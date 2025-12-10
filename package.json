@@ -1,0 +1,29 @@
+{
+  "name": "spring-modernization-marketplace",
+  "version": "1.0.0",
+  "description": "Claude Code plugin marketplace for Spring ecosystem modernization",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "format": "prettier --write \"**/*.md\"",
+    "format:check": "prettier --check \"**/*.md\"",
+    "lint": "markdownlint \"**/*.md\" --ignore node_modules",
+    "lint:fix": "markdownlint \"**/*.md\" --ignore node_modules --fix",
+    "check": "pnpm run format:check && pnpm run lint",
+    "fix": "pnpm run format && pnpm run lint:fix",
+    "audit": "pnpm audit",
+    "upgrade": "pnpm update --latest"
+  },
+  "devDependencies": {
+    "markdownlint-cli": "^0.43.0",
+    "prettier": "^3.7.4"
+  },
+  "keywords": [
+    "claude-code",
+    "plugin",
+    "marketplace",
+    "spring-boot",
+    "migration"
+  ],
+  "license": "MIT"
+}

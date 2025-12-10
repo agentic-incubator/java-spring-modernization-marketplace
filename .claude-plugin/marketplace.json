@@ -1,0 +1,30 @@
+{
+  "name": "spring-modernization-marketplace",
+  "owner": {
+    "name": "Spring Modernization Team",
+    "email": "modernization@example.com"
+  },
+  "metadata": {
+    "description": "A marketplace of AI agents and skills for automating Spring ecosystem modernization at scale",
+    "version": "1.0.0",
+    "pluginRoot": ".."
+  },
+  "plugins": [
+    {
+      "name": "spring-modernization",
+      "source": "./",
+      "description": "Complete Spring ecosystem modernization toolkit with research, discovery, migration, and validation capabilities",
+      "version": "1.0.0",
+      "author": {
+        "name": "Spring Modernization Team"
+      },
+      "category": "development",
+      "keywords": [
+        "spring-boot",
+        "migration",
+        "modernization",
+        "java"
+      ]
+    }
+  ]
+}
