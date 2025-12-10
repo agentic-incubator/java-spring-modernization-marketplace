@@ -1,0 +1,336 @@
+# GitHub Workflows
+
+Migrate portfolios of GitHub repositories with parallel processing and automatic PR creation.
+
+## Overview
+
+The `/migrate-github` command and `parallel-orchestrator` agent enable:
+
+- Cloning multiple GitHub repos simultaneously
+- Parallel discovery and analysis
+- Dependency-aware migration ordering
+- Automatic feature branch creation
+- Automatic PR submission
+
+## Prerequisites
+
+```bash
+# GitHub CLI must be installed and authenticated
+gh auth status
+
+# Should show: Logged in to github.com
+```
+
+## Quick Start
+
+### Single Repository
+
+```bash
+/migrate-github https://github.com/org/my-app
+```
+
+### Multiple Repositories
+
+```bash
+/migrate-github https://github.com/org/app1,https://github.com/org/app2,https://github.com/org/app3 --parallel
+```
+
+### From File
+
+Create `repos.txt`:
+
+```
+https://github.com/org/repo1
+https://github.com/org/repo2
+https://github.com/org/repo3
+```
+
+Run:
+
+```bash
+/migrate-github repos.txt --parallel
+```
+
+## Input Formats
+
+### Comma-Separated URLs
+
+```bash
+/migrate-github https://github.com/org/repo1,https://github.com/org/repo2
+```
+
+### repos.txt (Line-Separated)
+
+```
+https://github.com/org/repo1
+https://github.com/org/repo2
+https://github.com/org/repo3
+```
+
+### repos.json (With Dependencies)
+
+```json
+{
+  "workspace": "/tmp/migration-workspace",
+  "branchName": "feature/spring-boot-4-migration",
+  "parallel": true,
+  "createPRs": true,
+  "repos": [
+    {
+      "url": "https://github.com/org/common-lib",
+      "priority": 1,
+      "tier": "library"
+    },
+    {
+      "url": "https://github.com/org/app-service",
+      "dependsOn": ["common-lib"],
+      "tier": "application"
+    },
+    {
+      "url": "https://github.com/org/api-gateway",
+      "dependsOn": ["common-lib"],
+      "tier": "application"
+    }
+  ]
+}
+```
+
+## Command Options
+
+| Option               | Description                     | Default                           |
+| -------------------- | ------------------------------- | --------------------------------- |
+| `--parallel`         | Run independent ops in parallel | false                             |
+| `--branch <name>`    | Feature branch name             | `feature/spring-boot-4-migration` |
+| `--workspace <path>` | Local clone directory           | `/tmp/migration-workspace`        |
+| `--dry-run`          | Show plan without executing     | false                             |
+| `--skip-pr`          | Skip PR creation                | false                             |
+| `--labels <list>`    | PR labels (comma-separated)     | `spring-boot-4,dependencies`      |
+
+## Workflow Phases
+
+### Phase 1: Clone (Parallel)
+
+All repositories are cloned simultaneously:
+
+```
+[repo1] ──┬── [repo2] ──┬── [repo3] ──┬── [repo4]
+          │             │             │
+       PARALLEL      PARALLEL      PARALLEL
+```
+
+### Phase 2: Discovery (Parallel)
+
+Each repo is analyzed for migration requirements:
+
+```
+repo1: Maven, Spring Boot 3.3.5, needs Jackson + Security
+repo2: Gradle, Spring Boot 3.4.0, needs Jackson
+repo3: Maven, Spring Boot 3.3.5, needs Jackson + Security + Vaadin
+```
+
+### Phase 3: Dependency Graph
+
+Inter-repo dependencies are identified and repos are sorted into tiers:
+
+```
+Tier 1 (no deps):     [common-lib]
+                           │
+                           ▼
+Tier 2 (depends on 1): [app-service] [api-gateway]
+                           │              │
+                           └──────┬───────┘
+                                  ▼
+Tier 3 (depends on 2):      [frontend]
+```
+
+### Phase 4: Migration (Tiered Parallel)
+
+Migrations run in parallel within tiers, but tiers execute sequentially:
+
+```
+Tier 1: [common-lib]                    ← Runs first
+             │
+             ▼ (wait for completion)
+Tier 2: [app-service] [api-gateway]     ← Run in parallel
+             │              │
+             └──────┬───────┘
+                    ▼ (wait)
+Tier 3: [frontend]                      ← Runs last
+```
+
+### Phase 5: Validation
+
+Each repo is built and tested:
+
+```bash
+# Maven
+./mvnw clean verify
+
+# Gradle
+./gradlew clean build
+```
+
+### Phase 6: PR Creation (Parallel)
+
+PRs are created for all successful migrations:
+
+```bash
+# For each repo
+git add -A
+git commit -m "chore: migrate to Spring Boot 4.x"
+git push -u origin feature/spring-boot-4-migration
+gh pr create --title "chore: Migrate to Spring Boot 4.x" --body "..."
+```
+
+## PR Template
+
+Generated PRs include:
+
+```markdown
+## Spring Boot 4.x Migration
+
+### Changes Applied
+
+#### Build Configuration
+
+- Updated Spring Boot parent to 4.0.0
+- Updated Spring Cloud BOM to 2025.1.0
+- Added Jackson BOM 3.0.2
+
+#### Code Changes
+
+- Updated Jackson imports (core/databind to tools.jackson)
+- Preserved Jackson annotation imports
+- Updated exception handling (JacksonException)
+
+### Validation
+
+| Check       | Status |
+| ----------- | ------ |
+| Compilation | Passed |
+| Unit Tests  | Passed |
+
+### Generated By
+
+Spring Modernization Marketplace v1.0
+```
+
+## Output
+
+### Progress Updates
+
+```json
+{
+  "phase": "migration",
+  "tier": 2,
+  "progress": {
+    "total": 4,
+    "complete": 1,
+    "inProgress": 2,
+    "pending": 1
+  }
+}
+```
+
+### Final Summary
+
+```
+=== GitHub Migration Complete ===
+
+Repositories: 4
+Successful:   3 (PRs created)
+Failed:       1
+
+PRs Created:
+  - https://github.com/org/common-lib/pull/42
+  - https://github.com/org/app-service/pull/18
+  - https://github.com/org/api-gateway/pull/7
+
+Failed (require manual attention):
+  - frontend: Test failures in UserServiceTest
+    → Workspace: /tmp/migration-workspace/frontend
+    → Branch: feature/spring-boot-4-migration
+
+Next steps for failed repos:
+  1. cd /tmp/migration-workspace/frontend
+  2. Fix test failures
+  3. git add . && git commit --amend
+  4. git push && gh pr create
+```
+
+## Examples
+
+### Basic Parallel Migration
+
+```bash
+/migrate-github repos.txt --parallel
+```
+
+### Custom Branch Name
+
+```bash
+/migrate-github repos.txt --parallel --branch feature/sb4-upgrade
+```
+
+### Dry Run (Preview)
+
+```bash
+/migrate-github repos.txt --parallel --dry-run
+```
+
+### Skip PR Creation
+
+```bash
+/migrate-github repos.txt --parallel --skip-pr
+```
+
+### Custom Labels
+
+```bash
+/migrate-github repos.txt --parallel --labels "spring-boot-4,automated,needs-review"
+```
+
+### Full Options
+
+```bash
+/migrate-github repos.json \
+  --parallel \
+  --branch feature/spring-boot-4 \
+  --workspace /home/user/migrations \
+  --labels "spring-boot-4,automated"
+```
+
+## Error Handling
+
+### Clone Failures
+
+- Repo marked as `CLONE_FAILED`
+- Other repos continue
+- Reported in final summary
+
+### Migration Failures
+
+- Error saved to `$WORKSPACE/$repo/error.log`
+- Repo marked as `MIGRATION_FAILED`
+- Dependent repos may also fail
+- Other independent repos continue
+
+### PR Creation Failures
+
+- Retry once automatically
+- If still failing, provides manual instructions:
+
+```
+Manual PR creation for repo3:
+  cd /tmp/migration-workspace/repo3
+  git push -u origin feature/spring-boot-4-migration
+  gh pr create --title "..." --body "..."
+```
+
+## Best Practices
+
+1. **Always dry-run first** - Preview before executing
+2. **Use JSON for complex portfolios** - Define dependencies explicitly
+3. **Start with libraries** - Migrate shared code first
+4. **Review PRs before merging** - Automated != perfect
+5. **Keep workspace** - Don't delete until PRs are merged
