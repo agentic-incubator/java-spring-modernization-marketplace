@@ -255,7 +255,7 @@ This skill should run **before** other migration steps:
 └─────────────────────┘
 ```
 
-## Recommended Versions (December 2024)
+## Recommended Versions (December 2025)
 
 | Tool   | Version | Release Date | Notes                    |
 | ------ | ------- | ------------ | ------------------------ |

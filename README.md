@@ -17,7 +17,7 @@ This marketplace handles it: clone, analyze, migrate, validate, and submit PRsâ€
 | -------- | ----- | ------------------------------------------------------------------ |
 | Commands | 10    | `/migrate`, `/analyze`, `/migrate-github`, `/check-github-actions` |
 | Agents   | 9     | Orchestrator, parallel-orchestrator, validators                    |
-| Skills   | 16    | Build tool upgrader, Jackson, Security, GitHub Actions             |
+| Skills   | 19    | Build tool upgrader, Jackson, Security, GitHub Actions             |
 
 ## Quick Start
 
@@ -87,6 +87,7 @@ For portfolios, the orchestrator:
 | [Migrations](docs/migrations.md)                       | Detailed migration patterns          |
 | [GitHub Workflows](docs/github-workflows.md)           | Parallel migrations with PRs         |
 | [Troubleshooting](docs/troubleshooting.md)             | Common errors and solutions          |
+| [Sample Workflows](docs/samples/)                      | Real migration workflow examples     |
 | [Contributing](docs/contributing.md)                   | How to contribute                    |
 
 ## Build Tool Support
