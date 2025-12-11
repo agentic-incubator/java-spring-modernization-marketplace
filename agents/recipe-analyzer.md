@@ -47,11 +47,11 @@ For dependencies not in the catalog, search OpenRewrite documentation:
 
 **Base Documentation URLs:**
 
-- Recipes Index: https://docs.openrewrite.org/recipes
-- Spring Boot: https://docs.openrewrite.org/recipes/java/spring/boot4
-- Spring Security: https://docs.openrewrite.org/recipes/java/spring/security7
-- Jackson: https://docs.openrewrite.org/recipes/java/jackson
-- Java Migration: https://docs.openrewrite.org/recipes/java/migrate
+- Recipes Index: <https://docs.openrewrite.org/recipes>
+- Spring Boot: <https://docs.openrewrite.org/recipes/java/spring/boot4>
+- Spring Security: <https://docs.openrewrite.org/recipes/java/spring/security7>
+- Jackson: <https://docs.openrewrite.org/recipes/java/jackson>
+- Java Migration: <https://docs.openrewrite.org/recipes/java/migrate>
 
 **Search Strategy:**
 
@@ -64,7 +64,7 @@ WebFetch: https://docs.openrewrite.org/recipes/java/[category]
 
 For composite recipes, enumerate all included sub-recipes to understand coverage:
 
-**Example: Spring Boot 4.0 Composite Tree**
+#### Example: Spring Boot 4.0 Composite Tree
 
 ```text
 org.openrewrite.java.spring.boot4.UpgradeSpringBoot_4_0
@@ -327,21 +327,21 @@ For each recipe, determine:
 
 ### Finding New Recipes
 
-```
+```text
 WebSearch: "openrewrite spring boot 4.0 recipe 2025"
 WebFetch: https://docs.openrewrite.org/recipes/java/spring/boot4
 ```
 
 ### Checking Composite Structure
 
-```
+```text
 WebFetch: https://docs.openrewrite.org/recipes/java/spring/boot4/upgradespringboot_4_0
 Extract: Composite Recipes section, recipeList entries
 ```
 
 ### Finding Version-Specific Recipes
 
-```
+```text
 WebSearch: "openrewrite hibernate 6.6 upgrade recipe"
 WebFetch: https://docs.openrewrite.org/recipes/java/spring/data
 ```

@@ -294,7 +294,7 @@ Dynamically discovers OpenRewrite recipes from online documentation with version
 
 **Capabilities:**
 
-- Version-based recipe discovery from https://docs.openrewrite.org/recipes
+- Version-based recipe discovery from <https://docs.openrewrite.org/recipes>
 - Composite recipe tree walking to understand coverage
 - Latest version targeting
 - Transitive dependency handling

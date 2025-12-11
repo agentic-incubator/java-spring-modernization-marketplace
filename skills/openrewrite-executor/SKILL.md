@@ -14,7 +14,7 @@ For comprehensive recipe discovery with version-based matching and composite tre
 
 - **Recipe Catalog:** `skills/recipe-discovery/recipe-catalog.yaml`
 - **Recipe Discovery Skill:** `skills/recipe-discovery/SKILL.md`
-- **OpenRewrite Documentation:** https://docs.openrewrite.org/recipes
+- **OpenRewrite Documentation:** <https://docs.openrewrite.org/recipes>
 
 ## Available Recipes
 
