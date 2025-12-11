@@ -38,7 +38,7 @@ When new features or fixes are released, update your installation:
 ### Update the Marketplace
 
 ```bash
-claude plugin marketplace update agentic-incubator/java-spring-modernization-marketplace
+claude plugin marketplace update spring-m11n-marketplace
 ```
 
 ### Reinstall the Plugin
@@ -50,12 +50,7 @@ claude plugin install spring-m11n
 
 ### Verify the Update
 
-```bash
-# Inside a Claude Code shell
-/spring-m11n:version-check
-```
-
-Or check the plugin list:
+Check the plugin list:
 
 ```bash
 /plugin list
