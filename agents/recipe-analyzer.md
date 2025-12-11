@@ -33,13 +33,13 @@ This catalog maps artifact versions to recipes and documents composite recipe st
 
 Given detected project versions, find matching upgrade recipes:
 
-| Detected Version | Target Recipe | Upgrade Path |
-| --- | --- | --- |
-| Spring Boot 3.x | `UpgradeSpringBoot_4_0` | 3.x → 4.0.x |
-| Spring Boot 3.4.x | `UpgradeSpringBoot_3_5` | 3.4.x → 3.5.x |
-| Spring Security 6.x | `UpgradeSpringSecurity_7_0` | 6.x → 7.0.x |
-| Jackson 2.x | `UpgradeJackson_2_3` | 2.x → 3.x |
-| Java 17 | `UpgradeToJava21` | 17 → 21 |
+| Detected Version    | Target Recipe               | Upgrade Path  |
+| ------------------- | --------------------------- | ------------- |
+| Spring Boot 3.x     | `UpgradeSpringBoot_4_0`     | 3.x → 4.0.x   |
+| Spring Boot 3.4.x   | `UpgradeSpringBoot_3_5`     | 3.4.x → 3.5.x |
+| Spring Security 6.x | `UpgradeSpringSecurity_7_0` | 6.x → 7.0.x   |
+| Jackson 2.x         | `UpgradeJackson_2_3`        | 2.x → 3.x     |
+| Java 17             | `UpgradeToJava21`           | 17 → 21       |
 
 ### Step 3: Search Online Documentation
 
@@ -258,10 +258,7 @@ When invoked:
         "UpgradeSpringBoot_3_5"
       ],
       "coverage": "High - handles most Spring Boot changes",
-      "manualStepsRequired": [
-        "Review security configuration",
-        "Test custom autoconfiguration"
-      ],
+      "manualStepsRequired": ["Review security configuration", "Test custom autoconfiguration"],
       "documentation": "https://docs.openrewrite.org/recipes/java/spring/boot4"
     },
     {
@@ -275,9 +272,7 @@ When invoked:
         "java": "17 → 21"
       },
       "coverage": "High - handles build and code updates",
-      "manualStepsRequired": [
-        "Update CI/CD Java version"
-      ],
+      "manualStepsRequired": ["Update CI/CD Java version"],
       "documentation": "https://docs.openrewrite.org/recipes/java/migrate"
     }
   ],
@@ -293,10 +288,7 @@ When invoked:
       "tree": "See composite tree in analysis"
     }
   },
-  "notCovered": [
-    "Vaadin theme migration (Material → Lumo)",
-    "Custom Spring AI implementations"
-  ],
+  "notCovered": ["Vaadin theme migration (Material → Lumo)", "Custom Spring AI implementations"],
   "additionalRecipesAvailable": [
     {
       "name": "CommonStaticAnalysis",

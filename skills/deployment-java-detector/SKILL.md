@@ -10,14 +10,14 @@ Detects Java versions and distributions across various deployment platforms and 
 
 ## Supported Platforms
 
-| Platform       | Files                                    | Version Location                      |
-| -------------- | ---------------------------------------- | ------------------------------------- |
-| Docker         | `Dockerfile`, `Dockerfile.*`             | `FROM` image tags                     |
-| Kubernetes     | `*.yaml`, `*.yml` in `k8s/`, `kubernetes/` | Container image specs               |
-| Cloud Foundry  | `manifest.yml`, `manifest.yaml`          | `JBP_CONFIG_OPEN_JDK_JRE` env var     |
-| Fly.io         | `fly.toml`                               | `BP_JVM_VERSION` in build.args        |
-| Paketo/CNB     | `project.toml`, `pack` config            | `BP_JVM_VERSION` env var              |
-| Heroku         | `system.properties`                      | `java.runtime.version` property       |
+| Platform      | Files                                      | Version Location                  |
+| ------------- | ------------------------------------------ | --------------------------------- |
+| Docker        | `Dockerfile`, `Dockerfile.*`               | `FROM` image tags                 |
+| Kubernetes    | `*.yaml`, `*.yml` in `k8s/`, `kubernetes/` | Container image specs             |
+| Cloud Foundry | `manifest.yml`, `manifest.yaml`            | `JBP_CONFIG_OPEN_JDK_JRE` env var |
+| Fly.io        | `fly.toml`                                 | `BP_JVM_VERSION` in build.args    |
+| Paketo/CNB    | `project.toml`, `pack` config              | `BP_JVM_VERSION` env var          |
+| Heroku        | `system.properties`                        | `java.runtime.version` property   |
 
 ## Detection Patterns
 
@@ -238,13 +238,13 @@ java.runtime.version=21
 
 When no distribution is specified, recommend **BellSoft Liberica** as the preferred distribution:
 
-| Distribution      | Docker Hub                          | Notes                              |
-| ----------------- | ----------------------------------- | ---------------------------------- |
-| BellSoft Liberica | `bellsoft/liberica-openjdk-*`       | **Preferred** - TCK certified, optimized |
-| Eclipse Temurin   | `eclipse-temurin`                   | Former AdoptOpenJDK, widely used   |
-| Azul Zulu         | `azul/zulu-openjdk`                 | Enterprise support available       |
-| Amazon Corretto   | `amazoncorretto`                    | AWS optimized                      |
-| GraalVM           | `ghcr.io/graalvm/*`                 | Native image support               |
+| Distribution      | Docker Hub                    | Notes                                    |
+| ----------------- | ----------------------------- | ---------------------------------------- |
+| BellSoft Liberica | `bellsoft/liberica-openjdk-*` | **Preferred** - TCK certified, optimized |
+| Eclipse Temurin   | `eclipse-temurin`             | Former AdoptOpenJDK, widely used         |
+| Azul Zulu         | `azul/zulu-openjdk`           | Enterprise support available             |
+| Amazon Corretto   | `amazoncorretto`              | AWS optimized                            |
+| GraalVM           | `ghcr.io/graalvm/*`           | Native image support                     |
 
 ### Liberica Image Tags
 

@@ -218,26 +218,26 @@ mvn -U org.openrewrite.maven:rewrite-maven-plugin:run \
 
 ## Recipe Reference
 
-| Migration               | Recipe                        | Artifact                   | Type      |
-| ----------------------- | ----------------------------- | -------------------------- | --------- |
-| Spring Boot 3.x → 4.0   | `UpgradeSpringBoot_4_0`       | `rewrite-spring`           | composite |
-| Spring Boot 3.4 → 3.5   | `UpgradeSpringBoot_3_5`       | `rewrite-spring`           | composite |
-| Spring Boot 3.3 → 3.4   | `UpgradeSpringBoot_3_4`       | `rewrite-spring`           | composite |
-| Spring Boot 3.2 → 3.3   | `UpgradeSpringBoot_3_3`       | `rewrite-spring`           | composite |
-| Spring Boot 2.7 → 3.0   | `UpgradeSpringBoot_3_0`       | `rewrite-spring`           | composite |
-| Jackson 2.x → 3.x       | `UpgradeJackson_2_3`          | `rewrite-jackson`          | composite |
-| Security 6 → 7          | `UpgradeSpringSecurity_7_0`   | `rewrite-spring`           | composite |
-| Security 6.3 → 6.4      | `UpgradeSpringSecurity_6_4`   | `rewrite-spring`           | composite |
-| Cloud 2024 → 2025       | `UpgradeSpringCloud_2025`     | `rewrite-spring`           | composite |
-| Cloud 2023 → 2024       | `UpgradeSpringCloud_2024`     | `rewrite-spring`           | composite |
-| Java 17+ → 21           | `UpgradeToJava21`             | `rewrite-migrate-java`     | composite |
-| Java 21+ → 25           | `UpgradeToJava25`             | `rewrite-migrate-java`     | composite |
-| Java 11+ → 17           | `UpgradeToJava17`             | `rewrite-migrate-java`     | composite |
-| JUnit 4 → 5             | `JUnit4to5Migration`          | `rewrite-testing-frameworks` | composite |
-| JUnit 5 Best Practices  | `JUnit5BestPractices`         | `rewrite-testing-frameworks` | composite |
-| Static Analysis         | `CommonStaticAnalysis`        | `rewrite-static-analysis`  | composite |
-| javax → jakarta         | `JavaxToJakarta`              | `rewrite-migrate-java`     | composite |
-| Hibernate 6.5 → 6.6     | `UpgradeHibernate_6_6`        | `rewrite-spring`           | composite |
+| Migration              | Recipe                      | Artifact                     | Type      |
+| ---------------------- | --------------------------- | ---------------------------- | --------- |
+| Spring Boot 3.x → 4.0  | `UpgradeSpringBoot_4_0`     | `rewrite-spring`             | composite |
+| Spring Boot 3.4 → 3.5  | `UpgradeSpringBoot_3_5`     | `rewrite-spring`             | composite |
+| Spring Boot 3.3 → 3.4  | `UpgradeSpringBoot_3_4`     | `rewrite-spring`             | composite |
+| Spring Boot 3.2 → 3.3  | `UpgradeSpringBoot_3_3`     | `rewrite-spring`             | composite |
+| Spring Boot 2.7 → 3.0  | `UpgradeSpringBoot_3_0`     | `rewrite-spring`             | composite |
+| Jackson 2.x → 3.x      | `UpgradeJackson_2_3`        | `rewrite-jackson`            | composite |
+| Security 6 → 7         | `UpgradeSpringSecurity_7_0` | `rewrite-spring`             | composite |
+| Security 6.3 → 6.4     | `UpgradeSpringSecurity_6_4` | `rewrite-spring`             | composite |
+| Cloud 2024 → 2025      | `UpgradeSpringCloud_2025`   | `rewrite-spring`             | composite |
+| Cloud 2023 → 2024      | `UpgradeSpringCloud_2024`   | `rewrite-spring`             | composite |
+| Java 17+ → 21          | `UpgradeToJava21`           | `rewrite-migrate-java`       | composite |
+| Java 21+ → 25          | `UpgradeToJava25`           | `rewrite-migrate-java`       | composite |
+| Java 11+ → 17          | `UpgradeToJava17`           | `rewrite-migrate-java`       | composite |
+| JUnit 4 → 5            | `JUnit4to5Migration`        | `rewrite-testing-frameworks` | composite |
+| JUnit 5 Best Practices | `JUnit5BestPractices`       | `rewrite-testing-frameworks` | composite |
+| Static Analysis        | `CommonStaticAnalysis`      | `rewrite-static-analysis`    | composite |
+| javax → jakarta        | `JavaxToJakarta`            | `rewrite-migrate-java`       | composite |
+| Hibernate 6.5 → 6.6    | `UpgradeHibernate_6_6`      | `rewrite-spring`             | composite |
 
 ## Best Practices
 

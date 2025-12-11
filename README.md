@@ -88,6 +88,7 @@ For portfolios, the orchestrator:
 | [GitHub Workflows](docs/github-workflows.md)           | Parallel migrations with PRs         |
 | [Troubleshooting](docs/troubleshooting.md)             | Common errors and solutions          |
 | [Sample Workflows](docs/samples/)                      | Real migration workflow examples     |
+| [Project Historical](docs/project-historical.md)       | How this repo was built with AI      |
 | [Contributing](docs/contributing.md)                   | How to contribute                    |
 
 ## Build Tool Support

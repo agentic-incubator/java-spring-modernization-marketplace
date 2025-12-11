@@ -119,14 +119,14 @@ Detects Java versions and distributions in deployment manifests.
 
 **Supported Platforms:**
 
-| Platform       | Files                        | Version Location                  |
-| -------------- | ---------------------------- | --------------------------------- |
-| Docker         | `Dockerfile*`                | `FROM` image tags                 |
-| Kubernetes     | `k8s/**/*.yaml`              | Container image specs             |
-| Cloud Foundry  | `manifest.yml`               | `JBP_CONFIG_OPEN_JDK_JRE` env var |
-| Fly.io         | `fly.toml`                   | `BP_JVM_VERSION` in build.args    |
-| Paketo/CNB     | `project.toml`               | `BP_JVM_VERSION` env var          |
-| Heroku         | `system.properties`          | `java.runtime.version` property   |
+| Platform      | Files               | Version Location                  |
+| ------------- | ------------------- | --------------------------------- |
+| Docker        | `Dockerfile*`       | `FROM` image tags                 |
+| Kubernetes    | `k8s/**/*.yaml`     | Container image specs             |
+| Cloud Foundry | `manifest.yml`      | `JBP_CONFIG_OPEN_JDK_JRE` env var |
+| Fly.io        | `fly.toml`          | `BP_JVM_VERSION` in build.args    |
+| Paketo/CNB    | `project.toml`      | `BP_JVM_VERSION` env var          |
+| Heroku        | `system.properties` | `java.runtime.version` property   |
 
 **Distributions Detected:**
 
@@ -164,11 +164,11 @@ BP_JVM_VERSION = "21"
 
 **Image Size Reference:**
 
-| Image                                    | Size     |
-| ---------------------------------------- | -------- |
-| `bellsoft/liberica-openjdk-alpine:21`    | ~200 MB  |
-| `bellsoft/liberica-openjre-alpine:21`    | ~100 MB  |
-| `bellsoft/liberica-runtime-container:jre-21-slim-musl` | ~50 MB |
+| Image                                                  | Size    |
+| ------------------------------------------------------ | ------- |
+| `bellsoft/liberica-openjdk-alpine:21`                  | ~200 MB |
+| `bellsoft/liberica-openjre-alpine:21`                  | ~100 MB |
+| `bellsoft/liberica-runtime-container:jre-21-slim-musl` | ~50 MB  |
 
 ## Migration Skills
 
@@ -330,15 +330,15 @@ Dynamically discovers OpenRewrite recipes from online documentation with version
 
 **Categories Covered:**
 
-| Category        | Documentation URL                           |
-| --------------- | ------------------------------------------- |
-| Spring Boot     | `/recipes/java/spring/boot4`                |
-| Spring Security | `/recipes/java/spring/security7`            |
-| Spring Cloud    | `/recipes/java/spring/cloud2025`            |
-| Jackson         | `/recipes/java/jackson`                     |
-| Java Migration  | `/recipes/java/migrate`                     |
-| Testing         | `/recipes/java/testing`                     |
-| Static Analysis | `/recipes/staticanalysis`                   |
+| Category        | Documentation URL                |
+| --------------- | -------------------------------- |
+| Spring Boot     | `/recipes/java/spring/boot4`     |
+| Spring Security | `/recipes/java/spring/security7` |
+| Spring Cloud    | `/recipes/java/spring/cloud2025` |
+| Jackson         | `/recipes/java/jackson`          |
+| Java Migration  | `/recipes/java/migrate`          |
+| Testing         | `/recipes/java/testing`          |
+| Static Analysis | `/recipes/staticanalysis`        |
 
 ## Execution Skills
 
@@ -427,10 +427,10 @@ Creates pull requests with migration summaries.
 
 ## Skills by Category
 
-| Category         | Skills                                                                                                                                             |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Discovery        | build-tool-detector, build-tool-upgrader, version-detector, dependency-scanner, pattern-detector, github-actions-detector, deployment-java-detector |
-| Recipe Discovery | recipe-discovery                                                                                                                                   |
+| Category         | Skills                                                                                                                                               |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Discovery        | build-tool-detector, build-tool-upgrader, version-detector, dependency-scanner, pattern-detector, github-actions-detector, deployment-java-detector  |
+| Recipe Discovery | recipe-discovery                                                                                                                                     |
 | Migration        | jackson-migrator, security-config-migrator, spring-ai-migrator, import-migrator, build-file-updater, github-actions-updater, deployment-java-updater |
-| Execution        | build-runner, openrewrite-executor                                                                                                                 |
-| GitHub           | github-workflow, pr-submitter                                                                                                                      |
+| Execution        | build-runner, openrewrite-executor                                                                                                                   |
+| GitHub           | github-workflow, pr-submitter                                                                                                                        |

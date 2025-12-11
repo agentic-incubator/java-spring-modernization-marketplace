@@ -109,16 +109,16 @@ Find recipes for upgrading to the latest available versions.
 
 **Latest Versions (as of 2025-12):**
 
-| Technology     | Latest Version | Recipe                                   |
-| -------------- | -------------- | ---------------------------------------- |
-| Spring Boot    | 4.0.x          | `UpgradeSpringBoot_4_0`                  |
-| Spring Boot    | 3.5.x          | `UpgradeSpringBoot_3_5`                  |
-| Spring Security| 7.0.x          | `UpgradeSpringSecurity_7_0`              |
-| Spring Cloud   | 2025.x         | `UpgradeSpringCloud_2025`                |
-| Jackson        | 3.x            | `UpgradeJackson_2_3`                     |
-| Java           | 25             | `UpgradeToJava25`                        |
-| Java (LTS)     | 21             | `UpgradeToJava21`                        |
-| Hibernate      | 6.6            | `UpgradeHibernate_6_6`                   |
+| Technology      | Latest Version | Recipe                      |
+| --------------- | -------------- | --------------------------- |
+| Spring Boot     | 4.0.x          | `UpgradeSpringBoot_4_0`     |
+| Spring Boot     | 3.5.x          | `UpgradeSpringBoot_3_5`     |
+| Spring Security | 7.0.x          | `UpgradeSpringSecurity_7_0` |
+| Spring Cloud    | 2025.x         | `UpgradeSpringCloud_2025`   |
+| Jackson         | 3.x            | `UpgradeJackson_2_3`        |
+| Java            | 25             | `UpgradeToJava25`           |
+| Java (LTS)      | 21             | `UpgradeToJava21`           |
+| Hibernate       | 6.6            | `UpgradeHibernate_6_6`      |
 
 ## Recipe Discovery Workflow
 
@@ -141,10 +141,10 @@ Check `recipe-catalog.yaml` for known upgrade paths:
 ```yaml
 spring-boot:
   versions:
-    "4.0":
+    '4.0':
       recipe: org.openrewrite.java.spring.boot4.UpgradeSpringBoot_4_0
-      from_version: "3.x"
-      target_version: "4.0.x"
+      from_version: '3.x'
+      target_version: '4.0.x'
       composite: true
       includes:
         - org.openrewrite.java.spring.security7.UpgradeSpringSecurity_7_0
@@ -210,40 +210,40 @@ Output structured recommendations:
 
 ### Spring Ecosystem
 
-| Category        | Documentation URL                                    |
-| --------------- | ---------------------------------------------------- |
-| Spring Boot     | `/recipes/java/spring/boot`, `/boot2`, `/boot3`, `/boot4` |
+| Category        | Documentation URL                                            |
+| --------------- | ------------------------------------------------------------ |
+| Spring Boot     | `/recipes/java/spring/boot`, `/boot2`, `/boot3`, `/boot4`    |
 | Spring Security | `/recipes/java/spring/security5`, `/security6`, `/security7` |
-| Spring Cloud    | `/recipes/java/spring/cloud2022`, `/cloud2023`, etc. |
-| Spring Data     | `/recipes/java/spring/data`                          |
-| Spring Batch    | `/recipes/java/spring/batch`                         |
-| Spring Kafka    | `/recipes/java/spring/kafka`                         |
+| Spring Cloud    | `/recipes/java/spring/cloud2022`, `/cloud2023`, etc.         |
+| Spring Data     | `/recipes/java/spring/data`                                  |
+| Spring Batch    | `/recipes/java/spring/batch`                                 |
+| Spring Kafka    | `/recipes/java/spring/kafka`                                 |
 
 ### Java Platform
 
-| Category     | Documentation URL                        |
-| ------------ | ---------------------------------------- |
-| Java Migrate | `/recipes/java/migrate`                  |
-| Jakarta EE   | `/recipes/java/migrate/jakarta`          |
-| Lombok       | `/recipes/java/migrate/lombok`           |
-| Guava        | `/recipes/java/migrate/guava`            |
+| Category     | Documentation URL               |
+| ------------ | ------------------------------- |
+| Java Migrate | `/recipes/java/migrate`         |
+| Jakarta EE   | `/recipes/java/migrate/jakarta` |
+| Lombok       | `/recipes/java/migrate/lombok`  |
+| Guava        | `/recipes/java/migrate/guava`   |
 
 ### Libraries
 
-| Category     | Documentation URL                        |
-| ------------ | ---------------------------------------- |
-| Jackson      | `/recipes/java/jackson`                  |
-| Hibernate    | `/recipes/java/hibernate`                |
-| JUnit        | `/recipes/java/testing/junit5`           |
-| Mockito      | `/recipes/java/testing/mockito`          |
-| AssertJ      | `/recipes/java/testing/assertj`          |
+| Category  | Documentation URL               |
+| --------- | ------------------------------- |
+| Jackson   | `/recipes/java/jackson`         |
+| Hibernate | `/recipes/java/hibernate`       |
+| JUnit     | `/recipes/java/testing/junit5`  |
+| Mockito   | `/recipes/java/testing/mockito` |
+| AssertJ   | `/recipes/java/testing/assertj` |
 
 ### Build Tools
 
-| Category     | Documentation URL                        |
-| ------------ | ---------------------------------------- |
-| Maven        | `/recipes/maven`                         |
-| Gradle       | `/recipes/gradle`                        |
+| Category | Documentation URL |
+| -------- | ----------------- |
+| Maven    | `/recipes/maven`  |
+| Gradle   | `/recipes/gradle` |
 
 ## Transitive Dependency Handling
 

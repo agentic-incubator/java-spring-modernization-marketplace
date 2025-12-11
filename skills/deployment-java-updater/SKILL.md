@@ -11,14 +11,14 @@ default distribution when no specific distribution is required.
 
 ## Supported Platforms
 
-| Platform       | Configuration                        | Update Method                        |
-| -------------- | ------------------------------------ | ------------------------------------ |
-| Docker         | `Dockerfile`                         | Update `FROM` image tag              |
-| Kubernetes     | `*.yaml` manifests                   | Update container image specs         |
-| Cloud Foundry  | `manifest.yml`                       | Update `JBP_CONFIG_OPEN_JDK_JRE`     |
-| Fly.io         | `fly.toml`                           | Update `BP_JVM_VERSION`              |
-| Paketo/CNB     | `project.toml`                       | Update `BP_JVM_VERSION`              |
-| Heroku         | `system.properties`                  | Update `java.runtime.version`        |
+| Platform      | Configuration       | Update Method                    |
+| ------------- | ------------------- | -------------------------------- |
+| Docker        | `Dockerfile`        | Update `FROM` image tag          |
+| Kubernetes    | `*.yaml` manifests  | Update container image specs     |
+| Cloud Foundry | `manifest.yml`      | Update `JBP_CONFIG_OPEN_JDK_JRE` |
+| Fly.io        | `fly.toml`          | Update `BP_JVM_VERSION`          |
+| Paketo/CNB    | `project.toml`      | Update `BP_JVM_VERSION`          |
+| Heroku        | `system.properties` | Update `java.runtime.version`    |
 
 ## Distribution Preference: Liberica
 
@@ -84,10 +84,10 @@ ENTRYPOINT ["java", "-jar", "app.jar"]
 
 **Update Rules:**
 
-| Original Pattern              | Replacement Pattern                    |
-| ----------------------------- | -------------------------------------- |
+| Original Pattern              | Replacement Pattern                           |
+| ----------------------------- | --------------------------------------------- |
 | `FROM openjdk:{ver}*`         | `FROM bellsoft/liberica-openjdk-alpine:{ver}` |
-| `FROM eclipse-temurin:{ver}*` | Keep or switch to Liberica             |
+| `FROM eclipse-temurin:{ver}*` | Keep or switch to Liberica                    |
 | `FROM *:{ver}-jdk*`           | `FROM bellsoft/liberica-openjdk-alpine:{ver}` |
 | `FROM *:{ver}-jre*`           | `FROM bellsoft/liberica-openjre-alpine:{ver}` |
 
@@ -115,13 +115,13 @@ applications:
 
 **Version Format Reference:**
 
-| Java Version | JBP Config Value                    |
-| ------------ | ----------------------------------- |
-| Java 8       | `{ jre: { version: 1.8.0_+ } }`     |
-| Java 11      | `{ jre: { version: 11.+ } }`        |
-| Java 17      | `{ jre: { version: 17.+ } }`        |
-| Java 21      | `{ jre: { version: 21.+ } }`        |
-| Java 25      | `{ jre: { version: 25.+ } }`        |
+| Java Version | JBP Config Value                |
+| ------------ | ------------------------------- |
+| Java 8       | `{ jre: { version: 1.8.0_+ } }` |
+| Java 11      | `{ jre: { version: 11.+ } }`    |
+| Java 17      | `{ jre: { version: 17.+ } }`    |
+| Java 21      | `{ jre: { version: 21.+ } }`    |
+| Java 25      | `{ jre: { version: 25.+ } }`    |
 
 **With Memory Calculator (recommended for production):**
 
@@ -349,9 +349,7 @@ After updating, verify:
     "filesUpdated": 3,
     "targetVersion": "21",
     "targetDistribution": "bellsoft-liberica",
-    "manualReviewNeeded": [
-      "k8s/deployment.yaml - uses custom app image, verify base image"
-    ]
+    "manualReviewNeeded": ["k8s/deployment.yaml - uses custom app image, verify base image"]
   }
 }
 ```
@@ -409,14 +407,14 @@ FROM bellsoft/liberica-runtime-container:jre-21-slim-musl
 
 ## Image Size Reference
 
-| Image                                        | Approximate Size |
-| -------------------------------------------- | ---------------- |
-| `openjdk:21` (deprecated)                    | ~470 MB          |
-| `eclipse-temurin:21-jdk`                     | ~390 MB          |
-| `eclipse-temurin:21-jre`                     | ~270 MB          |
-| `bellsoft/liberica-openjdk-alpine:21`        | ~200 MB          |
-| `bellsoft/liberica-openjre-alpine:21`        | ~100 MB          |
-| `bellsoft/liberica-runtime-container:jre-21-slim-musl` | ~50 MB    |
+| Image                                                  | Approximate Size |
+| ------------------------------------------------------ | ---------------- |
+| `openjdk:21` (deprecated)                              | ~470 MB          |
+| `eclipse-temurin:21-jdk`                               | ~390 MB          |
+| `eclipse-temurin:21-jre`                               | ~270 MB          |
+| `bellsoft/liberica-openjdk-alpine:21`                  | ~200 MB          |
+| `bellsoft/liberica-openjre-alpine:21`                  | ~100 MB          |
+| `bellsoft/liberica-runtime-container:jre-21-slim-musl` | ~50 MB           |
 
 ## Integration with Migration Workflow
 
