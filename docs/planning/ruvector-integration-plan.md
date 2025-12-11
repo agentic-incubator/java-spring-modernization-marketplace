@@ -6,7 +6,10 @@
 
 ## Executive Summary
 
-This document proposes integrating [RuVector](https://github.com/ruvnet/ruvector) and its RuvLLM package into the Spring Modernization Marketplace to add intelligent, self-improving capabilities. The integration would transform the current static migration tooling into a learning system that improves with each migration.
+This document proposes integrating [RuVector](https://github.com/ruvnet/ruvector) and its
+RuvLLM package into the Spring Modernization Marketplace to add intelligent, self-improving
+capabilities. The integration would transform the current static migration tooling into a
+learning system that improves with each migration.
 
 ## Background
 
@@ -21,13 +24,13 @@ The Spring Modernization Marketplace provides:
 
 ### Limitations
 
-| Area | Current Limitation |
-|------|-------------------|
-| Pattern Learning | One-shot analysis; no memory across migrations |
-| Error Resolution | Static troubleshooting docs; manual pattern matching |
-| Recipe Selection | Catalog-based lookup; no semantic understanding |
-| Cross-Org Learning | No mechanism to share learnings (even anonymized) |
-| Session State | No persistence of migration context between sessions |
+| Area               | Current Limitation                                   |
+| ------------------ | ---------------------------------------------------- |
+| Pattern Learning   | One-shot analysis; no memory across migrations       |
+| Error Resolution   | Static troubleshooting docs; manual pattern matching |
+| Recipe Selection   | Catalog-based lookup; no semantic understanding      |
+| Cross-Org Learning | No mechanism to share learnings (even anonymized)    |
+| Session State      | No persistence of migration context between sessions |
 
 ## What RuVector/RuvLLM Provides
 
@@ -45,14 +48,14 @@ A distributed vector database combining:
 
 A self-learning LLM toolkit featuring:
 
-| Capability | Performance | Description |
-|------------|-------------|-------------|
-| Query Processing | 670K-1.14M ops/s | Automatic model routing |
-| Memory Search | 21.9K-35.3K ops/s | HNSW-based semantic retrieval |
-| Pattern Storage | 69.5K ops/s | SONA learning system |
-| Session Management | 690K ops/s create | Stateful conversation support |
+| Capability         | Performance             | Description                             |
+| ------------------ | ----------------------- | --------------------------------------- |
+| Query Processing   | 670K-1.14M ops/s        | Automatic model routing                 |
+| Memory Search      | 21.9K-35.3K ops/s       | HNSW-based semantic retrieval           |
+| Pattern Storage    | 69.5K ops/s             | SONA learning system                    |
+| Session Management | 690K ops/s create       | Stateful conversation support           |
 | Federated Learning | 128K ops/s agent create | Privacy-preserving distributed training |
-| SIMD Operations | 10-50x speedup | AVX2/NEON acceleration |
+| SIMD Operations    | 10-50x speedup          | AVX2/NEON acceleration                  |
 
 ### Key Innovations
 
@@ -64,7 +67,7 @@ A self-learning LLM toolkit featuring:
 
 ### Proposed System Design
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                      SPRING MODERNIZATION MARKETPLACE                        │
 ├─────────────────────────────────────────────────────────────────────────────┤
@@ -123,7 +126,7 @@ A self-learning LLM toolkit featuring:
 
 ### Data Flow
 
-```
+```text
 ┌──────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
 │   ANALYZE    │────▶│   ENRICH     │────▶│   MIGRATE    │────▶│   LEARN      │
 │              │     │   (NEW)      │     │              │     │   (NEW)      │
@@ -164,18 +167,19 @@ await patternMemory.store({
   sourcePattern: 'JsonProcessingException catch blocks',
   targetPattern: 'JacksonException catch blocks',
   context: { framework: 'jackson', fromVersion: '2.x', toVersion: '3.x' },
-  embedding: await ruvllm.embed(patternDescription)
-});
+  embedding: await ruvllm.embed(patternDescription),
+})
 
 // Query for similar patterns
 const similar = await patternMemory.search({
   query: 'handling JSON parsing errors in Spring controller',
   k: 5,
-  threshold: 0.8
-});
+  threshold: 0.8,
+})
 ```
 
 **Integration points:**
+
 - Called by `discovery-agent` during analysis
 - Called by `migration-agent` before transformations
 - Called by `reference-learner` when extracting patterns
@@ -192,18 +196,19 @@ await errorResolver.index({
   error: 'method setSpeed(Float) not found in TextToSpeechModel',
   stackTrace: '...',
   resolution: 'Change Float to Double for speed parameter',
-  migrationContext: { framework: 'spring-ai', version: '1.1' }
-});
+  migrationContext: { framework: 'spring-ai', version: '1.1' },
+})
 
 // Find similar errors
 const resolutions = await errorResolver.findSimilar({
   error: compilationError,
   stackTrace: buildOutput,
-  k: 3
-});
+  k: 3,
+})
 ```
 
 **Integration points:**
+
 - Called by `validation-agent` when builds fail
 - Populated after successful error resolution
 - Feeds into troubleshooting documentation
@@ -220,18 +225,19 @@ await recipeFinder.indexRecipe({
   name: 'UpgradeSpringBoot_4_0',
   description: 'Upgrades Spring Boot 3.x to 4.x including...',
   subRecipes: ['SpringBoot4Properties', 'UpdateJackson2ToJackson3'],
-  tags: ['spring-boot', 'jackson', 'security']
-});
+  tags: ['spring-boot', 'jackson', 'security'],
+})
 
 // Semantic recipe search
 const recipes = await recipeFinder.recommend({
   projectAnalysis: discoveryOutput,
   naturalLanguageQuery: 'Need to update JWT handling after Spring Security 7',
-  includeManualSteps: true
-});
+  includeManualSteps: true,
+})
 ```
 
 **Integration points:**
+
 - Enhances `recipe-discovery` skill
 - Called by `recipe-analyzer` agent
 - Integrates with OpenRewrite execution
@@ -261,6 +267,7 @@ const exportData = await migrationSession.export(sessionId);
 ```
 
 **Integration points:**
+
 - Called by orchestrator at checkpoints
 - Enables resume after interruption
 - Supports migration handoff between sessions
@@ -276,22 +283,23 @@ const exportData = await migrationSession.export(sessionId);
 await learningFeedback.positive({
   migrationId: 'uuid',
   pattern: 'VaadinWebSecurity replacement',
-  userComment: 'Worked perfectly'
-});
+  userComment: 'Worked perfectly',
+})
 
 // Record negative feedback with correction
 await learningFeedback.negative({
   migrationId: 'uuid',
   pattern: 'SecurityFilterChain configuration',
   issue: 'Missing CORS configuration',
-  correction: { before: '...', after: '...' }
-});
+  correction: { before: '...', after: '...' },
+})
 
 // Trigger learning update
-await learningFeedback.learn();
+await learningFeedback.learn()
 ```
 
 **Integration points:**
+
 - Invoked after validation success/failure
 - Feeds RuvLLM's `feedback()` API
 - Triggers LoRA adaptation
@@ -311,7 +319,7 @@ await learningFeedback.learn();
 
 **Workflow:**
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                          LEARNING AGENT                                  │
 ├─────────────────────────────────────────────────────────────────────────┤
@@ -351,7 +359,7 @@ await learningFeedback.learn();
 
 ### Before (Current)
 
-```
+```text
 1. /analyze path/to/project
    └── Detect build tool, versions, patterns (static)
 
@@ -368,7 +376,7 @@ await learningFeedback.learn();
 
 ### After (With RuVector/RuvLLM)
 
-```
+```text
 1. /analyze path/to/project
    └── Detect build tool, versions, patterns
    └── [NEW] Query pattern-memory: "85% similar to 47 prior migrations"
@@ -403,16 +411,19 @@ await learningFeedback.learn();
 **Goal:** Add intelligent error resolution with minimal integration complexity.
 
 **Deliverables:**
+
 - `error-resolver` skill
 - Error corpus initialization from existing troubleshooting docs
 - Integration with `validation-agent`
 
 **Technical approach:**
+
 - Use RuVector for HNSW indexing of errors
 - Embed errors using RuvLLM's `embed()` API
 - Store resolution context with each error
 
 **Success criteria:**
+
 - 50%+ reduction in manual error investigation time
 - Error corpus grows with each migration
 
@@ -421,17 +432,20 @@ await learningFeedback.learn();
 **Goal:** Enable learning from successful migrations.
 
 **Deliverables:**
+
 - `pattern-memory` skill
 - `learning-feedback` skill
 - Integration with `reference-learner` agent
 - Learning agent (basic version)
 
 **Technical approach:**
+
 - Extract code transformation patterns from git diffs
 - Embed patterns with context (framework, version, file type)
 - Implement feedback loop for pattern ranking
 
 **Success criteria:**
+
 - Pattern library grows to 1000+ entries
 - Measurable improvement in migration accuracy
 
@@ -440,16 +454,19 @@ await learningFeedback.learn();
 **Goal:** Semantic recipe recommendation.
 
 **Deliverables:**
+
 - `smart-recipe-finder` skill
 - Recipe embedding pipeline
 - Integration with `recipe-discovery` skill
 
 **Technical approach:**
+
 - Embed all OpenRewrite recipe descriptions
 - Include user-contributed manual steps
 - Multi-hop reasoning for complex migrations
 
 **Success criteria:**
+
 - Recipe recommendations rated helpful 80%+ of time
 - Reduced time to identify appropriate recipes
 
@@ -458,16 +475,19 @@ await learningFeedback.learn();
 **Goal:** Enable migration continuity across sessions.
 
 **Deliverables:**
+
 - `migration-session` skill
 - Session export/import functionality
 - Integration with orchestrators
 
 **Technical approach:**
+
 - Use RuvLLM session management APIs
 - Store project state, progress, and context
 - Enable handoff between sessions
 
 **Success criteria:**
+
 - Zero-loss migration resume after interruption
 - Session export/import works reliably
 
@@ -476,16 +496,19 @@ await learningFeedback.learn();
 **Goal:** Cross-organization learning while preserving privacy.
 
 **Deliverables:**
+
 - Federated learning infrastructure
 - Privacy-safe pattern sharing
 - Community pattern aggregation
 
 **Technical approach:**
+
 - Use RuvLLM's federated learning APIs
 - Anonymize patterns before sharing
 - Differential privacy for aggregation
 
 **Success criteria:**
+
 - 3+ organizations participating
 - Measurable improvement from shared learnings
 
@@ -505,13 +528,13 @@ await learningFeedback.learn();
 
 ### Platform Support
 
-| Platform | Native SIMD | Fallback |
-|----------|-------------|----------|
-| macOS (Apple Silicon) | NEON | Yes |
-| macOS (Intel) | AVX2/SSE4.1 | Yes |
-| Linux (x64) | AVX2/SSE4.1 | Yes |
-| Linux (ARM64) | NEON | Yes |
-| Windows (x64) | AVX2/SSE4.1 | Yes |
+| Platform              | Native SIMD | Fallback |
+| --------------------- | ----------- | -------- |
+| macOS (Apple Silicon) | NEON        | Yes      |
+| macOS (Intel)         | AVX2/SSE4.1 | Yes      |
+| Linux (x64)           | AVX2/SSE4.1 | Yes      |
+| Linux (ARM64)         | NEON        | Yes      |
+| Windows (x64)         | AVX2/SSE4.1 | Yes      |
 
 ### Configuration
 
@@ -539,7 +562,7 @@ ruvector:
     loraRank: 8
 
   federated:
-    enabled: false  # opt-in
+    enabled: false # opt-in
     aggregationEndpoint: https://api.example.com/federated
     anonymize: true
 ```
@@ -550,26 +573,26 @@ ruvector:
 
 ```typescript
 interface MigrationPattern {
-  id: string;
-  embedding: Float32Array;  // 768-dim
+  id: string
+  embedding: Float32Array // 768-dim
 
   // Pattern details
-  name: string;
-  description: string;
-  sourcePattern: string;
-  targetPattern: string;
+  name: string
+  description: string
+  sourcePattern: string
+  targetPattern: string
 
   // Context
-  framework: 'jackson' | 'security' | 'vaadin' | 'spring-ai' | 'spring-boot';
-  fromVersion: string;
-  toVersion: string;
-  fileTypes: string[];  // e.g., ['*.java', 'pom.xml']
+  framework: 'jackson' | 'security' | 'vaadin' | 'spring-ai' | 'spring-boot'
+  fromVersion: string
+  toVersion: string
+  fileTypes: string[] // e.g., ['*.java', 'pom.xml']
 
   // Quality metrics
-  successCount: number;
-  failureCount: number;
-  lastUsed: Date;
-  userRating: number;  // 1-5 average
+  successCount: number
+  failureCount: number
+  lastUsed: Date
+  userRating: number // 1-5 average
 }
 ```
 
@@ -577,54 +600,54 @@ interface MigrationPattern {
 
 ```typescript
 interface ErrorEntry {
-  id: string;
-  embedding: Float32Array;
+  id: string
+  embedding: Float32Array
 
   // Error details
-  errorMessage: string;
-  stackTraceSignature: string;  // Normalized stack trace
-  buildTool: 'maven' | 'gradle';
+  errorMessage: string
+  stackTraceSignature: string // Normalized stack trace
+  buildTool: 'maven' | 'gradle'
 
   // Resolution
-  resolution: string;
-  resolutionType: 'code-change' | 'config-change' | 'dependency-add' | 'manual';
-  codeChange?: { file: string; before: string; after: string; };
+  resolution: string
+  resolutionType: 'code-change' | 'config-change' | 'dependency-add' | 'manual'
+  codeChange?: { file: string; before: string; after: string }
 
   // Context
   migrationContext: {
-    framework: string;
-    version: string;
-    projectType: string;
-  };
+    framework: string
+    version: string
+    projectType: string
+  }
 
   // Quality
-  verified: boolean;
-  successCount: number;
+  verified: boolean
+  successCount: number
 }
 ```
 
 ## Risks and Mitigations
 
-| Risk | Impact | Likelihood | Mitigation |
-|------|--------|------------|------------|
-| Cold start (no initial data) | High | High | Pre-populate from existing migrations, troubleshooting docs |
-| Embedding quality for code | Medium | Medium | Use code-specific embedding models; fine-tune on migration corpus |
-| Native dependency complexity | Medium | Medium | JavaScript fallback; clear platform documentation |
-| Privacy concerns with federated | High | Low | Opt-in only; differential privacy; anonymization |
-| Storage growth | Low | Medium | Configurable limits; pruning of low-quality patterns |
-| Learning noise from bad feedback | Medium | Medium | Confidence thresholds; human review for low-confidence patterns |
+| Risk                             | Impact | Likelihood | Mitigation                                                        |
+| -------------------------------- | ------ | ---------- | ----------------------------------------------------------------- |
+| Cold start (no initial data)     | High   | High       | Pre-populate from existing migrations, troubleshooting docs       |
+| Embedding quality for code       | Medium | Medium     | Use code-specific embedding models; fine-tune on migration corpus |
+| Native dependency complexity     | Medium | Medium     | JavaScript fallback; clear platform documentation                 |
+| Privacy concerns with federated  | High   | Low        | Opt-in only; differential privacy; anonymization                  |
+| Storage growth                   | Low    | Medium     | Configurable limits; pruning of low-quality patterns              |
+| Learning noise from bad feedback | Medium | Medium     | Confidence thresholds; human review for low-confidence patterns   |
 
 ## Success Metrics
 
 ### Quantitative
 
-| Metric | Baseline | Target |
-|--------|----------|--------|
-| Migration success rate (first attempt) | ~70% | 90%+ |
-| Time to resolve build errors | ~15 min | <5 min |
-| Recipe selection accuracy | N/A | 80%+ |
-| Pattern library size | 0 | 1000+ entries |
-| User satisfaction (feedback) | N/A | 4.0/5.0+ |
+| Metric                                 | Baseline | Target        |
+| -------------------------------------- | -------- | ------------- |
+| Migration success rate (first attempt) | ~70%     | 90%+          |
+| Time to resolve build errors           | ~15 min  | <5 min        |
+| Recipe selection accuracy              | N/A      | 80%+          |
+| Pattern library size                   | 0        | 1000+ entries |
+| User satisfaction (feedback)           | N/A      | 4.0/5.0+      |
 
 ### Qualitative
 
