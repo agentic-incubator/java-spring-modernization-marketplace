@@ -16,6 +16,33 @@ Identifies Maven vs Gradle build systems.
 - Wrapper presence (`mvnw`, `gradlew`)
 - Multi-module structures
 
+### build-tool-upgrader
+
+Upgrades Maven/Gradle wrappers to versions compatible with Spring Boot 4.
+
+**Requirements for Spring Boot 4:**
+
+| Build Tool | Minimum | Recommended |
+| ---------- | ------- | ----------- |
+| Gradle     | 8.5     | 8.11        |
+| Maven      | 3.9.0   | 3.9.9       |
+
+**Commands:**
+
+```bash
+# Gradle upgrade
+./gradlew wrapper --gradle-version 8.11
+
+# Maven upgrade
+./mvnw wrapper:wrapper -Dmaven=3.9.9
+```
+
+**Updates:**
+
+- `gradle/wrapper/gradle-wrapper.properties`
+- `.mvn/wrapper/maven-wrapper.properties`
+- Wrapper scripts (`gradlew`, `mvnw`)
+
 ### version-detector
 
 Extracts framework versions from build files.
@@ -236,7 +263,7 @@ Creates pull requests with migration summaries.
 
 | Category  | Skills                                                                                              |
 | --------- | --------------------------------------------------------------------------------------------------- |
-| Discovery | build-tool-detector, version-detector, dependency-scanner, pattern-detector                         |
+| Discovery | build-tool-detector, build-tool-upgrader, version-detector, dependency-scanner, pattern-detector    |
 | Migration | jackson-migrator, security-config-migrator, spring-ai-migrator, import-migrator, build-file-updater |
 | Execution | build-runner, openrewrite-executor                                                                  |
 | GitHub    | github-workflow, pr-submitter                                                                       |

@@ -3,7 +3,7 @@ name: migration-agent
 description: Migration agent that applies Spring ecosystem transformations including build file updates, import migrations, and configuration changes. Use when executing the actual migration work on a project.
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: inherit
-skills: jackson-migrator, security-config-migrator, spring-ai-migrator, import-migrator, build-file-updater, openrewrite-executor
+skills: build-tool-upgrader, jackson-migrator, security-config-migrator, spring-ai-migrator, import-migrator, build-file-updater, openrewrite-executor
 ---
 
 # Migration Agent
@@ -14,10 +14,11 @@ You are a migration agent that applies transformations to upgrade Spring ecosyst
 
 Execute migration transformations in the correct order:
 
-1. **Build file updates** - Version bumps, BOM additions, groupId changes
-2. **Import migrations** - Update Java imports
-3. **Configuration migrations** - Update security and other configurations
-4. **Validation** - Run build to verify changes
+1. **Build tool upgrade** - Upgrade Maven/Gradle wrapper if needed
+2. **Build file updates** - Version bumps, BOM additions, groupId changes
+3. **Import migrations** - Update Java imports
+4. **Configuration migrations** - Update security and other configurations
+5. **Validation** - Run build to verify changes
 
 ## Critical Migration Rules
 
@@ -47,6 +48,30 @@ Execute migration transformations in the correct order:
 - **DO rename**: `CHAT_MEMORY_RETRIEVE_SIZE_KEY` → `TOP_K`
 
 ## Migration Sequence
+
+### Phase 0: Build Tool Upgrade (if needed)
+
+Check wrapper version and upgrade if below minimum:
+
+**Gradle** (minimum 8.5, recommend 8.11):
+
+```bash
+# Check current version
+grep distributionUrl gradle/wrapper/gradle-wrapper.properties
+
+# Upgrade if needed
+./gradlew wrapper --gradle-version 8.11
+```
+
+**Maven** (minimum 3.9.0, recommend 3.9.9):
+
+```bash
+# Check current version
+grep distributionUrl .mvn/wrapper/maven-wrapper.properties
+
+# Upgrade if needed
+./mvnw wrapper:wrapper -Dmaven=3.9.9
+```
 
 ### Phase 1: Build File Updates
 
@@ -119,6 +144,11 @@ Report migration results:
   "project": "my-app",
   "migrationStatus": "success",
   "changes": {
+    "buildToolUpgrade": {
+      "performed": true,
+      "from": "3.9.6",
+      "to": "3.9.9"
+    },
     "buildFiles": {
       "modified": ["pom.xml"],
       "changes": ["Updated Spring Boot to 4.0.0", "Added Jackson BOM"]

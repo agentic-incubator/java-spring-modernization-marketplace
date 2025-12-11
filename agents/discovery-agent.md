@@ -3,7 +3,7 @@ name: discovery-agent
 description: Discovery agent that analyzes Java/Spring projects to determine build tool, framework versions, dependencies, and migration requirements. Use when assessing a project before migration.
 tools: Read, Glob, Grep, Bash
 model: sonnet
-skills: build-tool-detector, version-detector, dependency-scanner, pattern-detector
+skills: build-tool-detector, build-tool-upgrader, version-detector, dependency-scanner, pattern-detector
 ---
 
 # Project Discovery Agent
@@ -29,6 +29,25 @@ Check for build files in this order:
 - `build.gradle` → Gradle Groovy DSL
 - `pom.xml` → Maven
 - `settings.gradle(.kts)` → Multi-module
+
+### Step 1.5: Wrapper Version Check
+
+**Gradle** - Read `gradle/wrapper/gradle-wrapper.properties`:
+
+```properties
+distributionUrl=https\://services.gradle.org/distributions/gradle-8.5-bin.zip
+```
+
+**Maven** - Read `.mvn/wrapper/maven-wrapper.properties`:
+
+```properties
+distributionUrl=https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.6/apache-maven-3.9.6-bin.zip
+```
+
+**Minimum versions for Spring Boot 4:**
+
+- Gradle: 8.5+ (recommend 8.11)
+- Maven: 3.9.0+ (recommend 3.9.9)
 
 ### Step 2: Version Detection
 
@@ -72,6 +91,9 @@ Search for code patterns:
       "type": "maven",
       "variant": "standard",
       "wrapperPresent": true,
+      "wrapperVersion": "3.9.6",
+      "wrapperUpgradeRequired": true,
+      "wrapperTargetVersion": "3.9.9",
       "multiModule": false
     },
     "versions": {
@@ -124,6 +146,7 @@ Search for code patterns:
   "migrationPlan": {
     "required": true,
     "phases": [
+      "Upgrade build tool wrapper (if needed)",
       "Update build files",
       "Migrate Jackson imports",
       "Migrate security configuration",

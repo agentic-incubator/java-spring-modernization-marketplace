@@ -13,11 +13,11 @@ This marketplace handles it: clone, analyze, migrate, validate, and submit PRsâ€
 
 ## What You Get
 
-| Category | Count | Highlights                                      |
-| -------- | ----- | ----------------------------------------------- |
-| Commands | 9     | `/migrate`, `/analyze`, `/migrate-github`       |
-| Agents   | 9     | Orchestrator, parallel-orchestrator, validators |
-| Skills   | 13    | Jackson, Security, Vaadin, Spring AI migrators  |
+| Category | Count | Highlights                                        |
+| -------- | ----- | ------------------------------------------------- |
+| Commands | 9     | `/migrate`, `/analyze`, `/migrate-github`         |
+| Agents   | 9     | Orchestrator, parallel-orchestrator, validators   |
+| Skills   | 14    | Build tool upgrader, Jackson, Security, Spring AI |
 
 ## Quick Start
 
@@ -77,16 +77,17 @@ For portfolios, the orchestrator:
 
 ## Documentation
 
-| Guide                                        | Description                          |
-| -------------------------------------------- | ------------------------------------ |
-| [Getting Started](docs/getting-started.md)   | Installation and basic usage         |
-| [Commands](docs/commands.md)                 | All slash commands reference         |
-| [Agents](docs/agents.md)                     | Specialized agents and orchestration |
-| [Skills](docs/skills.md)                     | Migration skills catalog             |
-| [Migrations](docs/migrations.md)             | Detailed migration patterns          |
-| [GitHub Workflows](docs/github-workflows.md) | Parallel migrations with PRs         |
-| [Troubleshooting](docs/troubleshooting.md)   | Common errors and solutions          |
-| [Contributing](docs/contributing.md)         | How to contribute                    |
+| Guide                                                  | Description                          |
+| ------------------------------------------------------ | ------------------------------------ |
+| [Getting Started](docs/getting-started.md)             | Installation and basic usage         |
+| [Claude Code Workflows](docs/claude-code-workflows.md) | Interactive usage patterns           |
+| [Commands](docs/commands.md)                           | All slash commands reference         |
+| [Agents](docs/agents.md)                               | Specialized agents and orchestration |
+| [Skills](docs/skills.md)                               | Migration skills catalog             |
+| [Migrations](docs/migrations.md)                       | Detailed migration patterns          |
+| [GitHub Workflows](docs/github-workflows.md)           | Parallel migrations with PRs         |
+| [Troubleshooting](docs/troubleshooting.md)             | Common errors and solutions          |
+| [Contributing](docs/contributing.md)                   | How to contribute                    |
 
 ## Build Tool Support
 

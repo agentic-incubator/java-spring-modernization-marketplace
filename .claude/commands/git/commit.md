@@ -1,7 +1,7 @@
 ---
 description: Analyze git changes and create an intelligent commit
 allowed-tools: [Bash]
-argument-hint: "[optional custom message]"
+argument-hint: '[optional custom message]'
 ---
 
 Analyze the current git changes and create a well-crafted commit message, then commit the changes.
