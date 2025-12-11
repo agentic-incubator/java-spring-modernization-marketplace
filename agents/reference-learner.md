@@ -47,7 +47,7 @@ git diff <before-commit>..<after-commit> -- "build.gradle*"
 
 Document specific transformations observed:
 
-```
+```text
 Reference: cf-butler (Spring Boot 4.0 migration)
 
 Learned Patterns:

@@ -25,7 +25,7 @@ Here's an actual conversation showing how Claude Code helps build a custom `repo
 
 The file should contain one GitHub URL per line:
 
-```
+```text
 https://github.com/org/repo1
 https://github.com/org/repo2
 https://github.com/org/repo3
@@ -39,7 +39,7 @@ That's it! No special formatting needed.
 /spring-m11n:migrate-github repos.txt --parallel
 ```
 
-**Alternative: JSON Format**
+#### Alternative: JSON Format
 
 If you need more control (dependencies between repos, explicit tiers, priority), use a `repos.json` instead:
 
@@ -81,7 +81,10 @@ Yes, it's documented in two places:
 
 **User:**
 
-> Can you take that json example and help me build another that contains the following github repos (I will only provide the owner/repo-name, I hope you can supplement): cf-toolsuite/cf-kaizen, cf-toolsuite/home, cf-toolsuite/sanford, cf-toolsuite/sanford-ui. sanford-ui depends on sanford. The tier for all these is application.
+> Can you take that json example and help me build another that contains the following github
+> repos (I will only provide the owner/repo-name, I hope you can supplement):
+> cf-toolsuite/cf-kaizen, cf-toolsuite/home, cf-toolsuite/sanford, cf-toolsuite/sanford-ui.
+> sanford-ui depends on sanford. The tier for all these is application.
 
 **Claude Code:** _(generates complete configuration)_
 

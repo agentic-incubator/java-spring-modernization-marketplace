@@ -78,7 +78,7 @@ java {
 
 Report current versions and target versions:
 
-```
+```text
 Framework Version Report
 ========================
 

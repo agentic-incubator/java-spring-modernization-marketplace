@@ -39,7 +39,7 @@ gh auth status
 
 Create `repos.txt`:
 
-```
+```text
 https://github.com/org/repo1
 https://github.com/org/repo2
 https://github.com/org/repo3
@@ -61,7 +61,7 @@ Run:
 
 ### repos.txt (Line-Separated)
 
-```
+```text
 https://github.com/org/repo1
 https://github.com/org/repo2
 https://github.com/org/repo3
@@ -112,7 +112,7 @@ https://github.com/org/repo3
 
 All repositories are cloned simultaneously:
 
-```
+```text
 [repo1] ──┬── [repo2] ──┬── [repo3] ──┬── [repo4]
           │             │             │
        PARALLEL      PARALLEL      PARALLEL
@@ -122,7 +122,7 @@ All repositories are cloned simultaneously:
 
 Each repo is analyzed for migration requirements:
 
-```
+```text
 repo1: Maven, Spring Boot 3.3.5, needs Jackson + Security
 repo2: Gradle, Spring Boot 3.4.0, needs Jackson
 repo3: Maven, Spring Boot 3.3.5, needs Jackson + Security + Vaadin
@@ -132,7 +132,7 @@ repo3: Maven, Spring Boot 3.3.5, needs Jackson + Security + Vaadin
 
 Inter-repo dependencies are identified and repos are sorted into tiers:
 
-```
+```text
 Tier 1 (no deps):     [common-lib]
                            │
                            ▼
@@ -147,7 +147,7 @@ Tier 3 (depends on 2):      [frontend]
 
 Migrations run in parallel within tiers, but tiers execute sequentially:
 
-```
+```text
 Tier 1: [common-lib]                    ← Runs first
              │
              ▼ (wait for completion)
@@ -234,7 +234,7 @@ Spring Modernization Marketplace v1.0
 
 ### Final Summary
 
-```
+```text
 === GitHub Migration Complete ===
 
 Repositories: 4
@@ -320,7 +320,7 @@ Next steps for failed repos:
 - Retry once automatically
 - If still failing, provides manual instructions:
 
-```
+```text
 Manual PR creation for repo3:
   cd /tmp/migration-workspace/repo3
   git push -u origin feature/spring-boot-4-migration

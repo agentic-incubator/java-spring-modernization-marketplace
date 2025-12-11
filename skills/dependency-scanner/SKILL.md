@@ -104,7 +104,7 @@ mvn dependency:tree -Dincludes=org.springframework.security*
 
 ### Jackson Detection
 
-```
+```text
 com.fasterxml.jackson.core:jackson-core
 com.fasterxml.jackson.core:jackson-databind
 com.fasterxml.jackson.core:jackson-annotations
@@ -115,7 +115,7 @@ com.fasterxml.jackson.module:jackson-module-*
 
 ### Spring Security Detection
 
-```
+```text
 org.springframework.security:spring-security-core
 org.springframework.security:spring-security-web
 org.springframework.security:spring-security-config
@@ -124,6 +124,6 @@ org.springframework.security:spring-security-oauth2-*
 
 ### Spring AI Detection
 
-```
+```text
 org.springframework.ai:spring-ai-*
 ```

@@ -7,7 +7,8 @@
 
 ## Overview
 
-This document captures a parallel migration workflow for upgrading multiple GitHub repositories to Spring Boot 4.0 using the Spring Modernization Marketplace plugin.
+This document captures a parallel migration workflow for upgrading multiple GitHub repositories to
+Spring Boot 4.0 using the Spring Modernization Marketplace plugin.
 
 ### Command Executed
 
@@ -139,7 +140,7 @@ return new ResponseEntityDecoder(new SpringDecoder(() ->
 
 **Discovery:** In Spring Boot 4.0, `HttpMessageConverters` moved to:
 
-```
+```text
 org.springframework.boot.http.converter.autoconfigure.HttpMessageConverters
 ```
 
@@ -222,7 +223,7 @@ springAiVersion=1.0.0
 ### PR Created
 
 **Repository:** cf-toolsuite/home
-**URL:** https://github.com/cf-toolsuite/home/pull/128
+**URL:** <https://github.com/cf-toolsuite/home/pull/128>
 **Title:** "chore: Verify Spring Boot 4.0 migration compatibility"
 
 **PR Summary:**

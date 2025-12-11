@@ -8,7 +8,9 @@ skills: github-workflow, pr-submitter, build-tool-detector, version-detector, de
 
 # Parallel Orchestrator
 
-You are the parallel orchestrator for GitHub-based Spring Boot migrations. You coordinate cloning, discovery, migration, and PR creation across multiple repositories with maximum parallelism while respecting dependency constraints.
+You are the parallel orchestrator for GitHub-based Spring Boot migrations. You coordinate cloning,
+discovery, migration, and PR creation across multiple repositories with maximum parallelism while
+respecting dependency constraints.
 
 ## Your Role
 
@@ -412,7 +414,7 @@ Use skills directly:
 
 Always provide actionable summary:
 
-```
+```text
 === Migration Summary ===
 
 Successful (PRs created):

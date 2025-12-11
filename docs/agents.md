@@ -12,7 +12,7 @@ Master coordinator for Spring ecosystem modernization.
 
 **Workflow:**
 
-```
+```text
 Research → Discovery → Migration → Validation
 ```
 
@@ -33,7 +33,7 @@ Coordinates parallel migration of GitHub repositories.
 
 **Workflow:**
 
-```
+```text
 Clone (parallel) → Discovery (parallel) → Tiered Migration → PRs (parallel)
 ```
 
@@ -183,7 +183,7 @@ Post-migration code cleanup.
 
 ## Agent Architecture
 
-```
+```text
                     ┌─────────────────────────────────────────────┐
                     │              ORCHESTRATOR                   │
                     │   (or parallel-orchestrator for GitHub)     │

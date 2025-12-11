@@ -81,7 +81,7 @@ java {
 
 Report GitHub Actions Java configurations and alignment status:
 
-```
+```text
 GitHub Actions Java Version Report
 ==================================
 

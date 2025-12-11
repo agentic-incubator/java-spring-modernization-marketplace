@@ -388,7 +388,7 @@ For multi-module Maven/Gradle projects:
 
 ### Review archived docs
 
-```
+```text
 .archives/spring-modernization-plan.md
 ```
 

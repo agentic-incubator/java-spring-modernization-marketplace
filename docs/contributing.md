@@ -103,7 +103,7 @@ What skills/agents this one uses.
 
 Create a new directory in `skills/` with a `SKILL.md` file:
 
-```
+```text
 skills/
 └── my-skill/
     └── SKILL.md
@@ -180,49 +180,51 @@ pnpm run fix
 
 1. Install the plugin locally:
 
-```bash
-claude plugin install /path/to/spring-modernization-marketplace
-```
+   ```bash
+   claude plugin install /path/to/spring-modernization-marketplace
+   ```
 
-2. Test your command/agent/skill:
+1. Test your command/agent/skill:
 
-```bash
-# For commands
-/your-command /path/to/test/project
+   ```bash
+   # For commands
+   /your-command /path/to/test/project
 
-# For agents - they're invoked by the orchestrator or other agents
-```
+   # For agents - they're invoked by the orchestrator or other agents
+   ```
 
-3. Verify with a real Spring project
+1. Verify with a real Spring project
 
 ## Pull Request Process
 
 1. Fork the repository
-2. Create a feature branch:
 
-```bash
-git checkout -b feature/my-new-skill
-```
+1. Create a feature branch:
 
-3. Make your changes
-4. Run formatting:
+   ```bash
+   git checkout -b feature/my-new-skill
+   ```
 
-```bash
-pnpm run fix
-```
+1. Make your changes
 
-5. Commit with clear message:
+1. Run formatting:
 
-```bash
-git commit -m "feat: add my-new-skill for XYZ migration"
-```
+   ```bash
+   pnpm run fix
+   ```
 
-6. Push and create PR:
+1. Commit with clear message:
 
-```bash
-git push origin feature/my-new-skill
-gh pr create
-```
+   ```bash
+   git commit -m "feat: add my-new-skill for XYZ migration"
+   ```
+
+1. Push and create PR:
+
+   ```bash
+   git push origin feature/my-new-skill
+   gh pr create
+   ```
 
 ### PR Guidelines
 

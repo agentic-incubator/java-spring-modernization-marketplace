@@ -217,7 +217,7 @@ java {
 
 For portfolio directories containing multiple projects:
 
-```
+```text
 portfolio/
 ├── project-a/
 │   ├── .github/workflows/build.yml  # Java 21

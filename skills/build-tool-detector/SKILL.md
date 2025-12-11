@@ -58,7 +58,8 @@ Return a JSON object:
 }
 ```
 
-**Note:** When scanning a portfolio directory, the `nestedProjects` array contains all discovered projects. If analyzing a single project, this array may be empty or contain only the root project.
+**Note:** When scanning a portfolio directory, the `nestedProjects` array contains all discovered
+projects. If analyzing a single project, this array may be empty or contain only the root project.
 
 ## Detection Patterns
 

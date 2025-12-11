@@ -106,21 +106,21 @@ When aligning entire matrix with build file:
 
 For `java-version: '21'` to `java-version: '25'`:
 
-```
+```text
 old_string: "java-version: '21'"
 new_string: "java-version: '25'"
 ```
 
 For `java-version: 21` (unquoted) to `java-version: 25`:
 
-```
+```text
 old_string: "java-version: 21"
 new_string: "java-version: 25"
 ```
 
 For matrix arrays:
 
-```
+```text
 old_string: "java: [ '17', '21' ]"
 new_string: "java: [ '21', '25' ]"
 ```
@@ -150,7 +150,7 @@ Update files in:
 
 For portfolio directories, update each project's workflows based on that project's build file Java version:
 
-```
+```text
 portfolio/
 ├── project-a/
 │   ├── .github/workflows/build.yml  # Update to match project-a's pom.xml
