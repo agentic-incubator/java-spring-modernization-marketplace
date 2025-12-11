@@ -13,6 +13,7 @@ Create standardized pull requests for Spring Boot migration changes using GitHub
 - GitHub CLI (`gh`) must be installed and authenticated
 - Repository must have changes committed to a feature branch
 - Branch must be pushed to remote origin
+- **Labels must exist** before PR creation (use `label-manager` skill to pre-create)
 
 ## Create Pull Request
 
@@ -84,6 +85,84 @@ gh pr create \
   --body "$PR_BODY" \
   --base main \
   --head feature/spring-boot-4-migration
+```
+
+### Fork-Based PR Creation
+
+When you lack push access to a repository (READ-only permission), create PRs from a fork:
+
+```bash
+# Variables
+UPSTREAM_REPO="owner/repo"           # Original repo (e.g., fastnsilver/grivet)
+CURRENT_USER=$(gh api user --jq ".login")  # Your GitHub username
+BRANCH_NAME="feature/spring-boot-4-migration"
+
+# Create PR from fork to upstream
+gh pr create \
+  --repo "$UPSTREAM_REPO" \
+  --head "$CURRENT_USER:$BRANCH_NAME" \
+  --title "chore: Migrate to Spring Boot 4.x" \
+  --body "$PR_BODY"
+```
+
+**Key differences for fork-based PRs:**
+
+| Option      | Direct Push              | Fork-Based                     |
+| ----------- | ------------------------ | ------------------------------ |
+| `--repo`    | Not needed (uses origin) | Required: target upstream repo |
+| `--head`    | Branch name only         | `username:branch` format       |
+| Push target | `origin`                 | `fork` remote                  |
+
+### Complete Fork-Based PR Workflow
+
+```bash
+UPSTREAM_REPO="fastnsilver/grivet"
+BRANCH_NAME="feature/spring-boot-4-migration"
+CURRENT_USER=$(gh api user --jq ".login")
+
+# 1. Ensure fork exists
+gh repo fork "$UPSTREAM_REPO" --clone=false 2>/dev/null || true
+
+# 2. Add fork remote (if not already added)
+git remote add fork "https://github.com/$CURRENT_USER/$(basename $UPSTREAM_REPO).git" 2>/dev/null || true
+
+# 3. Push to fork
+git push -u fork "$BRANCH_NAME"
+
+# 4. Create PR from fork to upstream
+gh pr create \
+  --repo "$UPSTREAM_REPO" \
+  --head "$CURRENT_USER:$BRANCH_NAME" \
+  --title "chore: Migrate $(basename $UPSTREAM_REPO) to Spring Boot 4.x" \
+  --body "$PR_BODY" \
+  --label "spring-boot-4,automated"
+```
+
+### Automatic Fork Detection
+
+Detect if fork-based workflow is needed before creating PR:
+
+```bash
+REPO="owner/repo"
+
+# Check permission level
+PERMISSION=$(gh repo view "$REPO" --json viewerPermission --jq ".viewerPermission")
+
+case "$PERMISSION" in
+  ADMIN|MAINTAIN|WRITE)
+    echo "Direct PR creation available"
+    gh pr create --title "..." --body "$PR_BODY"
+    ;;
+  *)
+    echo "Fork-based PR required (permission: $PERMISSION)"
+    CURRENT_USER=$(gh api user --jq ".login")
+    gh pr create \
+      --repo "$REPO" \
+      --head "$CURRENT_USER:$BRANCH_NAME" \
+      --title "..." \
+      --body "$PR_BODY"
+    ;;
+esac
 ```
 
 ## PR Templates
@@ -255,11 +334,59 @@ gh auth status
 gh auth login --web
 ```
 
+## Label Pre-Creation Requirement
+
+When using `--label` flag with `gh pr create`, the labels must already exist in the repository. Otherwise, PR creation fails with:
+
+```text
+could not add label: 'spring-boot-4' not found
+```
+
+### Solution: Use label-manager Skill
+
+Before creating PRs with labels, invoke the `label-manager` skill to ensure labels exist:
+
+```bash
+# Check existing labels
+gh label list --repo owner/repo --json name --jq ".[].name"
+
+# Create missing labels
+gh label create "spring-boot-4" --repo owner/repo --color "0E8A16" --description "Spring Boot 4.x migration"
+gh label create "automated" --repo owner/repo --color "1D76DB" --description "Automated change via tooling"
+gh label create "needs-review" --repo owner/repo --color "FBCA04" --description "Requires manual review"
+```
+
+### Integrated Workflow
+
+```bash
+REPO="owner/repo"
+LABELS="spring-boot-4,automated"
+
+# Step 1: Pre-create labels
+IFS=',' read -ra LABEL_ARRAY <<< "$LABELS"
+EXISTING=$(gh label list --repo "$REPO" --json name --jq ".[].name")
+
+for label in "${LABEL_ARRAY[@]}"; do
+  if ! echo "$EXISTING" | grep -q "^${label}$"; then
+    gh label create "$label" --repo "$REPO" --color "0E8A16" 2>/dev/null || true
+  fi
+done
+
+# Step 2: Create PR with labels
+gh pr create \
+  --repo "$REPO" \
+  --title "chore: Migrate to Spring Boot 4.x" \
+  --body "$PR_BODY" \
+  --label "$LABELS"
+```
+
+**Note:** The `parallel-orchestrator` and `migrate-github` command handle label pre-creation automatically in Phase 5.5.
+
 ## Critical Rules
 
 1. **Always verify branch is pushed** before creating PR
 2. **Use descriptive titles** following conventional commits
 3. **Include validation results** in PR body
-4. **Add appropriate labels** for tracking
+4. **Pre-create labels** before using `--label` flag (use `label-manager` skill)
 5. **Never create PRs with failing builds** unless explicitly noted
 6. **Link related issues** when applicable

@@ -125,6 +125,210 @@ wait
 echo "All repos cloned to $WORKSPACE"
 ```
 
+## Permission Detection
+
+Before pushing changes, detect if the user has write access to determine if a fork-based workflow is required.
+
+### Check Repository Permissions
+
+```bash
+# Get user's permission level on a repository
+PERMISSION=$(gh repo view owner/repo --json viewerPermission --jq ".viewerPermission")
+echo "Permission: $PERMISSION"
+
+# Possible values: ADMIN, MAINTAIN, WRITE, READ, or null/empty
+```
+
+| Permission   | Can Push Directly | Notes                   |
+| ------------ | ----------------- | ----------------------- |
+| `ADMIN`      | Yes               | Full access             |
+| `MAINTAIN`   | Yes               | Can push, manage issues |
+| `WRITE`      | Yes               | Standard contributor    |
+| `READ`       | No                | Fork required           |
+| `null/empty` | No                | Fork required           |
+
+### Check If User Is Repo Owner
+
+```bash
+# Get authenticated user
+CURRENT_USER=$(gh api user --jq ".login")
+
+# Get repo owner
+REPO_OWNER=$(gh repo view owner/repo --json owner --jq ".owner.login")
+
+# Compare
+if [ "$CURRENT_USER" = "$REPO_OWNER" ]; then
+  echo "User is repo owner - direct push allowed"
+else
+  echo "User is not owner - check permissions"
+fi
+```
+
+### Comprehensive Permission Check Function
+
+```bash
+# Check if user can push directly to a repository
+can_push_directly() {
+  local REPO="$1"  # owner/repo format
+
+  # Get permission level
+  PERMISSION=$(gh repo view "$REPO" --json viewerPermission --jq ".viewerPermission" 2>/dev/null)
+
+  case "$PERMISSION" in
+    ADMIN|MAINTAIN|WRITE)
+      return 0  # Can push directly
+      ;;
+    *)
+      return 1  # Fork required
+      ;;
+  esac
+}
+
+# Usage
+if can_push_directly "owner/repo"; then
+  echo "Direct push available"
+  git push -u origin feature/spring-boot-4-migration
+else
+  echo "Fork-based workflow required"
+  # See Fork-Based Workflow section below
+fi
+```
+
+## Fork-Based Workflow
+
+When the user lacks push access to the target repository, use a fork-based workflow.
+
+### Detect Existing Fork
+
+```bash
+UPSTREAM_REPO="owner/repo"
+CURRENT_USER=$(gh api user --jq ".login")
+
+# Check if fork already exists
+FORK_EXISTS=$(gh repo view "$CURRENT_USER/$(basename $UPSTREAM_REPO)" --json name 2>/dev/null && echo "yes" || echo "no")
+
+if [ "$FORK_EXISTS" = "yes" ]; then
+  echo "Fork already exists: $CURRENT_USER/$(basename $UPSTREAM_REPO)"
+else
+  echo "No fork found - will need to create one"
+fi
+```
+
+### Create Fork If Needed
+
+```bash
+UPSTREAM_REPO="owner/repo"
+
+# Create fork (--clone=false since we already have the repo cloned)
+gh repo fork "$UPSTREAM_REPO" --clone=false
+
+# Get the fork URL
+CURRENT_USER=$(gh api user --jq ".login")
+FORK_REPO="$CURRENT_USER/$(basename $UPSTREAM_REPO)"
+echo "Fork created: $FORK_REPO"
+```
+
+### Configure Fork Remote
+
+```bash
+cd /path/to/cloned/repo
+
+CURRENT_USER=$(gh api user --jq ".login")
+REPO_NAME=$(basename $(pwd))
+
+# Add fork as a remote
+git remote add fork "https://github.com/$CURRENT_USER/$REPO_NAME.git"
+
+# Verify remotes
+git remote -v
+# origin  https://github.com/owner/repo.git (fetch)
+# origin  https://github.com/owner/repo.git (push)
+# fork    https://github.com/current-user/repo.git (fetch)
+# fork    https://github.com/current-user/repo.git (push)
+```
+
+### Push to Fork
+
+```bash
+# Push feature branch to fork instead of origin
+git push -u fork feature/spring-boot-4-migration
+```
+
+### Full Fork-Based Workflow
+
+Complete workflow for repos without push access:
+
+```bash
+UPSTREAM_REPO="owner/repo"
+BRANCH_NAME="feature/spring-boot-4-migration"
+WORKSPACE="/tmp/migration-workspace"
+
+# 1. Clone upstream repo
+REPO_NAME=$(basename "$UPSTREAM_REPO")
+gh repo clone "$UPSTREAM_REPO" "$WORKSPACE/$REPO_NAME"
+cd "$WORKSPACE/$REPO_NAME"
+
+# 2. Check permissions
+PERMISSION=$(gh repo view "$UPSTREAM_REPO" --json viewerPermission --jq ".viewerPermission")
+
+if [[ "$PERMISSION" =~ ^(ADMIN|MAINTAIN|WRITE)$ ]]; then
+  # Direct push workflow
+  git checkout -b "$BRANCH_NAME"
+  # ... make changes ...
+  git add -A && git commit -m "chore: migrate to Spring Boot 4.x"
+  git push -u origin "$BRANCH_NAME"
+  gh pr create --title "chore: Migrate to Spring Boot 4.x" --body "$PR_BODY"
+else
+  # Fork-based workflow
+  CURRENT_USER=$(gh api user --jq ".login")
+
+  # Create fork if needed
+  gh repo fork "$UPSTREAM_REPO" --clone=false 2>/dev/null || true
+
+  # Add fork remote
+  git remote add fork "https://github.com/$CURRENT_USER/$REPO_NAME.git" 2>/dev/null || true
+
+  # Create branch and make changes
+  git checkout -b "$BRANCH_NAME"
+  # ... make changes ...
+  git add -A && git commit -m "chore: migrate to Spring Boot 4.x"
+
+  # Push to fork
+  git push -u fork "$BRANCH_NAME"
+
+  # Create PR from fork to upstream
+  gh pr create \
+    --repo "$UPSTREAM_REPO" \
+    --head "$CURRENT_USER:$BRANCH_NAME" \
+    --title "chore: Migrate to Spring Boot 4.x" \
+    --body "$PR_BODY"
+fi
+```
+
+## Output Format (with Fork Info)
+
+Report repository status including fork information:
+
+```json
+{
+  "repo": "owner/repo",
+  "status": "cloned",
+  "localPath": "/workspace/repo",
+  "branch": "feature/spring-boot-4-migration",
+  "remote": "origin",
+  "permissions": {
+    "level": "READ",
+    "canPushDirectly": false
+  },
+  "fork": {
+    "required": true,
+    "exists": true,
+    "url": "https://github.com/current-user/repo",
+    "remote": "fork"
+  }
+}
+```
+
 ## Error Handling
 
 ### Clone Failures
@@ -176,7 +380,9 @@ Report repository status:
 ## Critical Rules
 
 1. **Always verify authentication** before cloning private repos
-2. **Create backup branches** before making changes
-3. **Use descriptive commit messages** that explain migration changes
-4. **Never force push to main/master** branches
-5. **Verify remote branch doesn't exist** before pushing
+2. **Check permissions before pushing** - use fork-based workflow if READ-only access
+3. **Create backup branches** before making changes
+4. **Use descriptive commit messages** that explain migration changes
+5. **Never force push to main/master** branches
+6. **Verify remote branch doesn't exist** before pushing
+7. **For cross-org repos** - assume fork workflow needed unless permissions confirm otherwise
