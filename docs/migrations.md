@@ -243,6 +243,71 @@ TextToSpeechModel model = ...;
 | ------------------------------- | ------- |
 | `CHAT_MEMORY_RETRIEVE_SIZE_KEY` | `TOP_K` |
 
+## GitHub Actions Workflows
+
+When migrating Java versions, update your CI/CD pipelines to match.
+
+### Check Current Configuration
+
+```bash
+/check-github-actions /path/to/project
+```
+
+### Update Java Version
+
+```yaml
+# Before
+- uses: actions/setup-java@v4
+  with:
+    distribution: temurin
+    java-version: '21'
+
+# After
+- uses: actions/setup-java@v4
+  with:
+    distribution: temurin
+    java-version: '25'
+```
+
+### Update Matrix Builds
+
+```yaml
+# Before
+strategy:
+  matrix:
+    java: ['17', '21']
+
+# After
+strategy:
+  matrix:
+    java: ['21', '25']
+```
+
+### Preserve Distribution Settings
+
+When updating Java versions, keep the distribution unchanged:
+
+| Distribution | Provider          |
+| ------------ | ----------------- |
+| `temurin`    | Eclipse Temurin   |
+| `liberica`   | BellSoft Liberica |
+| `corretto`   | Amazon Corretto   |
+| `zulu`       | Azul Zulu         |
+
+### GraalVM Workflows
+
+```yaml
+# Before
+- uses: graalvm/setup-graalvm@v1
+  with:
+    java-version: '21'
+
+# After
+- uses: graalvm/setup-graalvm@v1
+  with:
+    java-version: '25'
+```
+
 ## Migration Order
 
 When migrating a project with multiple changes, follow this order:

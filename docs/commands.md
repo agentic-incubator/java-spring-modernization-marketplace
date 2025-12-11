@@ -52,6 +52,31 @@ Scan multiple projects for migration status.
 - Inter-project dependencies
 - Recommended migration order
 
+### /check-github-actions
+
+Check Java versions in GitHub Actions workflows.
+
+```bash
+/check-github-actions [project-path]
+```
+
+**Output:**
+
+- Workflow files found
+- Java versions in CI configurations
+- Distribution settings
+- Matrix build configurations
+- Alignment status with build files
+
+**Alignment Status:**
+
+| Status     | Description                                        |
+| ---------- | -------------------------------------------------- |
+| ALIGNED    | Build file and workflows use same Java version     |
+| MISALIGNED | Build file and workflows have different versions   |
+| MIXED      | Workflows have different versions among themselves |
+| NO_CI      | No GitHub Actions workflows found                  |
+
 ## Migration Commands
 
 ### /migrate
@@ -196,6 +221,7 @@ Validate migration with builds and tests.
 | ---------------------- | ---------------------------------- |
 | Check project state    | `/analyze /path`                   |
 | Check versions only    | `/version-check /path`             |
+| Check CI Java versions | `/check-github-actions /path`      |
 | Scan portfolio         | `/portfolio-scan /path`            |
 | Migrate single project | `/migrate /path`                   |
 | Migrate with preview   | `/migrate /path --dry-run`         |

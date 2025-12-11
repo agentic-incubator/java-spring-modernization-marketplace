@@ -26,6 +26,11 @@ When invoked, analyze the project at the specified path to determine:
    - Maven: Parse `pom.xml` for `<modules>` section
    - Gradle: Parse `settings.gradle(.kts)` for `include` statements
 
+4. **Nested Project Detection** (for portfolio/monorepo directories):
+   - Glob for `**/pom.xml` to find all Maven projects
+   - Glob for `**/build.gradle` and `**/build.gradle.kts` to find all Gradle projects
+   - Each discovered build file represents a distinct project
+
 ## Output Format
 
 Return a JSON object:
@@ -37,9 +42,23 @@ Return a JSON object:
   "wrapperPresent": true|false,
   "wrapperVersion": "x.x.x",
   "multiModule": true|false,
-  "modules": ["module-a", "module-b"]
+  "modules": ["module-a", "module-b"],
+  "nestedProjects": [
+    {
+      "path": "subdir/project-a",
+      "buildTool": "maven",
+      "buildFile": "subdir/project-a/pom.xml"
+    },
+    {
+      "path": "subdir/project-b",
+      "buildTool": "gradle",
+      "buildFile": "subdir/project-b/build.gradle.kts"
+    }
+  ]
 }
 ```
+
+**Note:** When scanning a portfolio directory, the `nestedProjects` array contains all discovered projects. If analyzing a single project, this array may be empty or contain only the root project.
 
 ## Detection Patterns
 

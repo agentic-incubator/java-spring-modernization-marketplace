@@ -33,7 +33,11 @@ This document captures a parallel migration workflow for upgrading multiple GitH
     { "url": "https://github.com/cf-toolsuite/cf-kaizen", "tier": "application" },
     { "url": "https://github.com/cf-toolsuite/home", "tier": "application" },
     { "url": "https://github.com/cf-toolsuite/sanford", "tier": "application" },
-    { "url": "https://github.com/cf-toolsuite/sanford-ui", "dependsOn": ["sanford"], "tier": "application" }
+    {
+      "url": "https://github.com/cf-toolsuite/sanford-ui",
+      "dependsOn": ["sanford"],
+      "tier": "application"
+    }
   ]
 }
 ```
@@ -52,11 +56,11 @@ github.com
 All 4 repositories cloned successfully to `/tmp/migration-workspace`:
 
 | Repository | Clone Status |
-|------------|--------------|
-| cf-kaizen | ✅ Success |
-| home | ✅ Success |
-| sanford | ✅ Success |
-| sanford-ui | ✅ Success |
+| ---------- | ------------ |
+| cf-kaizen  | ✅ Success   |
+| home       | ✅ Success   |
+| sanford    | ✅ Success   |
+| sanford-ui | ✅ Success   |
 
 ---
 
@@ -66,12 +70,12 @@ Four parallel discovery agents analyzed each repository:
 
 ### Discovery Summary
 
-| Repository | Spring Boot | Status | Migration Needed |
-|------------|-------------|--------|------------------|
-| **cf-kaizen** | 4.0.0 ✅ | Already migrated | Jackson imports only (8 files) |
-| **home** | 4.0.0 ✅ | Already migrated | Verification only |
-| **sanford** | 3.5.6 ⚠️ | Needs migration | SB4, Jackson, Spring AI TTS |
-| **sanford-ui** | 3.5.6 ⚠️ | Needs migration | SB4, Vaadin 25, deps |
+| Repository     | Spring Boot | Status           | Migration Needed               |
+| -------------- | ----------- | ---------------- | ------------------------------ |
+| **cf-kaizen**  | 4.0.0 ✅    | Already migrated | Jackson imports only (8 files) |
+| **home**       | 4.0.0 ✅    | Already migrated | Verification only              |
+| **sanford**    | 3.5.6 ⚠️    | Needs migration  | SB4, Jackson, Spring AI TTS    |
+| **sanford-ui** | 3.5.6 ⚠️    | Needs migration  | SB4, Vaadin 25, deps           |
 
 ### Tier Analysis
 
@@ -86,16 +90,16 @@ Four parallel discovery agents analyzed each repository:
 
 Three migration agents launched simultaneously:
 
-| Repository | Agent | Status |
-|------------|-------|--------|
-| cf-kaizen | `spring-m11n:migration-agent` | Completed |
-| home | `spring-m11n:migration-agent` | Completed |
-| sanford | `spring-m11n:migration-agent` | Completed |
+| Repository | Agent                         | Status    |
+| ---------- | ----------------------------- | --------- |
+| cf-kaizen  | `spring-m11n:migration-agent` | Completed |
+| home       | `spring-m11n:migration-agent` | Completed |
+| sanford    | `spring-m11n:migration-agent` | Completed |
 
 ### Tier 2 Migration
 
-| Repository | Agent | Duration |
-|------------|-------|----------|
+| Repository | Agent                         | Duration                         |
+| ---------- | ----------------------------- | -------------------------------- |
 | sanford-ui | `spring-m11n:migration-agent` | 56s (16 tool uses, 25.5k tokens) |
 
 ---
@@ -106,12 +110,12 @@ Four validation agents ran in parallel:
 
 ### Initial Validation Results
 
-| Repository | Build Status | Issue |
-|------------|--------------|-------|
-| **home** | ✅ SUCCESS | Ready for PR |
-| **cf-kaizen** | ❌ FAILED | `HttpMessageConverters` removed in SB4 |
-| **sanford** | ❌ FAILED | Jackson 3.x deps not in build.gradle, Spring AI packages moved |
-| **sanford-ui** | ❌ FAILED | Vaadin 25 plugin repo missing |
+| Repository     | Build Status | Issue                                                          |
+| -------------- | ------------ | -------------------------------------------------------------- |
+| **home**       | ✅ SUCCESS   | Ready for PR                                                   |
+| **cf-kaizen**  | ❌ FAILED    | `HttpMessageConverters` removed in SB4                         |
+| **sanford**    | ❌ FAILED    | Jackson 3.x deps not in build.gradle, Spring AI packages moved |
+| **sanford-ui** | ❌ FAILED    | Vaadin 25 plugin repo missing                                  |
 
 ---
 
@@ -134,6 +138,7 @@ return new ResponseEntityDecoder(new SpringDecoder(() ->
 ### Fix Attempt 2: New Package Location
 
 **Discovery:** In Spring Boot 4.0, `HttpMessageConverters` moved to:
+
 ```
 org.springframework.boot.http.converter.autoconfigure.HttpMessageConverters
 ```
@@ -207,12 +212,12 @@ springAiVersion=1.0.0
 
 ### Final Migration Results
 
-| Repository | Status | Reason | PR |
-|------------|--------|--------|----|
-| **home** | ✅ SUCCESS | Already on SB 4.0.0, verified compatible | [PR #128](https://github.com/cf-toolsuite/home/pull/128) |
-| **cf-kaizen** | ❌ SKIPPED | Spring Cloud OpenFeign not compatible with SB 4.0 | - |
-| **sanford** | ❌ SKIPPED | Spring AI 1.0/1.1 not compatible with SB 4.0 | - |
-| **sanford-ui** | ❌ SKIPPED | Depends on sanford (must stay on same version) | - |
+| Repository     | Status     | Reason                                            | PR                                                       |
+| -------------- | ---------- | ------------------------------------------------- | -------------------------------------------------------- |
+| **home**       | ✅ SUCCESS | Already on SB 4.0.0, verified compatible          | [PR #128](https://github.com/cf-toolsuite/home/pull/128) |
+| **cf-kaizen**  | ❌ SKIPPED | Spring Cloud OpenFeign not compatible with SB 4.0 | -                                                        |
+| **sanford**    | ❌ SKIPPED | Spring AI 1.0/1.1 not compatible with SB 4.0      | -                                                        |
+| **sanford-ui** | ❌ SKIPPED | Depends on sanford (must stay on same version)    | -                                                        |
 
 ### PR Created
 

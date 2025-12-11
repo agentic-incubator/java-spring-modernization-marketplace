@@ -260,6 +260,67 @@ gh pr list --head feature/spring-boot-4-migration
 gh pr create --title "..." --body "..."
 ```
 
+### GitHub Actions Java version mismatch
+
+**Cause:** CI workflow uses a different Java version than the build file.
+
+**Symptoms:**
+
+- Build passes locally but fails in CI
+- CI uses Java 17 but project requires Java 21+
+- Matrix builds don't include target Java version
+
+**Diagnose:**
+
+```bash
+/check-github-actions /path/to/project
+```
+
+**Solution:**
+
+Update `.github/workflows/*.yml` files:
+
+```yaml
+# Before
+- uses: actions/setup-java@v4
+  with:
+    distribution: temurin
+    java-version: '17'
+
+# After
+- uses: actions/setup-java@v4
+  with:
+    distribution: temurin
+    java-version: '21'
+```
+
+For matrix builds:
+
+```yaml
+# Before
+strategy:
+  matrix:
+    java: ['17', '21']
+
+# After
+strategy:
+  matrix:
+    java: ['21', '25']
+```
+
+### GitHub Actions workflow not updated after migration
+
+**Cause:** Migration updated build files but not CI configuration.
+
+**Solution:**
+
+The migration agent should update workflows automatically. If not:
+
+1. Check workflow files in `.github/workflows/`
+2. Update `java-version` in all `setup-java` steps
+3. Update matrix strategies if present
+4. Preserve distribution settings (temurin, liberica, etc.)
+
 ## Common Patterns
 
 ### Migration order matters

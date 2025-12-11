@@ -1,9 +1,9 @@
 ---
 name: discovery-agent
-description: Discovery agent that analyzes Java/Spring projects to determine build tool, framework versions, dependencies, and migration requirements. Use when assessing a project before migration.
+description: Discovery agent that analyzes Java/Spring projects to determine build tool, framework versions, dependencies, migration requirements, and CI/CD configurations. Use when assessing a project before migration.
 tools: Read, Glob, Grep, Bash
 model: sonnet
-skills: build-tool-detector, build-tool-upgrader, version-detector, dependency-scanner, pattern-detector
+skills: build-tool-detector, build-tool-upgrader, version-detector, dependency-scanner, pattern-detector, github-actions-detector
 ---
 
 # Project Discovery Agent
@@ -18,6 +18,7 @@ Perform comprehensive project analysis including:
 2. **Version detection** - All framework versions
 3. **Dependency scanning** - Identify migration-relevant dependencies
 4. **Pattern detection** - Find code patterns requiring migration
+5. **GitHub Actions detection** - Discover CI/CD Java configurations
 
 ## Analysis Workflow
 
@@ -81,6 +82,16 @@ Search for code patterns:
 - Vaadin theme usage
 - Spring AI TTS classes
 
+### Step 5: GitHub Actions Detection
+
+Scan `.github/workflows/` for CI/CD configurations:
+
+- Find all workflow files (`.yml`, `.yaml`)
+- Extract Java versions from `actions/setup-java` steps
+- Identify matrix strategies for multi-version builds
+- Compare CI Java version with build file Java version
+- Flag version misalignment for remediation
+
 ## Output Format
 
 ```json
@@ -141,6 +152,14 @@ Search for code patterns:
       "securityConfigs": 2,
       "vaadinThemes": 3,
       "springAiTts": 4
+    },
+    "githubActions": {
+      "present": true,
+      "workflows": [".github/workflows/build.yml", ".github/workflows/codeql.yml"],
+      "javaVersions": ["21"],
+      "distributions": ["liberica"],
+      "versionAligned": false,
+      "alignmentIssue": "Build file specifies Java 25, GitHub Actions uses Java 21"
     }
   },
   "migrationPlan": {
@@ -151,12 +170,14 @@ Search for code patterns:
       "Migrate Jackson imports",
       "Migrate security configuration",
       "Migrate Vaadin theme",
-      "Migrate Spring AI TTS"
+      "Migrate Spring AI TTS",
+      "Update GitHub Actions workflows (if present)"
     ],
     "estimatedChanges": {
       "buildFiles": 1,
       "javaFiles": 25,
-      "configFiles": 2
+      "configFiles": 2,
+      "workflowFiles": 2
     }
   }
 }

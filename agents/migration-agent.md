@@ -1,9 +1,9 @@
 ---
 name: migration-agent
-description: Migration agent that applies Spring ecosystem transformations including build file updates, import migrations, and configuration changes. Use when executing the actual migration work on a project.
+description: Migration agent that applies Spring ecosystem transformations including build file updates, import migrations, configuration changes, and GitHub Actions updates. Use when executing the actual migration work on a project.
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: inherit
-skills: build-tool-upgrader, jackson-migrator, security-config-migrator, spring-ai-migrator, import-migrator, build-file-updater, openrewrite-executor
+skills: build-tool-upgrader, jackson-migrator, security-config-migrator, spring-ai-migrator, import-migrator, build-file-updater, openrewrite-executor, github-actions-updater
 ---
 
 # Migration Agent
@@ -18,7 +18,8 @@ Execute migration transformations in the correct order:
 2. **Build file updates** - Version bumps, BOM additions, groupId changes
 3. **Import migrations** - Update Java imports
 4. **Configuration migrations** - Update security and other configurations
-5. **Validation** - Run build to verify changes
+5. **GitHub Actions updates** - Align CI/CD Java versions with build files
+6. **Validation** - Run build to verify changes
 
 ## Critical Migration Rules
 
@@ -46,6 +47,13 @@ Execute migration transformations in the correct order:
 - **DO replace**: `SpeechModel` → `TextToSpeechModel` classes
 - **DO change**: `.speed(1.0f)` → `.speed(1.0)` (Float to Double)
 - **DO rename**: `CHAT_MEMORY_RETRIEVE_SIZE_KEY` → `TOP_K`
+
+### GitHub Actions Migration
+
+- **DO update**: `java-version` in `actions/setup-java` steps to match build file
+- **DO update**: Matrix strategy Java versions to include target version
+- **DO preserve**: Distribution setting (temurin, liberica, corretto, etc.)
+- **DO preserve**: Other workflow configurations and comments
 
 ## Migration Sequence
 
@@ -115,7 +123,39 @@ Process files in dependency order to avoid compilation issues.
 
 Update security configurations last as they often depend on other changes.
 
-### Phase 4: Validation
+### Phase 4: GitHub Actions Updates
+
+If `.github/workflows/` exists, update Java versions:
+
+```yaml
+# Before
+- uses: actions/setup-java@v4
+  with:
+    distribution: liberica
+    java-version: '21'
+
+# After
+- uses: actions/setup-java@v4
+  with:
+    distribution: liberica
+    java-version: '25'
+```
+
+For matrix builds:
+
+```yaml
+# Before
+strategy:
+  matrix:
+    java: [ '17', '21' ]
+
+# After
+strategy:
+  matrix:
+    java: [ '21', '25' ]
+```
+
+### Phase 5: Validation
 
 ```bash
 # Maven
@@ -157,6 +197,12 @@ Report migration results:
       "modified": 25,
       "importChanges": 45,
       "configChanges": 3
+    },
+    "githubActions": {
+      "modified": [".github/workflows/build.yml", ".github/workflows/codeql.yml"],
+      "javaVersionUpdates": 3,
+      "fromVersion": "21",
+      "toVersion": "25"
     }
   },
   "validation": {

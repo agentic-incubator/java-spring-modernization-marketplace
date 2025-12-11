@@ -110,6 +110,13 @@ Runs the full build with tests to ensure everything works.
 /validate /path/to/project
 ```
 
+### Check CI/CD Alignment
+
+```bash
+# Verify GitHub Actions Java versions match build files
+/check-github-actions /path/to/project
+```
+
 ### Portfolio of Projects
 
 ```bash

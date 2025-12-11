@@ -13,11 +13,11 @@ This marketplace handles it: clone, analyze, migrate, validate, and submit PRsâ€
 
 ## What You Get
 
-| Category | Count | Highlights                                        |
-| -------- | ----- | ------------------------------------------------- |
-| Commands | 9     | `/migrate`, `/analyze`, `/migrate-github`         |
-| Agents   | 9     | Orchestrator, parallel-orchestrator, validators   |
-| Skills   | 14    | Build tool upgrader, Jackson, Security, Spring AI |
+| Category | Count | Highlights                                                         |
+| -------- | ----- | ------------------------------------------------------------------ |
+| Commands | 10    | `/migrate`, `/analyze`, `/migrate-github`, `/check-github-actions` |
+| Agents   | 9     | Orchestrator, parallel-orchestrator, validators                    |
+| Skills   | 16    | Build tool upgrader, Jackson, Security, GitHub Actions             |
 
 ## Quick Start
 

@@ -91,6 +91,28 @@ Finds code patterns requiring migration.
 | `AntPathRequestMatcher`      | Security 7    |
 | `SpeechModel`                | Spring AI 1.1 |
 
+### github-actions-detector
+
+Detects Java versions and configurations from GitHub Actions workflow files.
+
+**Scans:**
+
+- `.github/workflows/*.yml` and `.github/workflows/*.yaml`
+- `actions/setup-java` steps
+- `graalvm/setup-graalvm` steps
+- Matrix strategy configurations
+
+**Extracts:**
+
+- Java versions (direct, matrix, environment variable)
+- Distribution (temurin, liberica, corretto, zulu, etc.)
+- Action versions
+
+**Compares:**
+
+- Build file Java version vs CI Java version
+- Flags misalignment for remediation
+
 ## Migration Skills
 
 ### jackson-migrator
@@ -173,6 +195,39 @@ Updates Maven pom.xml and Gradle build files.
 - Dependency additions/removals
 
 **Supports:** Maven, Gradle Groovy, Gradle Kotlin DSL
+
+### github-actions-updater
+
+Updates Java versions in GitHub Actions workflow files.
+
+**Updates:**
+
+- `java-version` in `actions/setup-java` steps
+- Matrix strategy Java arrays
+- Environment variable definitions
+- `graalvm/setup-graalvm` configurations
+
+**Preserves:**
+
+- Distribution settings (temurin, liberica, etc.)
+- Other workflow configurations
+- Comments and formatting
+
+**Example:**
+
+```yaml
+# Before
+- uses: actions/setup-java@v4
+  with:
+    distribution: liberica
+    java-version: '21'
+
+# After
+- uses: actions/setup-java@v4
+  with:
+    distribution: liberica
+    java-version: '25'
+```
 
 ## Execution Skills
 
@@ -261,9 +316,9 @@ Creates pull requests with migration summaries.
 
 ## Skills by Category
 
-| Category  | Skills                                                                                              |
-| --------- | --------------------------------------------------------------------------------------------------- |
-| Discovery | build-tool-detector, build-tool-upgrader, version-detector, dependency-scanner, pattern-detector    |
-| Migration | jackson-migrator, security-config-migrator, spring-ai-migrator, import-migrator, build-file-updater |
-| Execution | build-runner, openrewrite-executor                                                                  |
-| GitHub    | github-workflow, pr-submitter                                                                       |
+| Category  | Skills                                                                                                                      |
+| --------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Discovery | build-tool-detector, build-tool-upgrader, version-detector, dependency-scanner, pattern-detector, github-actions-detector   |
+| Migration | jackson-migrator, security-config-migrator, spring-ai-migrator, import-migrator, build-file-updater, github-actions-updater |
+| Execution | build-runner, openrewrite-executor                                                                                          |
+| GitHub    | github-workflow, pr-submitter                                                                                               |
