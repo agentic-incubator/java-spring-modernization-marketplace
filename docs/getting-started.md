@@ -13,22 +13,23 @@ Get up and running with Spring Modernization Marketplace in minutes.
 ### Add the Marketplace
 
 ```bash
-claude plugin marketplace add owner/spring-modernization-marketplace
+claude plugin marketplace add agentic-incubator/java-spring-modernization-marketplace
 ```
 
 ### Install the Plugin
 
 ```bash
-claude plugin install spring-modernization
+claude plugin install spring-m11n
 ```
 
 ### Verify Installation
 
 ```bash
-claude plugin list
+# Inside a Claude code shell
+/plugin list
 ```
 
-You should see `spring-modernization` in the output.
+You should see `spring-m11n` in the output.
 
 ## Quick Start
 

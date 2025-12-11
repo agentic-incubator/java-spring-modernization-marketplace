@@ -23,8 +23,8 @@ This marketplace handles it: clone, analyze, migrate, validate, and submit PRsâ€
 
 ```bash
 # Install the marketplace
-claude plugin marketplace add owner/spring-modernization-marketplace
-claude plugin install spring-modernization
+claude plugin marketplace add agentic-incubator/java-spring-modernization-marketplace
+claude plugin install spring-m11n
 
 # Analyze your project
 /analyze /path/to/your/spring-app
