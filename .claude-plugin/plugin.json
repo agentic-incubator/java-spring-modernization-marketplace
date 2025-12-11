@@ -1,13 +1,12 @@
 {
-  "name": "spring-modernization",
+  "name": "spring-m11n",
   "version": "1.0.0",
-  "description": "Comprehensive toolkit for automating Spring ecosystem modernization (Spring Boot 3.x to 4.x, Jackson 2 to 3, Spring Security 6 to 7, Vaadin 24 to 25, Spring AI 1.0 to 1.1)",
+  "description": "Experimental toolkit for automating Spring ecosystem modernization (Spring Boot 3.x to 4.x, Jackson 2 to 3, Spring Security 6 to 7, Vaadin 24 to 25, Spring AI 1.0 to 1.1)",
   "author": {
-    "name": "Spring Modernization Team",
-    "email": "modernization@example.com"
+    "name": "Chris Phillipson"
   },
-  "homepage": "https://github.com/spring-modernization/java-agents-and-skills",
-  "license": "Apache-2.0",
+  "homepage": "https://github.com/agentic-incubator/java-spring-modernization-marketplace",
+  "license": "MIT",
   "keywords": [
     "spring-boot",
     "spring-cloud",
