@@ -31,6 +31,44 @@ claude plugin install spring-m11n
 
 You should see `spring-m11n` in the output.
 
+## Updating
+
+When new features or fixes are released, update your installation:
+
+### Update the Marketplace
+
+```bash
+claude plugin marketplace update agentic-incubator/java-spring-modernization-marketplace
+```
+
+### Reinstall the Plugin
+
+```bash
+claude plugin uninstall spring-m11n
+claude plugin install spring-m11n
+```
+
+### Verify the Update
+
+```bash
+# Inside a Claude Code shell
+/spring-m11n:version-check
+```
+
+Or check the plugin list:
+
+```bash
+/plugin list
+```
+
+**Tip:** If you experience issues after updating, try removing and re-adding the marketplace:
+
+```bash
+claude plugin marketplace remove agentic-incubator/java-spring-modernization-marketplace
+claude plugin marketplace add agentic-incubator/java-spring-modernization-marketplace
+claude plugin install spring-m11n
+```
+
 ## Quick Start
 
 ### 1. Analyze Your Project
