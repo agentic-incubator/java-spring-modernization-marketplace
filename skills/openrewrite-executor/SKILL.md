@@ -8,27 +8,113 @@ allowed-tools: Read, Write, Edit, Bash, Glob
 
 Execute OpenRewrite recipes for automated code migrations.
 
+## Recipe Catalog Reference
+
+For comprehensive recipe discovery with version-based matching and composite tree walking, see:
+
+- **Recipe Catalog:** `skills/recipe-discovery/recipe-catalog.yaml`
+- **Recipe Discovery Skill:** `skills/recipe-discovery/SKILL.md`
+- **OpenRewrite Documentation:** https://docs.openrewrite.org/recipes
+
 ## Available Recipes
 
-### Spring Boot 4 Upgrade
+### Spring Boot Recipes
 
 ```yaml
-recipe: org.openrewrite.java.spring.boot4.UpgradeSpringBoot_4_0
-artifact: org.openrewrite.recipe:rewrite-spring:RELEASE
+# Spring Boot 4.0 (composite - includes security, jackson, java upgrades)
+spring-boot-4:
+  recipe: org.openrewrite.java.spring.boot4.UpgradeSpringBoot_4_0
+  artifact: org.openrewrite.recipe:rewrite-spring:RELEASE
+  type: composite
+  includes: [security-7, jackson-3, boot-3.5, java-21]
+
+# Spring Boot 3.5
+spring-boot-3.5:
+  recipe: org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_5
+  artifact: org.openrewrite.recipe:rewrite-spring:RELEASE
+
+# Spring Boot 3.4
+spring-boot-3.4:
+  recipe: org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_4
+  artifact: org.openrewrite.recipe:rewrite-spring:RELEASE
 ```
 
-### Jackson 2 → 3 Upgrade
+### Jackson Recipes
 
 ```yaml
-recipe: org.openrewrite.java.jackson.UpgradeJackson_2_3
-artifact: org.openrewrite.recipe:rewrite-jackson:RELEASE
+# Jackson 2.x → 3.x (composite)
+jackson-3:
+  recipe: org.openrewrite.java.jackson.UpgradeJackson_2_3
+  artifact: org.openrewrite.recipe:rewrite-jackson:RELEASE
+  type: composite
+  includes:
+    - UpgradeJacksonDependencies_2_3
+    - UpdateJacksonPackageNames_2_3
+    - UpdateJacksonTypes_2_3
+    - RemoveJacksonModulesIncludedInDatabind_3
 ```
 
-### Spring Security 7 Upgrade
+### Spring Security Recipes
 
 ```yaml
-recipe: org.openrewrite.java.spring.security7.UpgradeSpringSecurity_7_0
-artifact: org.openrewrite.recipe:rewrite-spring:RELEASE
+# Spring Security 7.0
+security-7:
+  recipe: org.openrewrite.java.spring.security7.UpgradeSpringSecurity_7_0
+  artifact: org.openrewrite.recipe:rewrite-spring:RELEASE
+  type: composite
+```
+
+### Java Version Recipes
+
+```yaml
+# Java 21 (LTS)
+java-21:
+  recipe: org.openrewrite.java.migrate.UpgradeToJava21
+  artifact: org.openrewrite.recipe:rewrite-migrate-java:RELEASE
+  type: composite
+
+# Java 25
+java-25:
+  recipe: org.openrewrite.java.migrate.UpgradeToJava25
+  artifact: org.openrewrite.recipe:rewrite-migrate-java:RELEASE
+```
+
+### Spring Cloud Recipes
+
+```yaml
+# Spring Cloud 2025
+spring-cloud-2025:
+  recipe: org.openrewrite.java.spring.cloud2025.UpgradeSpringCloud_2025
+  artifact: org.openrewrite.recipe:rewrite-spring:RELEASE
+
+# Spring Cloud 2024
+spring-cloud-2024:
+  recipe: org.openrewrite.java.spring.cloud2024.UpgradeSpringCloud_2024
+  artifact: org.openrewrite.recipe:rewrite-spring:RELEASE
+```
+
+### Testing Recipes
+
+```yaml
+# JUnit 5 best practices
+junit5:
+  recipe: org.openrewrite.java.testing.junit5.JUnit5BestPractices
+  artifact: org.openrewrite.recipe:rewrite-testing-frameworks:RELEASE
+
+# JUnit 4 → 5 migration
+junit4-to-5:
+  recipe: org.openrewrite.java.testing.junit5.JUnit4to5Migration
+  artifact: org.openrewrite.recipe:rewrite-testing-frameworks:RELEASE
+```
+
+### Static Analysis Recipes
+
+```yaml
+# Common static analysis
+static-analysis:
+  recipe: org.openrewrite.staticanalysis.CommonStaticAnalysis
+  artifact: org.openrewrite.recipe:rewrite-static-analysis:RELEASE
+  type: composite
 ```
 
 ## Maven Execution
@@ -132,13 +218,26 @@ mvn -U org.openrewrite.maven:rewrite-maven-plugin:run \
 
 ## Recipe Reference
 
-| Migration             | Recipe                      | Artifact               |
-| --------------------- | --------------------------- | ---------------------- |
-| Spring Boot 3.x → 4.0 | `UpgradeSpringBoot_4_0`     | `rewrite-spring`       |
-| Spring Boot 3.3 → 3.4 | `UpgradeSpringBoot_3_4`     | `rewrite-spring`       |
-| Jackson 2.x → 3.x     | `UpgradeJackson_2_3`        | `rewrite-jackson`      |
-| Security 6 → 7        | `UpgradeSpringSecurity_7_0` | `rewrite-spring`       |
-| Java 17 → 21          | `UpgradeToJava21`           | `rewrite-migrate-java` |
+| Migration               | Recipe                        | Artifact                   | Type      |
+| ----------------------- | ----------------------------- | -------------------------- | --------- |
+| Spring Boot 3.x → 4.0   | `UpgradeSpringBoot_4_0`       | `rewrite-spring`           | composite |
+| Spring Boot 3.4 → 3.5   | `UpgradeSpringBoot_3_5`       | `rewrite-spring`           | composite |
+| Spring Boot 3.3 → 3.4   | `UpgradeSpringBoot_3_4`       | `rewrite-spring`           | composite |
+| Spring Boot 3.2 → 3.3   | `UpgradeSpringBoot_3_3`       | `rewrite-spring`           | composite |
+| Spring Boot 2.7 → 3.0   | `UpgradeSpringBoot_3_0`       | `rewrite-spring`           | composite |
+| Jackson 2.x → 3.x       | `UpgradeJackson_2_3`          | `rewrite-jackson`          | composite |
+| Security 6 → 7          | `UpgradeSpringSecurity_7_0`   | `rewrite-spring`           | composite |
+| Security 6.3 → 6.4      | `UpgradeSpringSecurity_6_4`   | `rewrite-spring`           | composite |
+| Cloud 2024 → 2025       | `UpgradeSpringCloud_2025`     | `rewrite-spring`           | composite |
+| Cloud 2023 → 2024       | `UpgradeSpringCloud_2024`     | `rewrite-spring`           | composite |
+| Java 17+ → 21           | `UpgradeToJava21`             | `rewrite-migrate-java`     | composite |
+| Java 21+ → 25           | `UpgradeToJava25`             | `rewrite-migrate-java`     | composite |
+| Java 11+ → 17           | `UpgradeToJava17`             | `rewrite-migrate-java`     | composite |
+| JUnit 4 → 5             | `JUnit4to5Migration`          | `rewrite-testing-frameworks` | composite |
+| JUnit 5 Best Practices  | `JUnit5BestPractices`         | `rewrite-testing-frameworks` | composite |
+| Static Analysis         | `CommonStaticAnalysis`        | `rewrite-static-analysis`  | composite |
+| javax → jakarta         | `JavaxToJakarta`              | `rewrite-migrate-java`     | composite |
+| Hibernate 6.5 → 6.6     | `UpgradeHibernate_6_6`        | `rewrite-spring`           | composite |
 
 ## Best Practices
 

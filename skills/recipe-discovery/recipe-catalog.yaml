@@ -1,0 +1,518 @@
+# OpenRewrite Recipe Catalog
+# Comprehensive mapping of artifact versions to available recipes
+# Source: https://docs.openrewrite.org/recipes
+# Last updated: 2025-12-11
+
+# =============================================================================
+# SPRING BOOT RECIPES
+# =============================================================================
+spring-boot:
+  category: java/spring
+  artifact: org.openrewrite.recipe:rewrite-spring
+  documentation: https://docs.openrewrite.org/recipes/java/spring
+
+  versions:
+    # Spring Boot 4.x (latest)
+    "4.0":
+      recipe: org.openrewrite.java.spring.boot4.UpgradeSpringBoot_4_0
+      from_version: "3.x"
+      target_version: "4.0.x"
+      documentation: https://docs.openrewrite.org/recipes/java/spring/boot4
+      composite: true
+      includes:
+        - org.openrewrite.java.spring.boot4.SpringBoot4Properties
+        - org.openrewrite.java.spring.boot4.UpdateJackson2ToJackson3
+        - org.openrewrite.java.spring.security7.UpgradeSpringSecurity_7_0
+        - org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_5
+        - org.openrewrite.java.migrate.UpgradeToJava21
+
+    # Spring Boot 3.x versions
+    "3.5":
+      recipe: org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_5
+      from_version: "3.4.x"
+      target_version: "3.5.x"
+      documentation: https://docs.openrewrite.org/recipes/java/spring/boot3
+      composite: true
+      includes:
+        - org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_4
+
+    "3.4":
+      recipe: org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_4
+      from_version: "3.3.x"
+      target_version: "3.4.x"
+      documentation: https://docs.openrewrite.org/recipes/java/spring/boot3
+      composite: true
+      includes:
+        - org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_3
+
+    "3.3":
+      recipe: org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_3
+      from_version: "3.2.x"
+      target_version: "3.3.x"
+      documentation: https://docs.openrewrite.org/recipes/java/spring/boot3
+      composite: true
+
+    "3.2":
+      recipe: org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_2
+      from_version: "3.1.x"
+      target_version: "3.2.x"
+      documentation: https://docs.openrewrite.org/recipes/java/spring/boot3
+      composite: true
+
+    "3.1":
+      recipe: org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_1
+      from_version: "3.0.x"
+      target_version: "3.1.x"
+      documentation: https://docs.openrewrite.org/recipes/java/spring/boot3
+      composite: true
+
+    "3.0":
+      recipe: org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_0
+      from_version: "2.7.x"
+      target_version: "3.0.x"
+      documentation: https://docs.openrewrite.org/recipes/java/spring/boot3
+      composite: true
+      includes:
+        - org.openrewrite.java.migrate.jakarta.JavaxToJakarta
+        - org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_7
+
+# =============================================================================
+# SPRING SECURITY RECIPES
+# =============================================================================
+spring-security:
+  category: java/spring/security
+  artifact: org.openrewrite.recipe:rewrite-spring
+  documentation: https://docs.openrewrite.org/recipes/java/spring/security
+
+  versions:
+    "7.0":
+      recipe: org.openrewrite.java.spring.security7.UpgradeSpringSecurity_7_0
+      from_version: "6.x"
+      target_version: "7.0.x"
+      documentation: https://docs.openrewrite.org/recipes/java/spring/security7
+      composite: true
+      includes:
+        - org.openrewrite.java.spring.security6.UpgradeSpringSecurity_6_4
+
+    "6.4":
+      recipe: org.openrewrite.java.spring.security6.UpgradeSpringSecurity_6_4
+      from_version: "6.3.x"
+      target_version: "6.4.x"
+      documentation: https://docs.openrewrite.org/recipes/java/spring/security6
+      composite: true
+
+    "6.3":
+      recipe: org.openrewrite.java.spring.security6.UpgradeSpringSecurity_6_3
+      from_version: "6.2.x"
+      target_version: "6.3.x"
+      documentation: https://docs.openrewrite.org/recipes/java/spring/security6
+      composite: true
+
+    "6.2":
+      recipe: org.openrewrite.java.spring.security6.UpgradeSpringSecurity_6_2
+      from_version: "6.1.x"
+      target_version: "6.2.x"
+      documentation: https://docs.openrewrite.org/recipes/java/spring/security6
+      composite: true
+
+# =============================================================================
+# SPRING CLOUD RECIPES
+# =============================================================================
+spring-cloud:
+  category: java/spring/cloud
+  artifact: org.openrewrite.recipe:rewrite-spring
+  documentation: https://docs.openrewrite.org/recipes/java/spring
+
+  versions:
+    "2025":
+      recipe: org.openrewrite.java.spring.cloud2025.UpgradeSpringCloud_2025
+      from_version: "2024.x"
+      target_version: "2025.x"
+      documentation: https://docs.openrewrite.org/recipes/java/spring/cloud2025
+      composite: true
+
+    "2024":
+      recipe: org.openrewrite.java.spring.cloud2024.UpgradeSpringCloud_2024
+      from_version: "2023.x"
+      target_version: "2024.x"
+      documentation: https://docs.openrewrite.org/recipes/java/spring/cloud2024
+      composite: true
+
+    "2023":
+      recipe: org.openrewrite.java.spring.cloud2023.UpgradeSpringCloud_2023
+      from_version: "2022.x"
+      target_version: "2023.x"
+      documentation: https://docs.openrewrite.org/recipes/java/spring/cloud2023
+      composite: true
+
+# =============================================================================
+# JACKSON RECIPES
+# =============================================================================
+jackson:
+  category: java/jackson
+  artifact: org.openrewrite.recipe:rewrite-jackson
+  documentation: https://docs.openrewrite.org/recipes/java/jackson
+
+  versions:
+    "3.0":
+      recipe: org.openrewrite.java.jackson.UpgradeJackson_2_3
+      from_version: "2.x"
+      target_version: "3.x"
+      documentation: https://docs.openrewrite.org/recipes/java/jackson
+      composite: true
+      includes:
+        - org.openrewrite.java.jackson.UpgradeJacksonDependencies_2_3
+        - org.openrewrite.java.jackson.UpdateJacksonPackageNames_2_3
+        - org.openrewrite.java.jackson.UpdateJacksonTypes_2_3
+        - org.openrewrite.java.jackson.JsonGeneratorMethodRenames
+        - org.openrewrite.java.jackson.JsonNodeMethodRenames
+        - org.openrewrite.java.jackson.JsonParserMethodRenames
+        - org.openrewrite.java.jackson.RemoveJacksonModulesIncludedInDatabind_3
+
+    "codehaus-to-fasterxml":
+      recipe: org.openrewrite.java.jackson.codehaus.MigrateCodehausToFasterXML
+      from_version: "org.codehaus.jackson"
+      target_version: "com.fasterxml.jackson"
+      documentation: https://docs.openrewrite.org/recipes/java/jackson/codehaus
+      composite: true
+
+# =============================================================================
+# JAVA VERSION RECIPES
+# =============================================================================
+java:
+  category: java/migrate
+  artifact: org.openrewrite.recipe:rewrite-migrate-java
+  documentation: https://docs.openrewrite.org/recipes/java/migrate
+
+  versions:
+    "25":
+      recipe: org.openrewrite.java.migrate.UpgradeToJava25
+      from_version: "21+"
+      target_version: "25"
+      documentation: https://docs.openrewrite.org/recipes/java/migrate
+      composite: true
+
+    "21":
+      recipe: org.openrewrite.java.migrate.UpgradeToJava21
+      from_version: "17+"
+      target_version: "21"
+      documentation: https://docs.openrewrite.org/recipes/java/migrate
+      composite: true
+      includes:
+        - org.openrewrite.java.migrate.UpgradeBuildToJava21
+        - org.openrewrite.java.migrate.lang.UseTextBlocks
+        - org.openrewrite.java.migrate.util.SequencedCollectionUpgrades
+
+    "17":
+      recipe: org.openrewrite.java.migrate.UpgradeToJava17
+      from_version: "11+"
+      target_version: "17"
+      documentation: https://docs.openrewrite.org/recipes/java/migrate
+      composite: true
+      includes:
+        - org.openrewrite.java.migrate.UpgradeBuildToJava17
+        - org.openrewrite.java.migrate.lang.UseTextBlocks
+
+    "11":
+      recipe: org.openrewrite.java.migrate.UpgradeToJava11
+      from_version: "8+"
+      target_version: "11"
+      documentation: https://docs.openrewrite.org/recipes/java/migrate
+      composite: true
+
+# =============================================================================
+# JAKARTA EE RECIPES
+# =============================================================================
+jakarta:
+  category: java/migrate/jakarta
+  artifact: org.openrewrite.recipe:rewrite-migrate-java
+  documentation: https://docs.openrewrite.org/recipes/java/migrate/jakarta
+
+  versions:
+    "10":
+      recipe: org.openrewrite.java.migrate.jakarta.JakartaEE10
+      from_version: "javax.*"
+      target_version: "jakarta.* (EE 10)"
+      documentation: https://docs.openrewrite.org/recipes/java/migrate/jakarta
+      composite: true
+
+    "javax-to-jakarta":
+      recipe: org.openrewrite.java.migrate.jakarta.JavaxToJakarta
+      from_version: "javax.*"
+      target_version: "jakarta.*"
+      documentation: https://docs.openrewrite.org/recipes/java/migrate/jakarta
+      composite: true
+
+# =============================================================================
+# HIBERNATE RECIPES
+# =============================================================================
+hibernate:
+  category: java/spring/data
+  artifact: org.openrewrite.recipe:rewrite-spring
+  documentation: https://docs.openrewrite.org/recipes/java/spring/data
+
+  versions:
+    "6.6":
+      recipe: org.openrewrite.java.spring.data.UpgradeHibernate_6_6
+      from_version: "6.5.x"
+      target_version: "6.6.x"
+      documentation: https://docs.openrewrite.org/recipes/java/spring/data
+      composite: true
+
+    "6.5":
+      recipe: org.openrewrite.java.spring.data.UpgradeHibernate_6_5
+      from_version: "6.4.x"
+      target_version: "6.5.x"
+      documentation: https://docs.openrewrite.org/recipes/java/spring/data
+      composite: true
+
+# =============================================================================
+# LOGGING RECIPES
+# =============================================================================
+logging:
+  category: java/logging
+  artifact: org.openrewrite.recipe:rewrite-logging-frameworks
+  documentation: https://docs.openrewrite.org/recipes/java/logging
+
+  recipes:
+    log4j2-to-slf4j:
+      recipe: org.openrewrite.java.logging.Log4j2ToSlf4j
+      description: Migrate Log4j2 to SLF4J
+
+    logback-layout:
+      recipe: org.openrewrite.java.logging.logback.LogbackLayoutPatternConfiguration
+      description: Configure Logback layout patterns
+
+    parameterized-logging:
+      recipe: org.openrewrite.java.logging.ParameterizedLogging
+      description: Use parameterized logging for better performance
+
+# =============================================================================
+# TESTING RECIPES
+# =============================================================================
+testing:
+  category: java/testing
+  artifact: org.openrewrite.recipe:rewrite-testing-frameworks
+  documentation: https://docs.openrewrite.org/recipes/java/testing
+
+  recipes:
+    junit5:
+      recipe: org.openrewrite.java.testing.junit5.JUnit5BestPractices
+      description: Apply JUnit 5 best practices
+      composite: true
+
+    junit4-to-5:
+      recipe: org.openrewrite.java.testing.junit5.JUnit4to5Migration
+      description: Migrate JUnit 4 to JUnit 5
+      composite: true
+
+    mockito:
+      recipe: org.openrewrite.java.testing.mockito.MockitoBestPractices
+      description: Apply Mockito best practices
+      composite: true
+
+    assertj:
+      recipe: org.openrewrite.java.testing.assertj.AssertJBestPractices
+      description: Migrate to AssertJ assertions
+      composite: true
+
+# =============================================================================
+# STATIC ANALYSIS RECIPES
+# =============================================================================
+static-analysis:
+  category: staticanalysis
+  artifact: org.openrewrite.recipe:rewrite-static-analysis
+  documentation: https://docs.openrewrite.org/recipes/staticanalysis
+
+  recipes:
+    common:
+      recipe: org.openrewrite.staticanalysis.CommonStaticAnalysis
+      description: Common static analysis improvements
+      composite: true
+      includes:
+        - org.openrewrite.staticanalysis.AddSerialVersionUidToSerializable
+        - org.openrewrite.staticanalysis.AtomicPrimitiveEqualsUsesGet
+        - org.openrewrite.staticanalysis.BigDecimalRoundingConstantsToEnums
+        - org.openrewrite.staticanalysis.BooleanChecksNotInverted
+        - org.openrewrite.staticanalysis.CatchClauseOnlyRethrows
+        - org.openrewrite.staticanalysis.ChainStringBuilderAppendCalls
+        - org.openrewrite.staticanalysis.CovariantEquals
+        # ... many more sub-recipes
+
+    code-cleanup:
+      recipe: org.openrewrite.staticanalysis.CodeCleanup
+      description: General code cleanup
+      composite: true
+
+    null-safety:
+      recipe: org.openrewrite.staticanalysis.NullSafety
+      description: Null safety improvements
+      composite: true
+
+# =============================================================================
+# GRADLE RECIPES
+# =============================================================================
+gradle:
+  category: gradle
+  artifact: org.openrewrite.recipe:rewrite-gradle
+  documentation: https://docs.openrewrite.org/recipes/gradle
+
+  recipes:
+    upgrade-gradle:
+      recipe: org.openrewrite.gradle.UpdateGradleWrapper
+      description: Update Gradle wrapper to specified version
+      parameters:
+        - version: string (e.g., "8.11")
+        - distribution: string (bin, all)
+
+    dependency-upgrade:
+      recipe: org.openrewrite.gradle.UpgradeDependencyVersion
+      description: Upgrade a dependency version
+      parameters:
+        - groupId: string
+        - artifactId: string
+        - newVersion: string
+
+# =============================================================================
+# MAVEN RECIPES
+# =============================================================================
+maven:
+  category: maven
+  artifact: org.openrewrite.recipe:rewrite-maven
+  documentation: https://docs.openrewrite.org/recipes/maven
+
+  recipes:
+    upgrade-parent:
+      recipe: org.openrewrite.maven.UpgradeParentVersion
+      description: Upgrade parent POM version
+      parameters:
+        - groupId: string
+        - artifactId: string
+        - newVersion: string
+
+    dependency-upgrade:
+      recipe: org.openrewrite.maven.UpgradeDependencyVersion
+      description: Upgrade a dependency version
+      parameters:
+        - groupId: string
+        - artifactId: string
+        - newVersion: string
+
+    change-dependency:
+      recipe: org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId
+      description: Change dependency groupId and/or artifactId
+      parameters:
+        - oldGroupId: string
+        - oldArtifactId: string
+        - newGroupId: string
+        - newArtifactId: string
+
+# =============================================================================
+# VERSION COMPATIBILITY MATRIX
+# =============================================================================
+compatibility-matrix:
+  description: Maps framework versions to compatible recipe combinations
+
+  spring-boot-4.0:
+    spring-boot: "4.0"
+    spring-security: "7.0"
+    spring-cloud: "2025"
+    jackson: "3.0"
+    java: "21"
+    recipes:
+      - org.openrewrite.java.spring.boot4.UpgradeSpringBoot_4_0
+      # Composite includes security, jackson, java upgrades
+
+  spring-boot-3.5:
+    spring-boot: "3.5"
+    spring-security: "6.4"
+    spring-cloud: "2024"
+    jackson: "2.x"
+    java: "17-24"
+    recipes:
+      - org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_5
+
+  spring-boot-3.3:
+    spring-boot: "3.3"
+    spring-security: "6.3"
+    spring-cloud: "2023"
+    jackson: "2.x"
+    java: "17-23"
+    recipes:
+      - org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_3
+
+# =============================================================================
+# RECIPE ARTIFACTS REFERENCE
+# =============================================================================
+artifacts:
+  rewrite-spring:
+    groupId: org.openrewrite.recipe
+    artifactId: rewrite-spring
+    description: Spring Boot, Security, Cloud, Data recipes
+    categories:
+      - spring-boot
+      - spring-security
+      - spring-cloud
+      - spring-data
+      - spring-batch
+      - spring-kafka
+
+  rewrite-migrate-java:
+    groupId: org.openrewrite.recipe
+    artifactId: rewrite-migrate-java
+    description: Java version and Jakarta EE migration recipes
+    categories:
+      - java-version
+      - jakarta
+      - javax
+
+  rewrite-jackson:
+    groupId: org.openrewrite.recipe
+    artifactId: rewrite-jackson
+    description: Jackson JSON library migration recipes
+    categories:
+      - jackson
+
+  rewrite-testing-frameworks:
+    groupId: org.openrewrite.recipe
+    artifactId: rewrite-testing-frameworks
+    description: Testing framework migration recipes
+    categories:
+      - junit
+      - mockito
+      - assertj
+      - testng
+
+  rewrite-static-analysis:
+    groupId: org.openrewrite.recipe
+    artifactId: rewrite-static-analysis
+    description: Static analysis and code quality recipes
+    categories:
+      - code-quality
+      - null-safety
+      - cleanup
+
+  rewrite-logging-frameworks:
+    groupId: org.openrewrite.recipe
+    artifactId: rewrite-logging-frameworks
+    description: Logging framework migration recipes
+    categories:
+      - log4j
+      - slf4j
+      - logback
+
+  rewrite-gradle:
+    groupId: org.openrewrite.recipe
+    artifactId: rewrite-gradle
+    description: Gradle build file recipes
+    categories:
+      - gradle
+      - build
+
+  rewrite-maven:
+    groupId: org.openrewrite.recipe
+    artifactId: rewrite-maven
+    description: Maven POM recipes
+    categories:
+      - maven
+      - build

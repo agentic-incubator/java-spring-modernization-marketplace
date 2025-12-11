@@ -229,6 +229,60 @@ Updates Java versions in GitHub Actions workflow files.
     java-version: '25'
 ```
 
+## Recipe Discovery Skills
+
+### recipe-discovery
+
+Dynamically discovers OpenRewrite recipes from online documentation with version-based matching and composite recipe tree walking.
+
+**Capabilities:**
+
+- Version-based recipe discovery from https://docs.openrewrite.org/recipes
+- Composite recipe tree walking to understand coverage
+- Latest version targeting
+- Transitive dependency handling
+
+**Recipe Catalog:** `skills/recipe-discovery/recipe-catalog.yaml`
+
+**Discovery Process:**
+
+1. Parse detected versions from project analysis
+2. Consult recipe catalog for known upgrade paths
+3. Search OpenRewrite docs for recipes not in catalog
+4. Walk composite recipe trees to understand sub-recipes
+5. Identify coverage gaps and manual migration needs
+
+**Example Output:**
+
+```json
+{
+  "recommendedRecipes": [
+    {
+      "name": "UpgradeSpringBoot_4_0",
+      "type": "composite",
+      "upgradesCovered": {
+        "spring-boot": "3.x → 4.0.x",
+        "spring-security": "6.x → 7.0.x",
+        "jackson": "2.x → 3.x"
+      },
+      "subRecipes": ["SpringBoot4Properties", "UpdateJackson2ToJackson3", "..."]
+    }
+  ]
+}
+```
+
+**Categories Covered:**
+
+| Category        | Documentation URL                           |
+| --------------- | ------------------------------------------- |
+| Spring Boot     | `/recipes/java/spring/boot4`                |
+| Spring Security | `/recipes/java/spring/security7`            |
+| Spring Cloud    | `/recipes/java/spring/cloud2025`            |
+| Jackson         | `/recipes/java/jackson`                     |
+| Java Migration  | `/recipes/java/migrate`                     |
+| Testing         | `/recipes/java/testing`                     |
+| Static Analysis | `/recipes/staticanalysis`                   |
+
 ## Execution Skills
 
 ### build-runner
@@ -316,9 +370,10 @@ Creates pull requests with migration summaries.
 
 ## Skills by Category
 
-| Category  | Skills                                                                                                                      |
-| --------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Discovery | build-tool-detector, build-tool-upgrader, version-detector, dependency-scanner, pattern-detector, github-actions-detector   |
-| Migration | jackson-migrator, security-config-migrator, spring-ai-migrator, import-migrator, build-file-updater, github-actions-updater |
-| Execution | build-runner, openrewrite-executor                                                                                          |
-| GitHub    | github-workflow, pr-submitter                                                                                               |
+| Category         | Skills                                                                                                                      |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Discovery        | build-tool-detector, build-tool-upgrader, version-detector, dependency-scanner, pattern-detector, github-actions-detector   |
+| Recipe Discovery | recipe-discovery                                                                                                            |
+| Migration        | jackson-migrator, security-config-migrator, spring-ai-migrator, import-migrator, build-file-updater, github-actions-updater |
+| Execution        | build-runner, openrewrite-executor                                                                                          |
+| GitHub           | github-workflow, pr-submitter                                                                                               |
