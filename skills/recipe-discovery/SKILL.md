@@ -6,7 +6,9 @@ allowed-tools: Read, WebFetch, WebSearch, Glob, Grep
 
 # OpenRewrite Recipe Discovery
 
-Dynamically discover OpenRewrite recipes from the official documentation at https://docs.openrewrite.org/recipes. This skill provides version-based recipe matching, composite recipe tree walking, and latest version targeting.
+Dynamically discover OpenRewrite recipes from the
+[official documentation](https://docs.openrewrite.org/recipes). This skill provides version-based
+recipe matching, composite recipe tree walking, and latest version targeting.
 
 ## Core Capabilities
 
@@ -59,7 +61,7 @@ Understand what sub-recipes are included in composite recipes by walking the rec
 
 **Example Tree for Spring Boot 4.0 Upgrade:**
 
-```
+```text
 org.openrewrite.java.spring.boot4.UpgradeSpringBoot_4_0
 ├── org.openrewrite.java.spring.boot4.SpringBoot4Properties
 │   └── Property file migrations
@@ -153,7 +155,7 @@ spring-boot:
 
 For dependencies not in catalog, search OpenRewrite docs:
 
-```
+```text
 WebSearch: "openrewrite recipe [dependency-name] upgrade [version]"
 WebFetch: https://docs.openrewrite.org/recipes/java/[category]
 ```
@@ -162,7 +164,7 @@ WebFetch: https://docs.openrewrite.org/recipes/java/[category]
 
 For composite recipes, enumerate all included sub-recipes:
 
-```
+```text
 1. Fetch recipe documentation page
 2. Find "Composite Recipes" or "recipeList" section
 3. Recursively process each included recipe
@@ -279,7 +281,7 @@ The discovery agent should invoke this skill to:
 
 **Example Integration:**
 
-```
+```text
 Discovery Agent → detects spring-boot: 3.3.5
 Recipe Discovery → recommends UpgradeSpringBoot_4_0 (composite)
 Recipe Discovery → walks tree: includes security7, jackson3
