@@ -134,6 +134,7 @@ Applies code transformations.
 - `jackson-migrator`
 - `security-config-migrator`
 - `spring-ai-migrator`
+- `application-property-migrator`
 - `import-migrator`
 - `build-file-updater`
 - `openrewrite-executor`
@@ -141,10 +142,13 @@ Applies code transformations.
 
 **Execution order:**
 
-1. Build file updates
-2. Import migrations
-3. Configuration migrations
-4. Validation
+1. Build tool upgrade (wrapper versions)
+2. Build file updates (BOMs, repos, starters, Undertow removal)
+3. Import migrations
+4. Application property migrations (kebab-case, namespaces, logging)
+5. Configuration migrations
+6. GitHub Actions updates
+7. Validation
 
 ### validation-agent
 
@@ -207,9 +211,9 @@ Post-migration code cleanup.
 
 Agents delegate to skills for specific tasks:
 
-| Agent                 | Skills                                                                                                                                                                 |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| discovery-agent       | build-tool-detector, build-tool-upgrader, version-detector, dependency-scanner, pattern-detector, github-actions-detector                                              |
-| migration-agent       | build-tool-upgrader, jackson-migrator, security-config-migrator, spring-ai-migrator, import-migrator, build-file-updater, openrewrite-executor, github-actions-updater |
-| validation-agent      | build-runner                                                                                                                                                           |
-| parallel-orchestrator | github-workflow, pr-submitter, build-tool-detector, version-detector, dependency-scanner                                                                               |
+| Agent                 | Skills                                                                                                                                                                                                |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| discovery-agent       | build-tool-detector, build-tool-upgrader, version-detector, dependency-scanner, pattern-detector, github-actions-detector                                                                             |
+| migration-agent       | build-tool-upgrader, jackson-migrator, security-config-migrator, spring-ai-migrator, application-property-migrator, import-migrator, build-file-updater, openrewrite-executor, github-actions-updater |
+| validation-agent      | build-runner                                                                                                                                                                                          |
+| parallel-orchestrator | github-workflow, pr-submitter, build-tool-detector, version-detector, dependency-scanner                                                                                                              |

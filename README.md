@@ -2,7 +2,7 @@
 
 **Automate your Spring Boot 4.x migration at scale.**
 
-A Claude Code plugin that upgrades entire portfolios—Jackson 3, Security 7, Vaadin 25, Spring AI 1.1—with parallel processing and automatic PR creation.
+A Claude Code plugin that upgrades entire portfolios—Jackson 3, Security 7, Vaadin 25, Spring AI 2.0—with parallel processing and automatic PR creation.
 
 ## Why This Exists
 
@@ -13,11 +13,11 @@ This marketplace handles it: clone, analyze, migrate, validate, and submit PRs�
 
 ## What You Get
 
-| Category | Count | Highlights                                                         |
-| -------- | ----- | ------------------------------------------------------------------ |
-| Commands | 10    | `/migrate`, `/analyze`, `/migrate-github`, `/check-github-actions` |
-| Agents   | 9     | Orchestrator, parallel-orchestrator, validators                    |
-| Skills   | 19    | Build tool upgrader, Jackson, Security, GitHub Actions             |
+| Category | Count | Highlights                                                                 |
+| -------- | ----- | -------------------------------------------------------------------------- |
+| Commands | 10    | `/migrate`, `/analyze`, `/migrate-github`, `/check-github-actions`         |
+| Agents   | 9     | Orchestrator, parallel-orchestrator, validators                            |
+| Skills   | 20    | Build tool upgrader, Jackson, Security, GitHub Actions, Property migration |
 
 ## Quick Start
 
@@ -51,13 +51,14 @@ claude plugin install spring-m11n
 
 ## Supported Migrations
 
-| From              | To  | Key Changes                               |
-| ----------------- | --- | ----------------------------------------- |
-| Spring Boot 3.x   | 4.x | Parent, plugins, dependencies             |
-| Jackson 2.x       | 3.x | GroupId `tools.jackson`, JacksonException |
-| Spring Security 6 | 7   | Bean-based config, PathPatternMatcher     |
-| Vaadin 24         | 25  | Lumo theme, security configurer           |
-| Spring AI 1.0     | 1.1 | TextToSpeechModel, Double speed           |
+| From              | To       | Key Changes                                                   |
+| ----------------- | -------- | ------------------------------------------------------------- |
+| Spring Boot 3.x   | 4.x      | Starter renames, Undertow removal, Spring Milestones repo     |
+| Jackson 2.x       | 3.x      | GroupId `tools.jackson`, JacksonException, property namespace |
+| Spring Security 6 | 7        | Bean-based config, PathPatternMatcher                         |
+| Vaadin 24         | 25       | Lumo theme, security configurer                               |
+| Spring AI 1.x     | 2.0.0-M1 | TextToSpeechModel, provider selection, autoconfigure split    |
+| Properties        | Boot 4   | Kebab-case, logging packages, Jackson namespace               |
 
 ## How It Works
 

@@ -4,11 +4,13 @@ Detailed migration patterns for each supported upgrade path.
 
 ## Version Compatibility Matrix
 
-| Spring Boot | Spring Cloud | Spring Security | Java  | Jackson | Spring AI |
-| ----------- | ------------ | --------------- | ----- | ------- | --------- |
-| 3.3.x       | 2024.0.x     | 6.3.x           | 17-23 | 2.x     | 1.0.x     |
-| 3.5.x       | 2025.0.x     | 6.4.x           | 17-24 | 2.x     | 1.0.x     |
-| **4.0.x**   | **2025.1.x** | **7.0.x**       | 17-25 | **3.x** | **1.1.x** |
+| Spring Boot | Spring Cloud | Spring Security | Java  | Jackson | Spring AI     |
+| ----------- | ------------ | --------------- | ----- | ------- | ------------- |
+| 3.3.x       | 2024.0.x     | 6.3.x           | 17-23 | 2.x     | 1.0.x         |
+| 3.5.x       | 2025.0.x     | 6.4.x           | 17-24 | 2.x     | 1.0.x - 1.1.x |
+| **4.0.x**   | **2025.1.x** | **7.0.x**       | 17-25 | **3.x** | **2.0.0-M1+** |
+
+**Important:** Spring AI 2.0.0-M1 is required for Spring Boot 4 compatibility due to autoconfigure module split.
 
 ## Spring Boot 3.x to 4.x
 
@@ -52,6 +54,60 @@ plugins {
 - Spring Security 7 compatibility
 - WebClient now requires explicit dependency
 - Spring Cloud BOM update to 2025.1.x
+- **Starter renames** - `spring-boot-starter-web` → `spring-boot-starter-webmvc`
+- **Undertow removed** - Not compatible with Servlet 6.1
+- **Spring AI 2.0** - Required for Boot 4 compatibility
+
+### Starter Artifact Renames
+
+```xml
+<!-- Before -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+
+<!-- After -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-webmvc</artifactId>
+</dependency>
+```
+
+### Undertow Removal
+
+Undertow is not compatible with Servlet 6.1 and was removed in Spring Boot 4.
+
+```xml
+<!-- REMOVE this dependency -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-undertow</artifactId>
+</dependency>
+
+<!-- Use Tomcat (default) or switch to Jetty -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-jetty</artifactId>
+</dependency>
+```
+
+### Spring Milestones Repository
+
+Required when using milestone releases like Spring AI 2.0.0-M1:
+
+```xml
+<repositories>
+    <repository>
+        <id>spring-milestones</id>
+        <name>Spring Milestones</name>
+        <url>https://repo.spring.io/milestone</url>
+        <snapshots>
+            <enabled>false</enabled>
+        </snapshots>
+    </repository>
+</repositories>
+```
 
 ## Jackson 2.x to 3.x
 
@@ -60,6 +116,55 @@ plugins {
 **DO NOT change `com.fasterxml.jackson.annotation.*` imports!**
 
 Jackson annotations remain backward compatible. Only change core/databind imports.
+
+### Annotation Rename
+
+`@JsonComponent` is renamed to `@JacksonComponent` in Spring Boot 4:
+
+```java
+// Before
+@JsonComponent
+public class CustomSerializer { }
+
+// After
+@JacksonComponent
+public class CustomSerializer { }
+```
+
+### Application Property Namespace Changes
+
+```yaml
+# Before (Spring Boot 3.x)
+spring:
+  jackson:
+    read:
+      FAIL_ON_UNKNOWN_PROPERTIES: false
+    write:
+      INDENT_OUTPUT: true
+
+# After (Spring Boot 4.x)
+spring:
+  jackson:
+    json:
+      read:
+        FAIL_ON_UNKNOWN_PROPERTIES: false
+      write:
+        INDENT_OUTPUT: true
+```
+
+### Logging Package Changes
+
+```yaml
+# Before (Jackson 2.x)
+logging:
+  level:
+    com.fasterxml.jackson: DEBUG
+
+# After (Jackson 3.x)
+logging:
+  level:
+    tools.jackson: DEBUG
+```
 
 ### GroupId Changes
 
@@ -211,7 +316,15 @@ public class MainLayout extends AppLayout { }
 
 See Spring Security section above - `VaadinWebSecurity` is replaced with `VaadinSecurityConfigurer`.
 
-## Spring AI 1.0 to 1.1
+## Spring AI 1.x to 2.0
+
+**Spring AI 2.0.0-M1 is required for Spring Boot 4 compatibility.**
+
+Spring Boot 4.0 splits the monolithic autoconfigure JAR into modules. Spring AI 1.x references old class locations, causing:
+
+```text
+ClassNotFoundException: org.springframework.boot.autoconfigure.web.client.RestClientAutoConfiguration
+```
 
 ### TTS API Changes
 
@@ -237,11 +350,68 @@ TextToSpeechModel model = ...;
 .withSpeed(1.0)
 ```
 
+In YAML configuration, remove the `f` suffix:
+
+```yaml
+# Before (invalid for Double)
+speed: 1.0f
+
+# After
+speed: 1.0
+```
+
+### Provider Selection (New in 2.0)
+
+Replace autoconfigure excludes with `spring.ai.model.*`:
+
+```yaml
+# Before (Spring AI 1.x)
+spring:
+  autoconfigure:
+    exclude: org.springframework.ai.autoconfigure.openai.OpenAiAutoConfiguration
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+
+# After (Spring AI 2.0)
+spring:
+  ai:
+    model:
+      chat: ollama
+      embedding: ollama
+    ollama:
+      base-url: http://localhost:11434
+```
+
+### Autoconfigure Class Split
+
+The monolithic `OpenAiAutoConfiguration` was split into 6 classes:
+
+- `OpenAiAudioSpeechAutoConfiguration`
+- `OpenAiAudioTranscriptionAutoConfiguration`
+- `OpenAiChatAutoConfiguration`
+- `OpenAiEmbeddingAutoConfiguration`
+- `OpenAiImageAutoConfiguration`
+- `OpenAiModerationAutoConfiguration`
+
 ### Memory Advisor Constants
 
-| Before                          | After   |
-| ------------------------------- | ------- |
-| `CHAT_MEMORY_RETRIEVE_SIZE_KEY` | `TOP_K` |
+| Before                            | After                        |
+| --------------------------------- | ---------------------------- |
+| `CHAT_MEMORY_RETRIEVE_SIZE_KEY`   | `TOP_K`                      |
+| `CHAT_MEMORY_CONVERSATION_ID_KEY` | `ChatMemory.CONVERSATION_ID` |
+
+### Property Naming Convention
+
+Use kebab-case for Spring properties:
+
+```yaml
+# Before (non-standard)
+base_url: http://localhost:11434
+
+# After (standard)
+base-url: http://localhost:11434
+```
 
 ## GitHub Actions Workflows
 

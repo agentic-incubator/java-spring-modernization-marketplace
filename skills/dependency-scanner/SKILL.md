@@ -19,14 +19,66 @@ Scan the project to identify dependencies in these categories:
 
 ## Key Dependencies to Track
 
-| Dependency          | Migration Concern          | Action                                    |
-| ------------------- | -------------------------- | ----------------------------------------- |
-| `jackson-*`         | groupId change             | `com.fasterxml.jackson` → `tools.jackson` |
-| `spring-security-*` | API changes                | Spring Security 6 → 7 patterns            |
-| `vaadin-*`          | Theme and security changes | Material → Lumo, VaadinWebSecurity        |
-| `spring-ai-*`       | TTS API changes            | SpeechModel → TextToSpeechModel           |
-| `jakarta.*`         | Already migrated           | Verify javax.\* complete                  |
-| `resilience4j-*`    | Compatibility check        | Version alignment                         |
+| Dependency                     | Migration Concern          | Action                                              |
+| ------------------------------ | -------------------------- | --------------------------------------------------- |
+| `jackson-*`                    | groupId change             | `com.fasterxml.jackson` → `tools.jackson`           |
+| `spring-security-*`            | API changes                | Spring Security 6 → 7 patterns                      |
+| `vaadin-*`                     | Theme and security changes | Material → Lumo, VaadinWebSecurity                  |
+| `spring-ai-*`                  | TTS API + Boot 4 compat    | Upgrade to 2.0.0-M1 for Boot 4, add milestones repo |
+| `spring-boot-starter-undertow` | **REMOVED in Boot 4**      | Replace with Tomcat (default) or Jetty              |
+| `spring-boot-starter-web`      | Renamed in Boot 4          | Rename to `spring-boot-starter-webmvc`              |
+| `jakarta.*`                    | Already migrated           | Verify javax.\* complete                            |
+| `resilience4j-*`               | Compatibility check        | Version alignment                                   |
+
+## Critical: Undertow Removal
+
+**Undertow is not compatible with Servlet 6.1 and has been removed from Spring Boot 4.**
+
+### Detection
+
+```xml
+<!-- This dependency MUST be removed for Spring Boot 4 -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-undertow</artifactId>
+</dependency>
+```
+
+### Migration Options
+
+| Current  | Migration Path                           | Notes                    |
+| -------- | ---------------------------------------- | ------------------------ |
+| Undertow | Remove dependency (use Tomcat default)   | Recommended              |
+| Undertow | Replace with `spring-boot-starter-jetty` | If Jetty features needed |
+
+### Why Undertow Was Removed
+
+Undertow does not support Servlet 6.1, which is required by Spring Boot 4.
+The Spring team decided to remove Undertow support rather than maintain a
+partially-compatible embedded server.
+
+## Milestone Version Detection
+
+Spring AI 2.0.0-M1 (and other milestone releases) require the Spring Milestones repository.
+
+### Detection Pattern
+
+Look for version patterns indicating milestone releases:
+
+- `-M1`, `-M2`, `-M3` (Milestone)
+- `-RC1`, `-RC2` (Release Candidate)
+- `-SNAPSHOT` (Snapshot)
+
+### Required Repository
+
+When milestone versions are detected, verify Spring Milestones repository is configured:
+
+```xml
+<repository>
+    <id>spring-milestones</id>
+    <url>https://repo.spring.io/milestone</url>
+</repository>
+```
 
 ## Maven Scanning
 
@@ -92,11 +144,35 @@ mvn dependency:tree -Dincludes=org.springframework.security*
         "artifactId": "spring-ai-openai-spring-boot-starter",
         "currentVersion": "1.0.0",
         "migrationRequired": true,
-        "action": "Update TTS API classes, change speed param to Double"
+        "action": "Upgrade to 2.0.0-M1 for Boot 4 compatibility, add Spring Milestones repo"
+      }
+    ],
+    "undertow": [
+      {
+        "groupId": "org.springframework.boot",
+        "artifactId": "spring-boot-starter-undertow",
+        "currentVersion": "managed",
+        "migrationRequired": true,
+        "severity": "BLOCKING",
+        "action": "REMOVE - Undertow not compatible with Servlet 6.1. Use Tomcat (default) or Jetty."
+      }
+    ],
+    "web-starter": [
+      {
+        "groupId": "org.springframework.boot",
+        "artifactId": "spring-boot-starter-web",
+        "currentVersion": "managed",
+        "migrationRequired": true,
+        "action": "Rename to spring-boot-starter-webmvc"
       }
     ]
   },
-  "totalMigrationActions": 4
+  "milestoneVersionsDetected": ["spring-ai:2.0.0-M1"],
+  "repositoryRequired": {
+    "spring-milestones": true,
+    "reason": "Spring AI 2.0.0-M1 is a milestone release"
+  },
+  "totalMigrationActions": 6
 }
 ```
 
@@ -126,4 +202,27 @@ org.springframework.security:spring-security-oauth2-*
 
 ```text
 org.springframework.ai:spring-ai-*
+```
+
+### Undertow Detection (BLOCKING)
+
+```text
+org.springframework.boot:spring-boot-starter-undertow
+```
+
+### Web Starter Detection (Rename Required)
+
+```text
+org.springframework.boot:spring-boot-starter-web
+```
+
+### Milestone Version Detection
+
+```text
+*-M1
+*-M2
+*-M3
+*-RC1
+*-RC2
+*-SNAPSHOT
 ```

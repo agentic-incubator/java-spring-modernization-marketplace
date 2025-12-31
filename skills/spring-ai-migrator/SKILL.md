@@ -1,12 +1,34 @@
 ---
 name: spring-ai-migrator
-description: Migrate Spring AI 1.0.x to 1.1.x including TTS API changes (SpeechModel to TextToSpeechModel), speed parameter type change (Float to Double), and chat memory advisor constant renames. Use when upgrading Spring AI or fixing Spring AI compilation errors.
+description: Migrate Spring AI 1.x to 2.0.x including TTS API changes (SpeechModel to TextToSpeechModel), speed parameter type change (Float to Double), chat memory advisor constant renames, and autoconfigure migration for Spring Boot 4 compatibility. Use when upgrading Spring AI or fixing Spring AI compilation errors.
 allowed-tools: Read, Write, Edit, Glob, Grep
 ---
 
 # Spring AI Migrator
 
-Migrate Spring AI 1.0.x to Spring AI 1.1.x with TTS API and advisor changes.
+Migrate Spring AI 1.x to Spring AI 2.0.x with TTS API, advisor, and autoconfigure changes.
+
+## Critical: Spring Boot 4 Compatibility
+
+**Spring AI 2.0.0-M1 is required for Spring Boot 4 compatibility.**
+
+Spring Boot 4.0 splits the monolithic autoconfigure JAR into modules, causing package
+relocations. Spring AI 1.x was built for Spring Boot 3.x and references old class
+locations, resulting in:
+
+```text
+ClassNotFoundException: org.springframework.boot.autoconfigure.web.client.RestClientAutoConfiguration
+```
+
+**Solution:** Upgrade Spring AI from 1.x to 2.0.0-M1 or later.
+
+## Version Compatibility
+
+| Spring Boot | Spring AI     | Notes                           |
+| ----------- | ------------- | ------------------------------- |
+| 3.3.x       | 1.0.x         | Original Spring AI              |
+| 3.5.x       | 1.0.x - 1.1.x | Last Spring Boot 3.x compatible |
+| **4.0.x**   | **2.0.0-M1+** | Required for Boot 4             |
 
 ## Key Migration Areas
 
@@ -151,8 +173,124 @@ chatClient.prompt()
 5. **Check defaults** - Note that `TOP_K` default is now 20 (was 100)
 6. **Run tests** - Verify TTS and chat memory functionality
 
+## Spring AI 2.0 Autoconfigure Migration
+
+### Provider Selection (Recommended Approach)
+
+Spring AI 2.0 introduces the `spring.ai.model.*` properties for provider selection instead of autoconfigure excludes.
+
+#### Before (Spring AI 1.x - Autoconfigure Excludes)
+
+```yaml
+spring:
+  autoconfigure:
+    exclude: org.springframework.ai.autoconfigure.openai.OpenAiAutoConfiguration
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        model: llama3.2
+```
+
+#### After (Spring AI 2.0 - Model Selection)
+
+```yaml
+spring:
+  ai:
+    model:
+      chat: ollama
+      embedding: ollama
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        model: llama3.2
+```
+
+### Autoconfigure Class Split
+
+In Spring AI 2.0, the monolithic `OpenAiAutoConfiguration` was split into 6 separate classes:
+
+| Old Class (1.x)                                       | New Classes (2.0)                           |
+| ----------------------------------------------------- | ------------------------------------------- |
+| `o.s.ai.autoconfigure.openai.OpenAiAutoConfiguration` | `OpenAiAudioSpeechAutoConfiguration`        |
+|                                                       | `OpenAiAudioTranscriptionAutoConfiguration` |
+|                                                       | `OpenAiChatAutoConfiguration`               |
+|                                                       | `OpenAiEmbeddingAutoConfiguration`          |
+|                                                       | `OpenAiImageAutoConfiguration`              |
+|                                                       | `OpenAiModerationAutoConfiguration`         |
+
+If you must exclude specific autoconfiguration (not recommended), reference the new class names:
+
+```yaml
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.ai.autoconfigure.openai.OpenAiChatAutoConfiguration
+      - org.springframework.ai.autoconfigure.openai.OpenAiEmbeddingAutoConfiguration
+```
+
+### Default Model Changes
+
+Spring AI 2.0 changes some defaults:
+
+| Setting           | Old Default (1.x) | New Default (2.0) | Action Required           |
+| ----------------- | ----------------- | ----------------- | ------------------------- |
+| OpenAI chat model | `gpt-4o-mini`     | `gpt-5-mini`      | Explicit config if needed |
+| Temperature       | Implicit defaults | Not set           | Must configure explicitly |
+
+### Version Property Update
+
+```yaml
+# Before (1.x)
+spring-ai.version: 1.1.2
+
+# After (2.0)
+spring-ai.version: 2.0.0-M1
+```
+
+## Spring Milestones Repository
+
+Spring AI 2.0.0-M1 is a milestone release requiring the Spring Milestones repository:
+
+### Maven
+
+```xml
+<repositories>
+    <repository>
+        <id>spring-milestones</id>
+        <name>Spring Milestones</name>
+        <url>https://repo.spring.io/milestone</url>
+        <snapshots>
+            <enabled>false</enabled>
+        </snapshots>
+    </repository>
+</repositories>
+```
+
+### Gradle
+
+```kotlin
+repositories {
+    maven { url = uri("https://repo.spring.io/milestone") }
+}
+```
+
 ## Benefits of Migration
 
+- **Spring Boot 4 compatibility** - Required for autoconfigure module split
 - **Provider-agnostic code** - TextToSpeechModel works with OpenAI, ElevenLabs, and future providers
 - **Cleaner API** - Shared interfaces instead of provider-specific classes
 - **Future compatibility** - Aligned with Spring AI's abstraction direction
+- **Simplified provider selection** - Use `spring.ai.model.*` instead of excludes
+
+## Migration Steps (Complete)
+
+1. **Update version** - Change Spring AI to 2.0.0-M1 in build files
+2. **Add repository** - Add Spring Milestones repo for milestone releases
+3. **Update imports** - Replace SpeechModel classes with TextToSpeechModel classes
+4. **Update types** - Change `SpeechModel` to `TextToSpeechModel` in declarations
+5. **Fix speed params** - Remove `f` suffix from speed values
+6. **Update constants** - Replace memory advisor constant names
+7. **Migrate provider selection** - Replace autoconfigure excludes with `spring.ai.model.*`
+8. **Configure defaults** - Explicitly set temperature and model if needed
+9. **Run tests** - Verify TTS and chat memory functionality

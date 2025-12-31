@@ -69,6 +69,9 @@ Catalogs migration-relevant dependencies.
 - Spring Security dependencies
 - Vaadin dependencies
 - Spring AI dependencies
+- **Undertow** (BLOCKING - must be removed for Boot 4)
+- **spring-boot-starter-web** (rename to webmvc)
+- Milestone versions (require Spring Milestones repo)
 
 **Identifies:**
 
@@ -76,6 +79,7 @@ Catalogs migration-relevant dependencies.
 - Managed dependencies
 - Transitive dependencies
 - Plugin dependencies
+- Repository requirements (Spring Milestones for -M1, -RC releases)
 
 ### pattern-detector
 
@@ -218,15 +222,33 @@ public class Config {
 
 ### spring-ai-migrator
 
-Migrates Spring AI 1.0.x to 1.1.x.
+Migrates Spring AI 1.x to 2.0.x (required for Spring Boot 4 compatibility).
 
 **Changes:**
 
-| Before                          | After                  |
-| ------------------------------- | ---------------------- |
-| `SpeechModel`                   | `TextToSpeechModel`    |
-| Speed: `Float` (e.g., `1.0f`)   | `Double` (e.g., `1.0`) |
-| `CHAT_MEMORY_RETRIEVE_SIZE_KEY` | `TOP_K`                |
+| Before                            | After                        |
+| --------------------------------- | ---------------------------- |
+| `SpeechModel`                     | `TextToSpeechModel`          |
+| Speed: `Float` (e.g., `1.0f`)     | `Double` (e.g., `1.0`)       |
+| `CHAT_MEMORY_RETRIEVE_SIZE_KEY`   | `TOP_K`                      |
+| `CHAT_MEMORY_CONVERSATION_ID_KEY` | `ChatMemory.CONVERSATION_ID` |
+| Autoconfigure excludes            | `spring.ai.model.*` config   |
+
+**Spring Boot 4 Requirement:** Spring AI 2.0.0-M1 is required due to autoconfigure module split.
+
+### application-property-migrator
+
+Migrates application.yml and application.properties files for Spring Boot 4.
+
+**Changes:**
+
+| Category           | Before                  | After                        |
+| ------------------ | ----------------------- | ---------------------------- |
+| Property naming    | `base_url`              | `base-url` (kebab-case)      |
+| Jackson namespace  | `spring.jackson.read.*` | `spring.jackson.json.read.*` |
+| Jackson logging    | `com.fasterxml.jackson` | `tools.jackson`              |
+| Spring AI provider | Autoconfigure excludes  | `spring.ai.model.*`          |
+| Float literals     | `speed: 1.0f`           | `speed: 1.0`                 |
 
 ### import-migrator
 
@@ -246,8 +268,11 @@ Updates Maven pom.xml and Gradle build files.
 **Operations:**
 
 - Version bumps (parent, plugins, dependencies)
-- BOM additions
-- GroupId changes
+- BOM additions (Jackson, Spring Cloud)
+- Repository additions (Spring Milestones for milestone releases)
+- GroupId changes (Jackson 2 → 3)
+- Starter renames (`spring-boot-starter-web` → `spring-boot-starter-webmvc`)
+- Undertow removal (not compatible with Servlet 6.1)
 - Property updates
 - Dependency additions/removals
 
@@ -427,10 +452,10 @@ Creates pull requests with migration summaries.
 
 ## Skills by Category
 
-| Category         | Skills                                                                                                                                               |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Discovery        | build-tool-detector, build-tool-upgrader, version-detector, dependency-scanner, pattern-detector, github-actions-detector, deployment-java-detector  |
-| Recipe Discovery | recipe-discovery                                                                                                                                     |
-| Migration        | jackson-migrator, security-config-migrator, spring-ai-migrator, import-migrator, build-file-updater, github-actions-updater, deployment-java-updater |
-| Execution        | build-runner, openrewrite-executor                                                                                                                   |
-| GitHub           | github-workflow, pr-submitter                                                                                                                        |
+| Category         | Skills                                                                                                                                                                              |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Discovery        | build-tool-detector, build-tool-upgrader, version-detector, dependency-scanner, pattern-detector, github-actions-detector, deployment-java-detector                                 |
+| Recipe Discovery | recipe-discovery                                                                                                                                                                    |
+| Migration        | jackson-migrator, security-config-migrator, spring-ai-migrator, application-property-migrator, import-migrator, build-file-updater, github-actions-updater, deployment-java-updater |
+| Execution        | build-runner, openrewrite-executor                                                                                                                                                  |
+| GitHub           | github-workflow, pr-submitter                                                                                                                                                       |
