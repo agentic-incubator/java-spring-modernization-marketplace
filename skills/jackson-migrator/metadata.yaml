@@ -1,7 +1,7 @@
 skill:
   name: jackson-migrator
-  version: 1.1.0
-  description: Migrate Jackson 2.x to 3.x including groupId changes, import updates, and exception handling
+  version: 1.2.0
+  description: Migrate Jackson 2.x to 3.x including groupId changes, import updates, exception handling, and documentation updates
 
   transformations:
     - id: jackson-imports
@@ -28,6 +28,18 @@ skill:
       version: 1.0.0
       description: Verify Jackson annotations remain at com.fasterxml.jackson.annotation (no change needed)
       detection: "import com\\.fasterxml\\.jackson\\.annotation"
+
+    - id: jackson-docs
+      version: 1.2.0
+      description: Update Jackson code examples and references in documentation files
+      detection: "README\\.md|docs/.*\\.md"
+      documentationTransformation: true
+      targetFiles:
+        - README.md
+        - docs/migrations.md
+        - docs/jackson-migration.md
+        - docs/getting-started.md
+        - docs/troubleshooting.md
 
   dependencies:
     - skill: build-runner

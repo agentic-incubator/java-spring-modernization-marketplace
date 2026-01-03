@@ -143,10 +143,20 @@ Target Branch: $CURRENT_BRANCH
 Migration Details:
 $(yq eval '.' .migration-state.yaml)
 
+Documentation Changes (v1.1.0+):
+$(yq eval '.documentationState // "No documentation changes tracked"' .migration-state.yaml)
+
 Commit History:
 $(git log --oneline --grep="migration" -10)
 
 EOF
+
+  # Archive documentation report if it exists
+  if [ -f ".migration-summary/docs-changes.md" ]; then
+    cp .migration-summary/docs-changes.md \
+       "$ARCHIVE_DIR/docs-changes-${MIGRATION_ID}-${TIMESTAMP}.md"
+    echo "Archived documentation report: $ARCHIVE_DIR/docs-changes-${MIGRATION_ID}-${TIMESTAMP}.md"
+  fi
 
   echo "Created summary: $ARCHIVE_DIR/migration-state-${MIGRATION_ID}-${TIMESTAMP}.summary.txt"
 fi

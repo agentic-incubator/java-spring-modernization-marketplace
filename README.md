@@ -13,11 +13,11 @@ This marketplace handles it: clone, analyze, migrate, validate, and submit PRs�
 
 ## What You Get
 
-| Category | Count | Highlights                                                                             |
-| -------- | ----- | -------------------------------------------------------------------------------------- |
-| Commands | 10    | `/migrate`, `/analyze`, `/migrate-github`, `/check-github-actions`                     |
-| Agents   | 9     | Orchestrator, parallel-orchestrator, validators                                        |
-| Skills   | 28    | Dependency updater, Jackson, Security, Build tools, GitHub Actions, Property migration |
+| Category | Count | Highlights                                                                                                      |
+| -------- | ----- | --------------------------------------------------------------------------------------------------------------- |
+| Commands | 10    | `/migrate`, `/analyze`, `/migrate-github`, `/check-github-actions`                                              |
+| Agents   | 9     | Orchestrator, parallel-orchestrator, validators                                                                 |
+| Skills   | 29    | Dependency updater, Jackson, Security, Documentation migration, Build tools, GitHub Actions, Property migration |
 
 ## Quick Start
 
@@ -51,14 +51,15 @@ claude plugin install spring-m11n
 
 ## Supported Migrations
 
-| From              | To       | Key Changes                                                   |
-| ----------------- | -------- | ------------------------------------------------------------- |
-| Spring Boot 3.x   | 4.x      | Starter renames, Undertow removal, Spring Milestones repo     |
-| Jackson 2.x       | 3.x      | GroupId `tools.jackson`, JacksonException, property namespace |
-| Spring Security 6 | 7        | Bean-based config, PathPatternMatcher                         |
-| Vaadin 24         | 25       | Lumo theme, security configurer                               |
-| Spring AI 1.x     | 2.0.0-M1 | TextToSpeechModel, provider selection, autoconfigure split    |
-| Properties        | Boot 4   | Kebab-case, logging packages, Jackson namespace               |
+| From              | To          | Key Changes                                                   |
+| ----------------- | ----------- | ------------------------------------------------------------- |
+| Spring Boot 3.x   | 4.x         | Starter renames, Undertow removal, Spring Milestones repo     |
+| Jackson 2.x       | 3.x         | GroupId `tools.jackson`, JacksonException, property namespace |
+| Spring Security 6 | 7           | Bean-based config, PathPatternMatcher                         |
+| Vaadin 24         | 25          | Lumo theme, security configurer                               |
+| Spring AI 1.x     | 2.0.0-M1    | TextToSpeechModel, provider selection, autoconfigure split    |
+| Properties        | Boot 4      | Kebab-case, logging packages, Jackson namespace               |
+| **Documentation** | **Aligned** | **README, prerequisites, code examples, version references**  |
 
 ## How It Works
 
@@ -75,6 +76,55 @@ For portfolios, the orchestrator:
 2. Discovers dependencies between projects
 3. Migrates in tiers (libraries first)
 4. Creates PRs for each successful migration
+
+## Documentation Migration (New in v1.2.0)
+
+Automatically updates documentation to align with migrated code:
+
+### What Gets Updated
+
+- **README prerequisites** - Java, Spring Boot, framework version requirements
+- **Code examples** - Import statements, dependency snippets in markdown
+- **Version references** - General version mentions across all docs
+- **Getting started guides** - Installation and setup instructions
+- **Migration guides** - Version compatibility matrices
+
+### How It Works
+
+**Hybrid Architecture:**
+
+- **Skill-specific updates**: Each migrator (Jackson, Security, etc.) updates its domain-specific doc examples
+- **Cross-cutting updates**: Central documentation-migrator handles general version references
+- **Aggregated reporting**: Single unified report showing all documentation changes
+
+**Example:**
+
+```markdown
+# Before migration
+
+## Prerequisites
+
+- Java 17 or higher
+- Spring Boot 3.2.x
+- Jackson 2.17+
+
+# After migration
+
+## Prerequisites
+
+- Java 21 or higher
+- Spring Boot 4.0.x
+- Jackson 3.0+
+```
+
+**Features:**
+
+- ✅ Optional execution (only runs if docs are detected)
+- ✅ Tracks changes separately from code
+- ✅ Prevents duplication through section-based boundaries
+- ✅ Generates `.migration-summary/docs-changes.md` report
+
+See `skills/documentation-migrator/SKILL.md` for details.
 
 ## Documentation
 

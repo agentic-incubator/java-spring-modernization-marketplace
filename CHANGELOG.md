@@ -5,6 +5,133 @@ All notable changes to the Spring Modernization Marketplace will be documented i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-01-03
+
+### Added
+
+#### Documentation Migration (Hybrid Architecture)
+
+- **Automatic Documentation Updates**: Documentation files now automatically updated alongside code migrations
+  - README prerequisites (Java, Spring Boot, framework versions)
+  - Code examples in markdown (imports, dependencies, configurations)
+  - Version references across all documentation
+  - Getting started guides and installation instructions
+  - Migration guide version compatibility matrices
+
+- **New Skill**:
+  - `documentation-migrator` (v1.0.0): Cross-cutting documentation updates and aggregated reporting
+    - 5 core transformations: readme-prerequisites, general-version-refs, getting-started-guide, migration-guide-versions, aggregate-doc-report
+    - Reads target versions from migration state
+    - Generates unified `.migration-summary/docs-changes.md` report
+    - Section-based updates to prevent duplication with skill-specific docs
+
+- **Enhanced State Schema**: `migration-state` (v1.0.0 → v1.1.0)
+  - New `documentationState` field for aggregated documentation tracking
+  - New `documentationChanges` field in transformation entries
+  - Tracks files updated, lines changed, and code examples modified
+  - JSON schema validation for documentation fields
+  - Enhanced state file examples with documentation tracking
+
+#### Skill-Specific Documentation Extensions
+
+- **jackson-migrator** (v1.1.0 → v1.2.0):
+  - New `jackson-docs` transformation: Updates Jackson examples in documentation
+  - Targets: README.md, docs/migrations.md, docs/jackson-migration.md, docs/troubleshooting.md
+  - Updates Java code blocks (imports, exceptions), Maven/Gradle snippets
+
+- **security-config-migrator** (v1.0.0 → v1.1.0):
+  - New `security-docs` transformation: Updates Spring Security config examples
+  - Targets: README.md, docs/migrations.md, docs/security-migration.md, docs/security-config.md
+  - Updates security configuration patterns and request matchers
+
+- **spring-ai-migrator** (v2.0.0 → v2.1.0):
+  - New `spring-ai-docs` transformation: Updates Spring AI examples and configs
+  - Targets: README.md, docs/migrations.md, docs/spring-ai-migration.md, docs/ai-integration.md
+  - Updates TTS model names, speed parameters, autoconfigure examples
+
+- **vaadin-migrator** (v1.0.0 → v1.1.0):
+  - New `vaadin-docs` transformation: Updates Vaadin theme and security examples
+  - Targets: README.md, docs/migrations.md, docs/vaadin-migration.md, docs/ui-components.md
+  - Updates Material → Lumo theme examples, VaadinWebSecurity configurations
+
+#### Enhanced Features
+
+- **Optional Execution**: Documentation transformations only run when relevant docs are detected
+  - Checks for docs/ directory existence
+  - Detects framework-specific patterns in documentation
+  - Skips gracefully if no documentation found
+
+- **Aggregated Reporting**: Unified view of all documentation changes
+  - Collects changes from all skills with documentation updates
+  - Shows total files updated, lines changed, code examples modified
+  - Lists which skills contributed documentation changes
+  - Generates single `.migration-summary/docs-changes.md` report
+
+- **Idempotent Documentation Updates**: Safe to rerun documentation migrations
+  - Leverages existing migration-state infrastructure
+  - Tracks documentation transformations separately from code
+  - Detection patterns prevent unnecessary re-application
+
+- **Post-Merge Cleanup Enhancement**: Archives documentation reports
+  - Includes `documentationState` in migration summaries
+  - Archives `.migration-summary/docs-changes.md` with migration artifacts
+  - Enhanced cleanup output shows documentation metrics
+
+#### Documentation
+
+- **New Skill Documentation**:
+  - `skills/documentation-migrator/SKILL.md`: Comprehensive 600+ line guide
+  - Transformation examples (before/after)
+  - Integration workflow documentation
+  - Responsibility matrix to prevent duplication
+
+- **Enhanced Skill Documentation**:
+  - `skills/jackson-migrator/SKILL.md`: Added "Documentation Migration" section
+  - `skills/migration-state/SKILL.md`: Added "Enhanced Schema with Documentation Tracking" section
+  - `skills/post-merge-cleanup/SKILL.md`: Enhanced summary generation examples
+
+- **README Updates**:
+  - New "Documentation Migration" section with examples
+  - Updated "Supported Migrations" table with documentation row
+  - Updated skill count: 28 → 29
+
+### Changed
+
+- **Migration Workflow**: Documentation now updated automatically as part of migration process
+- **State File Schema**: Extended to track documentation changes separately (backward compatible)
+- **Skill Count**: Increased from 28 to 29 skills
+- **Package Version**: Bumped to 1.2.0 with updated description
+
+### Technical Details
+
+**Hybrid Architecture Design**:
+
+- **Skill-specific extensions**: Each migrator handles domain-specific doc examples
+- **Centralized core**: documentation-migrator handles cross-cutting updates
+- **Clear boundaries**: Section-based updates prevent conflicts
+- **Aggregated state**: Single source of truth for all documentation changes
+
+**File Patterns Supported**:
+
+- Markdown files: README.md, docs/\*_/_.md, CONTRIBUTING.md, CHANGELOG.md
+- Text files: docs/\*_/_.txt
+- All documentation in .github/ directory
+
+**State Tracking**:
+
+```yaml
+documentationChanges:
+  filesUpdated: [README.md, docs/migrations.md]
+  linesChanged: 45
+  examplesUpdated: 8
+
+documentationState:
+  totalFilesUpdated: 4
+  totalLinesChanged: 134
+  skillsWithDocChanges: [jackson-migrator, security-config-migrator]
+  reportLocation: .migration-summary/docs-changes.md
+```
+
 ## [1.1.0] - 2026-01-03
 
 ### Added
@@ -196,10 +323,66 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **1.2.0** (2026-01-03) - Documentation migration with hybrid architecture, aggregated reporting
 - **1.1.0** (2026-01-03) - Idempotent migration operations, state management, resume capability
 - **1.0.0** (2025-12-XX) - Initial release with full migration framework
 
 ## Upgrade Guide
+
+### From 1.1.0 to 1.2.0
+
+**Backward Compatible**: No breaking changes. All 1.1.0 migrations continue to work.
+
+**New Features Available**:
+
+1. **Automatic Documentation Updates**: Documentation automatically aligned with migrated code
+   - README prerequisites updated (Java, Spring Boot, framework versions)
+   - Code examples updated in markdown files
+   - Version references updated across all docs
+
+2. **Skill-Specific Documentation Extensions**: Each migrator now handles domain-specific docs
+   - `jackson-migrator`: Updates Jackson examples in documentation
+   - `security-config-migrator`: Updates Spring Security config examples
+   - `spring-ai-migrator`: Updates Spring AI examples and configs
+   - `vaadin-migrator`: Updates Vaadin theme and security examples
+
+3. **Aggregated Documentation Reporting**: Unified view of all documentation changes
+   - `.migration-summary/docs-changes.md` shows all documentation updates
+   - Tracks files updated, lines changed, code examples modified
+   - Lists which skills contributed documentation changes
+
+4. **Enhanced State Tracking**: Documentation changes tracked separately
+   - `documentationChanges` field in transformation entries
+   - `documentationState` for aggregated documentation metrics
+   - Backward compatible with v1.1.0 state files
+
+**Migration Path**:
+
+```bash
+# Existing 1.1.0 migrations automatically get documentation updates
+/spring-m11n:migrate /path/to/project
+
+# Documentation transformations run automatically when docs are detected
+# No configuration needed - works out of the box
+
+# Review documentation changes in the aggregated report
+cat .migration-summary/docs-changes.md
+
+# Documentation updates are included in the same PR as code changes
+```
+
+**State File Enhancement**:
+
+- State files now include documentation tracking (backward compatible)
+- Old state files work without modification
+- New state files include `documentationChanges` and `documentationState`
+- Post-merge cleanup archives documentation reports
+
+**Optional Behavior**:
+
+- Documentation transformations only run if documentation is detected
+- Projects without docs/ directory skip documentation updates gracefully
+- No impact on projects without documentation
 
 ### From 1.0.0 to 1.1.0
 

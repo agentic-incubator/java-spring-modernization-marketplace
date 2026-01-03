@@ -1,0 +1,78 @@
+skill:
+  name: documentation-migrator
+  version: 1.0.0
+  description: Update cross-cutting documentation for Spring Boot 4.x migration including version references, prerequisites, and aggregated reporting
+
+  transformations:
+    - id: readme-prerequisites
+      version: 1.0.0
+      description: Update README prerequisites section (Java, Spring Boot versions)
+      detection: "README\\.md.*(Prerequisites?|Requirements?)"
+
+    - id: general-version-refs
+      version: 1.0.0
+      description: Update general version references in documentation
+      detection: "Spring Boot 3\\.[0-9]+|Jackson 2\\.[0-9]+|Java 17"
+
+    - id: getting-started-guide
+      version: 1.0.0
+      description: Update getting-started guide with new prerequisites
+      detection: "docs/getting-started\\.md.*Java 17"
+
+    - id: migration-guide-versions
+      version: 1.0.0
+      description: Update migration guide version compatibility matrix
+      detection: "docs/migrations\\.md.*Spring Boot.*3\\."
+
+    - id: aggregate-doc-report
+      version: 1.0.0
+      description: Generate aggregated documentation changes report from all skills
+      detection: "\\.migration-state\\.yaml"
+
+  dependencies:
+    - skill: jackson-migrator
+      minVersion: 1.2.0
+      optional: true
+    - skill: security-config-migrator
+      minVersion: 1.1.0
+      optional: true
+    - skill: spring-ai-migrator
+      minVersion: 2.1.0
+      optional: true
+    - skill: vaadin-migrator
+      minVersion: 1.1.0
+      optional: true
+    - skill: migration-state
+      minVersion: 1.1.0
+      required: true
+
+  filePatterns:
+    include:
+      - README.md
+      - README*.md
+      - readme*.md
+      - docs/**/*.md
+      - docs/**/*.txt
+      - "*.md"
+      - .github/**/*.md
+      - CONTRIBUTING.md
+      - CHANGELOG.md
+    exclude:
+      - node_modules/**
+      - .git/**
+      - target/**
+      - build/**
+      - dist/**
+
+  documentation:
+    detectionPaths:
+      - README.md
+      - docs/getting-started.md
+      - docs/migrations.md
+      - docs/*.md
+    reportOutput: .migration-summary/docs-changes.md
+    aggregateFrom:
+      - jackson-migrator:jackson-docs
+      - security-config-migrator:security-docs
+      - spring-ai-migrator:spring-ai-docs
+      - vaadin-migrator:vaadin-docs

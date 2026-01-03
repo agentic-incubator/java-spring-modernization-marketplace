@@ -25,8 +25,16 @@ appliedTransformations:
       - jackson-imports
       - jackson-groupid
       - jackson-exceptions
+      - jackson-docs  # NEW: Documentation transformation
     completedAt: "2026-01-03T10:35:00Z"
     commitSha: "abc123def456789"
+    # NEW: Track documentation changes
+    documentationChanges:
+      filesUpdated:
+        - docs/migrations.md
+        - README.md
+      linesChanged: 45
+      examplesUpdated: 8
 
   # Second transformation: Spring Security migration
   - skill: spring-security-migrator
@@ -36,8 +44,16 @@ appliedTransformations:
       - authorizations
       - csrf-config
       - session-management
+      - security-docs  # NEW: Documentation transformation
     completedAt: "2026-01-03T10:42:00Z"
     commitSha: "def456abc789012"
+    # NEW: Track documentation changes
+    documentationChanges:
+      filesUpdated:
+        - docs/migrations.md
+        - docs/security-config.md
+      linesChanged: 28
+      examplesUpdated: 3
 
   # Third transformation: Build file updates
   - skill: build-file-updater
@@ -69,6 +85,25 @@ appliedTransformations:
     completedAt: "2026-01-03T11:30:00Z"
     commitSha: "456def789012abc"
 
+  # NEW: Sixth transformation: Cross-cutting documentation updates
+  - skill: documentation-migrator
+    version: "1.0.0"
+    transformations:
+      - readme-prerequisites
+      - general-version-refs
+      - getting-started-guide
+      - aggregate-doc-report
+    completedAt: "2026-01-03T12:00:00Z"
+    commitSha: "789abc012def456"
+    # Documentation-specific tracking
+    documentationChanges:
+      filesUpdated:
+        - README.md
+        - docs/getting-started.md
+        - docs/prerequisites.md
+      linesChanged: 67
+      examplesUpdated: 0  # General updates, not code examples
+
 # Transformations still pending
 pendingTransformations:
   - vaadin-migrator  # Detected Vaadin usage, not yet migrated
@@ -94,6 +129,16 @@ validationDetails:
 
 # No errors in last run
 lastError: null
+
+# NEW: Aggregated documentation state (v1.1.0+)
+documentationState:
+  totalFilesUpdated: 6  # Unique files across all transformations
+  totalLinesChanged: 140  # 45 + 28 + 67
+  skillsWithDocChanges:
+    - jackson-migrator
+    - spring-security-migrator
+    - documentation-migrator
+  reportLocation: ".migration-summary/docs-changes.md"
 
 # Additional metadata (optional)
 metadata:

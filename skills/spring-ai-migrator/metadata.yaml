@@ -1,7 +1,7 @@
 skill:
   name: spring-ai-migrator
-  version: 2.0.0
-  description: Migrate Spring AI 1.x to 2.0.x including TTS API changes, speed parameter type change, chat memory advisor constant renames, and autoconfigure migration for Spring Boot 4 compatibility
+  version: 2.1.0
+  description: Migrate Spring AI 1.x to 2.0.x including TTS API changes, speed parameter type change, chat memory advisor constant renames, autoconfigure migration for Spring Boot 4 compatibility, and documentation updates
 
   transformations:
     - id: tts-model-rename
@@ -33,6 +33,18 @@ skill:
       version: 2.0.0
       description: Add Spring Milestones repository for Spring AI 2.0.0-M1
       detection: "spring-ai\.version.*2\.0\.0-M1"
+
+    - id: spring-ai-docs
+      version: 2.1.0
+      description: Update Spring AI examples and configuration in documentation
+      detection: "README\\.md|docs/.*\\.md"
+      documentationTransformation: true
+      targetFiles:
+        - README.md
+        - docs/migrations.md
+        - docs/spring-ai-migration.md
+        - docs/ai-integration.md
+        - docs/troubleshooting.md
 
   dependencies:
     - skill: build-runner

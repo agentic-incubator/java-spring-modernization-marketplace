@@ -72,6 +72,65 @@ validationDetails:
 lastError: '3 compilation errors in SecurityConfig.java'
 ```
 
+### Enhanced Schema with Documentation Tracking (v1.1.0+)
+
+Starting with version 1.1.0, the migration-state skill supports tracking documentation changes:
+
+```yaml
+# .migration-state.yaml (Enhanced with documentation tracking)
+migrationId: 'sb4-20260103-abc12345'
+branch: 'feature/spring-boot-4-migration'
+startedAt: '2026-01-03T10:30:00Z'
+lastUpdatedAt: '2026-01-03T11:45:00Z'
+marketplaceVersion: '1.2.0'
+
+targetVersions:
+  spring-boot: '4.0.0'
+  jackson: '3.0.0'
+  spring-security: '7.0.0'
+
+appliedTransformations:
+  - skill: jackson-migrator
+    version: '1.1.0'
+    transformations:
+      - jackson-imports
+      - jackson-groupid
+      - jackson-docs # NEW: Documentation transformation
+    completedAt: '2026-01-03T10:35:00Z'
+    commitSha: 'abc123def456'
+    documentationChanges: # NEW: Track documentation updates
+      filesUpdated:
+        - docs/migrations.md
+        - README.md
+      linesChanged: 45
+      examplesUpdated: 8
+
+  - skill: documentation-migrator
+    version: '1.0.0'
+    transformations:
+      - readme-prerequisites
+      - general-version-refs
+    completedAt: '2026-01-03T11:00:00Z'
+    commitSha: 'ghi789jkl012'
+    documentationChanges:
+      filesUpdated:
+        - README.md
+        - docs/getting-started.md
+      linesChanged: 67
+      examplesUpdated: 0
+
+validationStatus: 'PASSED'
+
+# NEW: Aggregated documentation state
+documentationState:
+  totalFilesUpdated: 4
+  totalLinesChanged: 112
+  skillsWithDocChanges:
+    - jackson-migrator
+    - documentation-migrator
+  reportLocation: '.migration-summary/docs-changes.md'
+```
+
 ## JSON Schema Validation
 
 The YAML state file must conform to this JSON Schema equivalent:
@@ -126,7 +185,19 @@ The YAML state file must conform to this JSON Schema equivalent:
             "items": { "type": "string" }
           },
           "completedAt": { "type": "string", "format": "date-time" },
-          "commitSha": { "type": "string" }
+          "commitSha": { "type": "string" },
+          "documentationChanges": {
+            "type": "object",
+            "description": "Optional tracking of documentation updates (v1.1.0+)",
+            "properties": {
+              "filesUpdated": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "linesChanged": { "type": "integer" },
+              "examplesUpdated": { "type": "integer" }
+            }
+          }
         }
       }
     },
@@ -163,6 +234,19 @@ The YAML state file must conform to this JSON Schema equivalent:
     "lastError": {
       "type": "string",
       "description": "Human-readable error message from last failure"
+    },
+    "documentationState": {
+      "type": "object",
+      "description": "Aggregated documentation change tracking (v1.1.0+)",
+      "properties": {
+        "totalFilesUpdated": { "type": "integer" },
+        "totalLinesChanged": { "type": "integer" },
+        "skillsWithDocChanges": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "reportLocation": { "type": "string" }
+      }
     }
   }
 }

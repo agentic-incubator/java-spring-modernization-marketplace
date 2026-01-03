@@ -211,6 +211,121 @@ commitSha: <git-commit-sha>
 
 The state file is committed with the migration changes for audit trail.
 
+## Documentation Migration (v1.2.0+)
+
+Starting with version 1.2.0, the jackson-migrator also updates Jackson examples and references in documentation files.
+
+### What Gets Updated
+
+The `jackson-docs` transformation updates:
+
+- **README.md**: Jackson code examples, dependency snippets, version references
+- **docs/migrations.md**: Jackson migration guides with before/after examples
+- **docs/getting-started.md**: Quick start examples using Jackson
+- **docs/troubleshooting.md**: Error messages and exception handling examples
+
+### Detection Pattern
+
+Documentation migration only runs if:
+
+1. Documentation directory exists (`docs/` or README.md found)
+2. Jackson references detected in documentation files:
+   - `com.fasterxml.jackson` import statements in code blocks
+   - `JsonProcessingException` or `JsonMappingException` in examples
+   - Maven/Gradle dependencies with Jackson groupId
+
+### Example: README Before
+
+````markdown
+## Quick Start
+
+```java
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+public void serialize() throws JsonProcessingException {
+    ObjectMapper mapper = new ObjectMapper();
+    String json = mapper.writeValueAsString(myObject);
+}
+```
+
+**Maven Dependency:**
+
+```xml
+<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-databind</artifactId>
+    <version>2.17.0</version>
+</dependency>
+```
+````
+
+### Example: README After
+
+````markdown
+## Quick Start
+
+```java
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+
+public void serialize() throws JacksonException {
+    ObjectMapper mapper = new ObjectMapper();
+    String json = mapper.writeValueAsString(myObject);
+}
+```
+
+**Maven Dependency:**
+
+```xml
+<dependency>
+    <groupId>tools.jackson.core</groupId>
+    <artifactId>jackson-databind</artifactId>
+    <version>3.0.2</version>
+</dependency>
+```
+````
+
+### Documentation State Tracking
+
+Documentation changes are tracked separately in the state file:
+
+```yaml
+skill: jackson-migrator
+version: 1.2.0
+transformations:
+  - jackson-imports
+  - jackson-groupid
+  - jackson-exception-handling
+  - jackson-bom
+  - jackson-docs # Documentation transformation
+completedAt: 2026-01-03T10:35:00Z
+commitSha: abc123def456
+documentationChanges: # Tracked separately
+  filesUpdated:
+    - README.md
+    - docs/migrations.md
+    - docs/getting-started.md
+  linesChanged: 45
+  examplesUpdated: 8 # Code blocks updated
+```
+
+### Optional Execution
+
+The jackson-docs transformation is **optional**:
+
+- Skipped if no `docs/` directory exists
+- Skipped if no Jackson references found in documentation
+- Runs automatically when relevant documentation is detected
+
+### Integration with Documentation-Migrator
+
+The jackson-docs transformation:
+
+- Updates **domain-specific** Jackson examples in documentation
+- Works alongside `documentation-migrator` which handles cross-cutting version references
+- Prevents duplication through section-based boundaries (e.g., "## Jackson 2.x to 3.x" section in docs/migrations.md)
+
 ## Integration with Migration State Skill
 
 This skill depends on the `migration-state` skill (v1.0.0+) for:

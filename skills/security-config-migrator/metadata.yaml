@@ -1,7 +1,7 @@
 skill:
   name: security-config-migrator
-  version: 1.0.0
-  description: Migrate Spring Security configurations for Spring Boot 4.x compatibility
+  version: 1.1.0
+  description: Migrate Spring Security configurations for Spring Boot 4.x compatibility including code and documentation updates
 
   transformations:
     - id: security-config
@@ -23,6 +23,18 @@ skill:
       version: 1.0.0
       description: Update session management configuration
       detection: "sessionManagement\(\)\.sessionCreationPolicy"
+
+    - id: security-docs
+      version: 1.1.0
+      description: Update Spring Security configuration examples in documentation
+      detection: "README\\.md|docs/.*\\.md"
+      documentationTransformation: true
+      targetFiles:
+        - README.md
+        - docs/migrations.md
+        - docs/security-migration.md
+        - docs/security-config.md
+        - docs/troubleshooting.md
 
   dependencies:
     - skill: build-runner
