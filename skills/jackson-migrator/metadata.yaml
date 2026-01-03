@@ -1,0 +1,36 @@
+skill:
+  name: jackson-migrator
+  version: 1.1.0
+  description: Migrate Jackson 2.x to 3.x including groupId changes, import updates, and exception handling
+
+  transformations:
+    - id: jackson-imports
+      version: 1.0.0
+      description: Update import statements from com.fasterxml.jackson to tools.jackson
+      detection: "import com\\.fasterxml\\.jackson\\.(core|databind|dataformat|datatype|module)"
+
+    - id: jackson-groupid
+      version: 1.0.0
+      description: Update Maven/Gradle groupId from com.fasterxml.jackson to tools.jackson
+      detection: "com\\.fasterxml\\.jackson\\.core|com\\.fasterxml\\.jackson\\.databind"
+
+    - id: jackson-exception-handling
+      version: 1.1.0
+      description: Update exception class references from JsonProcessingException to JacksonException
+      detection: "JsonProcessingException|JsonMappingException"
+
+    - id: jackson-bom
+      version: 1.0.0
+      description: Add Jackson BOM for version management
+      detection: "tools\\.jackson.*jackson-databind"
+
+    - id: jackson-annotations-preserve
+      version: 1.0.0
+      description: Verify Jackson annotations remain at com.fasterxml.jackson.annotation (no change needed)
+      detection: "import com\\.fasterxml\\.jackson\\.annotation"
+
+  dependencies:
+    - skill: build-runner
+      minVersion: 1.0.0
+    - skill: migration-state
+      minVersion: 1.0.0

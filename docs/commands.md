@@ -133,6 +133,84 @@ Clone and migrate GitHub repositories with parallel processing and automatic PR 
 | `--skip-pr`          | Skip PR creation                | false                             |
 | `--labels <list>`    | PR labels (comma-separated)     | `spring-boot-4,dependencies`      |
 
+### /resume
+
+Resume an interrupted or failed migration from the last checkpoint.
+
+```bash
+/resume [project-path]
+```
+
+**Use Cases:**
+
+- **Marketplace upgrade**: Resume after upgrading the marketplace to apply new transformations
+- **Build failure**: Resume after fixing compilation errors or test failures
+- **Partial migration**: Resume after stopping mid-migration
+- **Retry**: Safely retry on the same branch without losing progress
+
+**How it Works:**
+
+1. Loads `.migration-state.yaml` from the project
+2. Checks out the recorded migration branch
+3. Compares marketplace versions (e.g., 1.0.0 → 1.1.0)
+4. Identifies new/updated transformations
+5. Applies only pending transformations (skips already-applied)
+6. Runs validation
+7. Reports what was skipped vs. applied
+
+**Example Output:**
+
+```text
+📂 Resuming migration in /path/to/project
+
+📋 Migration State:
+   Branch: feature/spring-boot-4-migration
+   Started: 2026-01-03T10:30:00Z
+   Marketplace: 1.0.0 → 1.1.0 (upgraded)
+
+✅ Already Applied (skipping):
+   - jackson-migrator v1.0.0 (2 transformations)
+   - spring-security-migrator v1.0.0 (2 transformations)
+
+🆕 New Since Last Run:
+   - jackson-migrator v1.1.0: +1 transformation
+   - spring-ai-migrator v1.0.0: 3 transformations
+
+🔄 Applying new transformations...
+   ✅ jackson-migrator:exception-handling
+   ✅ spring-ai-migrator:tts-model-rename
+   ✅ spring-ai-migrator:speed-parameter
+   ✅ spring-ai-migrator:advisor-constants
+
+🔨 Running validation...
+   ✅ Compile: SUCCESS
+   ✅ Tests: 150 passed
+
+🎉 Migration resumed successfully!
+```
+
+**State File:** `.migration-state.yaml`
+
+The resume command relies on the migration state file which tracks:
+
+- Applied transformations (skill, version, commit SHA)
+- Pending transformations
+- Marketplace version
+- Validation status
+- Migration branch name
+
+**Comparison with /migrate:**
+
+| Feature                  | /migrate              | /resume                        |
+| ------------------------ | --------------------- | ------------------------------ |
+| When to use              | First-time migration  | Continue existing migration    |
+| Branch handling          | Creates new or reuses | Uses existing branch           |
+| Transformation detection | Applies all           | Applies only new/pending       |
+| Marketplace upgrades     | Not detected          | Automatically detected         |
+| State file               | Creates if not exists | Requires existing state file   |
+| Idempotency              | Safe with state       | Inherently idempotent          |
+| Use after failure        | Starts from beginning | Continues from last checkpoint |
+
 ### /openrewrite
 
 Run OpenRewrite automated recipes.
@@ -225,6 +303,7 @@ Validate migration with builds and tests.
 | Scan portfolio         | `/portfolio-scan /path`            |
 | Migrate single project | `/migrate /path`                   |
 | Migrate with preview   | `/migrate /path --dry-run`         |
+| Resume migration       | `/resume /path`                    |
 | Migrate GitHub repos   | `/migrate-github urls --parallel`  |
 | Run OpenRewrite        | `/openrewrite spring-boot-4 /path` |
 | Fix Jackson issues     | `/fix-jackson /path`               |

@@ -1,0 +1,31 @@
+skill:
+  name: security-config-migrator
+  version: 1.0.0
+  description: Migrate Spring Security configurations for Spring Boot 4.x compatibility
+
+  transformations:
+    - id: security-config
+      version: 1.0.0
+      description: Update deprecated security configuration methods
+      detection: "WebSecurityConfigurerAdapter|antMatchers|mvcMatchers"
+
+    - id: authorizations
+      version: 1.0.0
+      description: Update authorization rule syntax
+      detection: "authorizeRequests|access\s*\("
+
+    - id: csrf-config
+      version: 1.0.0
+      description: Update CSRF configuration for Spring Security 7
+      detection: "csrf\(\)\.disable\(\)"
+
+    - id: session-management
+      version: 1.0.0
+      description: Update session management configuration
+      detection: "sessionManagement\(\)\.sessionCreationPolicy"
+
+  dependencies:
+    - skill: build-runner
+      minVersion: 1.0.0
+    - skill: migration-state
+      minVersion: 1.0.0

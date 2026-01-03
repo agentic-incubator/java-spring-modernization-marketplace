@@ -1,6 +1,6 @@
 {
   "name": "spring-modernization-marketplace",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Claude Code plugin marketplace for Spring ecosystem modernization",
   "private": true,
   "packageManager": "pnpm@9.15.0",
@@ -16,7 +16,7 @@
     "upgrade": "pnpm update --latest"
   },
   "devDependencies": {
-    "markdownlint-cli": "^0.43.0",
+    "markdownlint-cli": "^0.47.0",
     "prettier": "^3.7.4"
   },
   "keywords": [

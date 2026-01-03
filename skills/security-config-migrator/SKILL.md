@@ -159,3 +159,96 @@ public class SecurityConfig {
 4. **Update request matchers** - Replace `AntPathRequestMatcher` with `PathPatternRequestMatcher`
 5. **Add Vaadin configurer** - Use `http.with(VaadinSecurityConfigurer.vaadin(), ...)`
 6. **Test security** - Verify authentication and authorization work correctly
+
+## Idempotent Transformation Logic
+
+This skill implements idempotent transformations that can be safely run multiple times. Each transformation:
+
+1. **Reads migration state** - Loads `.migration-state.yaml` to check applied transformations
+2. **Checks if already applied** - Skips transformations with version >= applied version
+3. **Detects if still needed** - Uses regex patterns to verify transformation is required
+4. **Applies transformation** - Only executes if detection pattern matches
+5. **Updates state** - Records transformation in state file with version and commit SHA
+
+### Transformation Flow
+
+```yaml
+# Example state file entry after security-config-migrator runs
+appliedTransformations:
+  - skill: security-config-migrator
+    version: 1.0.0
+    transformations:
+      - security-config
+      - authorizations
+      - csrf-config
+      - session-management
+    completedAt: 2026-01-03T11:00:00Z
+    commitSha: ghi789jkl
+```
+
+### Detection Patterns
+
+Each transformation has a detection pattern in `metadata.yaml`:
+
+| Transformation ID    | Detection Pattern                                        | Purpose                                |
+| -------------------- | -------------------------------------------------------- | -------------------------------------- |
+| `security-config`    | `WebSecurityConfigurerAdapter\|antMatchers\|mvcMatchers` | Find deprecated security configuration |
+| `authorizations`     | `authorizeRequests\|access\s*\(`                         | Find old authorization rule syntax     |
+| `csrf-config`        | `csrf\(\)\.disable\(\)`                                  | Find CSRF disable patterns             |
+| `session-management` | `sessionManagement\(\)\.sessionCreationPolicy`           | Find session management configuration  |
+
+### Skip Logic
+
+Before applying any transformation:
+
+1. Load state from `.migration-state.yaml`
+2. For each transformation in `metadata.yaml`:
+   - Check if `skill: security-config-migrator` exists in `appliedTransformations`
+   - If yes, check if transformation ID is in the list
+   - If yes, compare versions: skip if `appliedVersion >= currentVersion`
+   - If no or version is older, run detection pattern
+3. If detection pattern matches, apply transformation
+4. If detection pattern doesn't match, skip (already transformed or not applicable)
+
+### Version Comparison
+
+Transformations are only reapplied if:
+
+- Transformation ID not found in state file, OR
+- Applied version < current version (e.g., 0.9.0 < 1.0.0), OR
+- Detection pattern still matches (manual revert detected)
+
+### Verification
+
+After each transformation, verify:
+
+1. **Compilation** - Run `mvn compile` or `gradle compileJava`
+2. **Security tests** - Run security-related tests
+3. **Configuration validation** - Ensure `SecurityFilterChain` bean is properly configured
+4. **Pattern absence** - Re-run detection pattern to confirm it no longer matches
+
+### State Updates
+
+After successful transformation:
+
+```yaml
+# Updated .migration-state.yaml
+skill: security-config-migrator
+version: 1.0.0
+transformations: [security-config, authorizations, csrf-config, session-management]
+completedAt: 2026-01-03T11:00:00Z
+commitSha: <git-commit-sha>
+```
+
+The state file is committed with the migration changes for audit trail.
+
+## Integration with Migration State Skill
+
+This skill depends on the `migration-state` skill (v1.0.0+) for:
+
+- Reading `.migration-state.yaml`
+- Checking applied transformations
+- Updating state after successful transformation
+- Version comparison logic
+
+See `skills/migration-state/SKILL.md` for state management details.

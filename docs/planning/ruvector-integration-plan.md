@@ -69,47 +69,47 @@ A self-learning LLM toolkit featuring:
 
 ```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                      SPRING MODERNIZATION MARKETPLACE                        │
+│                      SPRING MODERNIZATION MARKETPLACE                       │
 ├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│   ORCHESTRATION LAYER                                                        │
-│   ┌────────────────┐  ┌─────────────────────┐  ┌────────────────────────┐   │
-│   │  orchestrator  │  │ parallel-orchestrator│  │   learning-agent       │   │
-│   │                │  │                      │  │   (NEW)                │   │
-│   └───────┬────────┘  └──────────┬───────────┘  └───────────┬────────────┘   │
-│           │                      │                          │               │
-│   ────────┴──────────────────────┴──────────────────────────┴────────────   │
-│                                                                              │
-│   AGENT LAYER                                                                │
+│                                                                             │
+│   ORCHESTRATION LAYER                                                       │
+│   ┌────────────────┐  ┌───────────────────────┐  ┌────────────────────────┐ │
+│   │  orchestrator  │  │ parallel-orchestrator │  │   learning-agent       │ │
+│   │                │  │                       │  │   (NEW)                │ │
+│   └───────┬────────┘  └──────────┬────────────┘  └───────────┬────────────┘ │
+│           │                      │                           │              │
+│   ────────┴──────────────────────┴───────────────────────────┴────────────  │
+│                                                                             │
+│   AGENT LAYER                                                               │
 │   ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐       │
 │   │  discovery   │ │  migration   │ │  validation  │ │   cleanup    │       │
 │   │    agent     │ │    agent     │ │    agent     │ │    agent     │       │
 │   └──────┬───────┘ └──────┬───────┘ └──────┬───────┘ └──────┬───────┘       │
 │          │                │                │                │               │
 │   ───────┴────────────────┴────────────────┴────────────────┴────────────   │
-│                                                                              │
-│   SKILLS LAYER (existing + new)                                              │
+│                                                                             │
+│   SKILLS LAYER (existing + new)                                             │
 │   ┌────────────────────────────────────────────────────────────────────┐    │
 │   │  build-tool-detector │ version-detector │ pattern-detector │ ...   │    │
 │   ├────────────────────────────────────────────────────────────────────┤    │
 │   │  pattern-memory (NEW) │ error-resolver (NEW) │ smart-recipe (NEW)  │    │
 │   │  migration-session (NEW) │ learning-feedback (NEW)                 │    │
 │   └────────────────────────────────────────────────────────────────────┘    │
-│                                                                              │
+│                                                                             │
 │   ═══════════════════════════════════════════════════════════════════════   │
-│                                                                              │
-│   INTELLIGENCE LAYER (NEW - RuVector/RuvLLM)                                 │
+│                                                                             │
+│   INTELLIGENCE LAYER (NEW - RuVector/RuvLLM)                                │
 │   ┌─────────────────────────────────────────────────────────────────────┐   │
-│   │                                                                      │   │
+│   │                                                                     │   │
 │   │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────────┐  │   │
 │   │  │  PATTERN STORE  │  │  ERROR CORPUS   │  │  RECIPE EMBEDDINGS  │  │   │
 │   │  │                 │  │                 │  │                     │  │   │
 │   │  │ • Migration     │  │ • Build errors  │  │ • OpenRewrite       │  │   │
 │   │  │   patterns      │  │ • Stack traces  │  │   recipes           │  │   │
-│   │  │ • Code transforms│  │ • Resolutions  │  │ • Manual fixes      │  │   │
+│   │  │ • Code xforms   │  │ • Resolutions   │  │ • Manual fixes      │  │   │
 │   │  │ • LoRA adapters │  │ • Context       │  │ • Semantic search   │  │   │
 │   │  └─────────────────┘  └─────────────────┘  └─────────────────────┘  │   │
-│   │                                                                      │   │
+│   │                                                                     │   │
 │   │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────────┐  │   │
 │   │  │ SESSION STATE   │  │ SIMD ENGINE     │  │ FEDERATED LEARNING  │  │   │
 │   │  │                 │  │                 │  │                     │  │   │
@@ -118,9 +118,9 @@ A self-learning LLM toolkit featuring:
 │   │  │   progress      │  │ • Dot product   │  │ • Privacy-safe      │  │   │
 │   │  │ • Export/import │  │ • Activations   │  │   sharing           │  │   │
 │   │  └─────────────────┘  └─────────────────┘  └─────────────────────┘  │   │
-│   │                                                                      │   │
+│   │                                                                     │   │
 │   └─────────────────────────────────────────────────────────────────────┘   │
-│                                                                              │
+│                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -141,13 +141,13 @@ A self-learning LLM toolkit featuring:
                             │                    │                    │
                             ▼                    ▼                    ▼
                      ┌──────────────────────────────────────────────────────┐
-                     │              RuVector Intelligence Layer              │
-                     │                                                       │
+                     │              RuVector Intelligence Layer             │
+                     │                                                      │
                      │  Pattern Memory ◄──► Error Corpus ◄──► Recipe Index  │
-                     │         │                  │                 │        │
+                     │         │                  │                │        │
                      │         └──────────► SIMD Engine ◄──────────┘        │
                      │                           │                          │
-                     │                   Federated Learning                  │
+                     │                   Federated Learning                 │
                      └──────────────────────────────────────────────────────┘
 ```
 
@@ -321,37 +321,37 @@ await learningFeedback.learn()
 
 ```text
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                          LEARNING AGENT                                  │
+│                          LEARNING AGENT                                 │
 ├─────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│  ON MIGRATION COMPLETE:                                                  │
+│                                                                         │
+│  ON MIGRATION COMPLETE:                                                 │
 │  ┌────────────┐    ┌────────────┐    ┌────────────┐    ┌────────────┐   │
 │  │  Extract   │───▶│   Embed    │───▶│   Store    │───▶│  Validate  │   │
 │  │  patterns  │    │  with      │    │  in        │    │  recall    │   │
 │  │  from diff │    │  RuvLLM    │    │  RuVector  │    │  quality   │   │
 │  └────────────┘    └────────────┘    └────────────┘    └────────────┘   │
-│                                                                          │
-│  ON ERROR RESOLUTION:                                                    │
+│                                                                         │
+│  ON ERROR RESOLUTION:                                                   │
 │  ┌────────────┐    ┌────────────┐    ┌────────────┐                     │
 │  │  Capture   │───▶│   Index    │───▶│   Link to  │                     │
 │  │  error +   │    │  in error  │    │   pattern  │                     │
 │  │  resolution│    │  corpus    │    │   store    │                     │
 │  └────────────┘    └────────────┘    └────────────┘                     │
-│                                                                          │
-│  ON FEEDBACK:                                                            │
+│                                                                         │
+│  ON FEEDBACK:                                                           │
 │  ┌────────────┐    ┌────────────┐    ┌────────────┐                     │
 │  │  Process   │───▶│   Apply    │───▶│  Update    │                     │
 │  │  user      │    │   LoRA     │    │  pattern   │                     │
 │  │  feedback  │    │   weights  │    │  rankings  │                     │
 │  └────────────┘    └────────────┘    └────────────┘                     │
-│                                                                          │
-│  PERIODIC (if federated enabled):                                        │
+│                                                                         │
+│  PERIODIC (if federated enabled):                                       │
 │  ┌────────────┐    ┌────────────┐    ┌────────────┐                     │
 │  │  Export    │───▶│  Aggregate │───▶│   Import   │                     │
 │  │  local     │    │  with      │    │  improved  │                     │
 │  │  state     │    │  peers     │    │  model     │                     │
 │  └────────────┘    └────────────┘    └────────────┘                     │
-│                                                                          │
+│                                                                         │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 

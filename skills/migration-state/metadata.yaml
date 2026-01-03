@@ -1,0 +1,86 @@
+skill:
+  name: migration-state
+  version: 1.0.0
+  description: Core state management for idempotent migration operations with YAML-based state tracking
+
+  transformations:
+    - id: initialize-state
+      version: 1.0.0
+      description: Initialize new .migration-state.yaml file for branch-specific migration tracking
+      detection: ".*"  # Always available for new migrations
+
+    - id: read-state
+      version: 1.0.0
+      description: Read and validate existing migration state with corruption detection
+      detection: "\\.migration-state\\.yaml$"
+
+    - id: update-applied
+      version: 1.0.0
+      description: Record completed transformations with commit SHA and timestamp
+      detection: "\\.migration-state\\.yaml$"
+
+    - id: update-validation
+      version: 1.0.0
+      description: Update validation status (compile, test results)
+      detection: "\\.migration-state\\.yaml$"
+
+    - id: atomic-commit
+      version: 1.0.0
+      description: Commit state atomically with code changes to prevent drift
+      detection: "\\.migration-state\\.yaml$"
+
+    - id: check-applied
+      version: 1.0.0
+      description: Check if transformation already applied for idempotency
+      detection: "\\.migration-state\\.yaml$"
+
+    - id: get-skill-version
+      version: 1.0.0
+      description: Retrieve version of previously applied skill for upgrade detection
+      detection: "\\.migration-state\\.yaml$"
+
+  stateSchema:
+    format: YAML
+    location: ".migration-state.yaml"
+    branchSpecific: true
+    requiredFields:
+      - migrationId
+      - branch
+      - startedAt
+      - lastUpdatedAt
+      - marketplaceVersion
+    optionalFields:
+      - targetVersions
+      - appliedTransformations
+      - pendingTransformations
+      - validationStatus
+      - validationDetails
+      - lastError
+
+  dependencies:
+    - tool: yq
+      version: ">=4.0.0"
+      required: false
+      fallback: "python3 with pyyaml"
+    - tool: python3
+      version: ">=3.7"
+      required: true
+      packages:
+        - pyyaml
+    - tool: git
+      version: ">=2.0.0"
+      required: true
+
+  integrations:
+    - skill: github-workflow
+      description: "Branch creation and state initialization"
+    - skill: jackson-migrator
+      description: "Transformation tracking and idempotency"
+    - skill: spring-security-migrator
+      description: "Transformation tracking and idempotency"
+    - skill: spring-ai-migrator
+      description: "Transformation tracking and idempotency"
+    - skill: build-runner
+      description: "Validation status updates"
+    - skill: resume-migration
+      description: "State-based resume operations"

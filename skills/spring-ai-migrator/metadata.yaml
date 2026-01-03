@@ -1,0 +1,41 @@
+skill:
+  name: spring-ai-migrator
+  version: 2.0.0
+  description: Migrate Spring AI 1.x to 2.0.x including TTS API changes, speed parameter type change, chat memory advisor constant renames, and autoconfigure migration for Spring Boot 4 compatibility
+
+  transformations:
+    - id: tts-model-rename
+      version: 1.0.0
+      description: Replace SpeechModel with TextToSpeechModel classes
+      detection: "SpeechModel|SpeechPrompt|SpeechResponse|SpeechMessage"
+
+    - id: speed-parameter
+      version: 1.0.0
+      description: Update speed parameter from Float to Double (remove 'f' suffix)
+      detection: "\.speed\s*\(\s*\d+\.\d+f\s*\)"
+
+    - id: advisor-constants
+      version: 1.0.0
+      description: Update chat memory advisor constant names
+      detection: "CHAT_MEMORY_RETRIEVE_SIZE_KEY|DEFAULT_CHAT_MEMORY_RESPONSE_SIZE|CHAT_MEMORY_CONVERSATION_ID_KEY"
+
+    - id: autoconfigure-provider-selection
+      version: 2.0.0
+      description: Migrate from autoconfigure excludes to spring.ai.model.* provider selection
+      detection: "spring:\s*\n\s*autoconfigure:\s*\n\s*exclude:.*OpenAiAutoConfiguration"
+
+    - id: autoconfigure-class-split
+      version: 2.0.0
+      description: Update monolithic OpenAiAutoConfiguration to split classes
+      detection: "org\.springframework\.ai\.autoconfigure\.openai\.OpenAiAutoConfiguration"
+
+    - id: milestones-repository
+      version: 2.0.0
+      description: Add Spring Milestones repository for Spring AI 2.0.0-M1
+      detection: "spring-ai\.version.*2\.0\.0-M1"
+
+  dependencies:
+    - skill: build-runner
+      minVersion: 1.0.0
+    - skill: migration-state
+      minVersion: 1.0.0

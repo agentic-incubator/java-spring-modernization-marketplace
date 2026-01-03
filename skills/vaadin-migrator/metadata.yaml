@@ -1,0 +1,28 @@
+skill:
+  name: vaadin-migrator
+  version: 1.0.0
+  description: Migrate Vaadin 24 to Vaadin 25 for Spring Boot 4 compatibility including theme changes and security configuration
+
+  transformations:
+    - id: vaadin-theme-material-to-lumo
+      version: 1.0.0
+      description: Replace Material theme with Lumo theme
+      detection: "com\\.vaadin\\.flow\\.theme\\.material\\.Material|@Theme\\(themeClass\\s*=\\s*Material\\.class"
+
+    - id: vaadin-security-configurer
+      version: 1.0.0
+      description: Replace VaadinWebSecurity with VaadinSecurityConfigurer
+      detection: "VaadinWebSecurity|com\\.vaadin\\.flow\\.spring\\.security\\.VaadinWebSecurity"
+
+    - id: vaadin-version-upgrade
+      version: 1.0.0
+      description: Update Vaadin version to 25.x in build files
+      detection: "com\\.vaadin:vaadin-bom:[0-9]+\\.[0-9]+"
+
+  dependencies:
+    - skill: security-config-migrator
+      minVersion: 1.0.0
+    - skill: build-runner
+      minVersion: 1.0.0
+    - skill: migration-state
+      minVersion: 1.0.0

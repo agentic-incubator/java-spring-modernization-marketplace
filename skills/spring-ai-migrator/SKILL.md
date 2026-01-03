@@ -294,3 +294,116 @@ repositories {
 7. **Migrate provider selection** - Replace autoconfigure excludes with `spring.ai.model.*`
 8. **Configure defaults** - Explicitly set temperature and model if needed
 9. **Run tests** - Verify TTS and chat memory functionality
+
+## Idempotent Transformation Logic
+
+This skill implements idempotent transformations that can be safely run multiple times. Each transformation:
+
+1. **Reads migration state** - Loads `.migration-state.yaml` to check applied transformations
+2. **Checks if already applied** - Skips transformations with version >= applied version
+3. **Detects if still needed** - Uses regex patterns to verify transformation is required
+4. **Applies transformation** - Only executes if detection pattern matches
+5. **Updates state** - Records transformation in state file with version and commit SHA
+
+### Transformation Flow
+
+```yaml
+# Example state file entry after spring-ai-migrator runs
+appliedTransformations:
+  - skill: spring-ai-migrator
+    version: 2.0.0
+    transformations:
+      - tts-model-rename
+      - speed-parameter
+      - advisor-constants
+      - autoconfigure-provider-selection
+      - autoconfigure-class-split
+      - milestones-repository
+    completedAt: 2026-01-03T11:30:00Z
+    commitSha: def456abc
+```
+
+### Detection Patterns
+
+Each transformation has a detection pattern in `metadata.yaml`:
+
+| Transformation ID                  | Detection Pattern                                                                                   | Purpose                              |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| `tts-model-rename`                 | `SpeechModel\|SpeechPrompt\|SpeechResponse\|SpeechMessage`                                          | Find old TTS class names             |
+| `speed-parameter`                  | `\.speed\s*\(\s*\d+\.\d+f\s*\)`                                                                     | Find Float speed parameters          |
+| `advisor-constants`                | `CHAT_MEMORY_RETRIEVE_SIZE_KEY\|DEFAULT_CHAT_MEMORY_RESPONSE_SIZE\|CHAT_MEMORY_CONVERSATION_ID_KEY` | Find old advisor constants           |
+| `autoconfigure-provider-selection` | `spring:\s*\n\s*autoconfigure:\s*\n\s*exclude:.*OpenAiAutoConfiguration`                            | Find autoconfigure excludes          |
+| `autoconfigure-class-split`        | `org\.springframework\.ai\.autoconfigure\.openai\.OpenAiAutoConfiguration`                          | Find monolithic autoconfigure class  |
+| `milestones-repository`            | `spring-ai\.version.*2\.0\.0-M1`                                                                    | Detect Spring AI 2.0 milestone usage |
+
+### Skip Logic
+
+Before applying any transformation:
+
+1. Load state from `.migration-state.yaml`
+2. For each transformation in `metadata.yaml`:
+   - Check if `skill: spring-ai-migrator` exists in `appliedTransformations`
+   - If yes, check if transformation ID is in the list
+   - If yes, compare versions: skip if `appliedVersion >= currentVersion`
+   - If no or version is older, run detection pattern
+3. If detection pattern matches, apply transformation
+4. If detection pattern doesn't match, skip (already transformed or not applicable)
+
+### Version Comparison
+
+Transformations are only reapplied if:
+
+- Transformation ID not found in state file, OR
+- Applied version < current version (e.g., 1.0.0 < 2.0.0), OR
+- Detection pattern still matches (manual revert detected)
+
+**Example upgrade scenario:**
+
+```yaml
+# User ran spring-ai-migrator v1.0.0 previously
+appliedTransformations:
+  - skill: spring-ai-migrator
+    version: 1.0.0
+    transformations: [tts-model-rename, speed-parameter, advisor-constants]
+
+# Marketplace upgraded to v2.0.0 with new transformations
+# On resume, these transformations are applied:
+# - autoconfigure-provider-selection (new in 2.0.0)
+# - autoconfigure-class-split (new in 2.0.0)
+# - milestones-repository (new in 2.0.0)
+# Existing transformations are skipped (already at v1.0.0)
+```
+
+### State Updates
+
+After successful transformation:
+
+```yaml
+# Updated .migration-state.yaml
+skill: spring-ai-migrator
+version: 2.0.0
+transformations:
+  [
+    tts-model-rename,
+    speed-parameter,
+    advisor-constants,
+    autoconfigure-provider-selection,
+    autoconfigure-class-split,
+    milestones-repository,
+  ]
+completedAt: 2026-01-03T11:30:00Z
+commitSha: <git-commit-sha>
+```
+
+The state file is committed with the migration changes for audit trail.
+
+## Integration with Migration State Skill
+
+This skill depends on the `migration-state` skill (v1.0.0+) for:
+
+- Reading `.migration-state.yaml`
+- Checking applied transformations
+- Updating state after successful transformation
+- Version comparison logic
+
+See `skills/migration-state/SKILL.md` for state management details.

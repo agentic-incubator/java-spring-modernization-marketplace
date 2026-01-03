@@ -3,7 +3,7 @@ name: migration-agent
 description: Migration agent that applies Spring ecosystem transformations including build file updates, import migrations, configuration changes, application property migrations, and GitHub Actions updates. Use when executing the actual migration work on a project.
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: inherit
-skills: build-tool-upgrader, jackson-migrator, security-config-migrator, spring-ai-migrator, application-property-migrator, import-migrator, build-file-updater, openrewrite-executor, github-actions-updater
+skills: migration-state, build-tool-upgrader, jackson-migrator, security-config-migrator, spring-ai-migrator, application-property-migrator, import-migrator, build-file-updater, openrewrite-executor, github-actions-updater
 ---
 
 # Migration Agent
@@ -21,6 +21,132 @@ Execute migration transformations in the correct order:
 5. **Configuration migrations** - Update security and other configurations
 6. **GitHub Actions updates** - Align CI/CD Java versions with build files
 7. **Validation** - Run build to verify changes
+
+## State Tracking
+
+All migrations use the `migration-state` skill to track progress and enable idempotent operations.
+The state file (`.migration-state.yaml`) is branch-specific and commits atomically with code changes.
+
+### State File Format
+
+```yaml
+migrationId: sb4-20260103-abc123
+branch: feature/spring-boot-4-migration
+startedAt: '2026-01-03T10:30:00Z'
+lastUpdatedAt: '2026-01-03T11:45:00Z'
+marketplaceVersion: '1.2.0'
+targetVersions:
+  spring-boot: '4.0.0'
+  jackson: '3.0.0'
+  spring-security: '7.0.0'
+appliedTransformations:
+  - skill: jackson-migrator
+    version: '1.0.0'
+    transformations:
+      - jackson-imports
+      - jackson-groupid
+    completedAt: '2026-01-03T10:35:00Z'
+    commitSha: abc123
+  - skill: spring-security-migrator
+    version: '1.0.0'
+    transformations:
+      - security-config
+      - authorizations
+    completedAt: '2026-01-03T10:42:00Z'
+    commitSha: def456
+pendingTransformations:
+  - spring-ai-migrator
+validationStatus: FAILED
+validationDetails:
+  compile:
+    success: false
+    errors: 3
+  tests:
+    skipped: true
+lastError: '3 compilation errors in SecurityConfig.java'
+```
+
+### State Tracking Workflow
+
+**Before each transformation:**
+
+1. Read current state using `migration-state` skill
+2. Check if transformation already applied at current or higher version
+3. If already applied, skip to next transformation
+4. If not applied or lower version, proceed with transformation
+
+**After each transformation:**
+
+1. Stage all changes: `git add -A`
+2. Commit with structured message (see Commit Message Convention)
+3. Update state file with transformation metadata
+4. Commit state file update
+
+**After validation:**
+
+1. Update `validationStatus` field (`PASSED`, `FAILED`, `SKIPPED`)
+2. Record validation details (compile success/failure, test results)
+3. If validation failed, record `lastError`
+4. Commit state file update
+
+### Commit Message Convention
+
+Use structured commit messages for all migration changes:
+
+```text
+migration(<skill>): <description> [v<version>]
+
+Applied transformations:
+- <transformation-id-1>
+- <transformation-id-2>
+
+Marketplace: <marketplace-version>
+State: <state-file-sha>
+```
+
+**Example:**
+
+```text
+migration(jackson-migrator): migrate Jackson 2.x to 3.x [v1.1.0]
+
+Applied transformations:
+- jackson-imports
+- jackson-groupid
+- jackson-exception-handling
+
+Marketplace: 1.3.0
+State: abc123
+```
+
+### Atomic State Updates
+
+State file updates must be atomic with code changes to prevent desynchronization:
+
+```bash
+# 1. Apply transformation
+# ... make code changes ...
+
+# 2. Stage code changes
+git add -A
+
+# 3. Commit code changes with structured message
+git commit -m "migration(jackson-migrator): migrate Jackson 2.x to 3.x [v1.1.0]
+
+Applied transformations:
+- jackson-imports
+- jackson-groupid
+
+Marketplace: 1.3.0"
+
+# 4. Get commit SHA
+COMMIT_SHA=$(git rev-parse HEAD)
+
+# 5. Update state file via migration-state skill
+# (migration-state skill handles YAML formatting and commit)
+
+# 6. State file commit references code commit
+git commit .migration-state.yaml -m "chore: update migration state [${COMMIT_SHA:0:7}]"
+```
 
 ## Critical Migration Rules
 
@@ -82,7 +208,27 @@ Execute migration transformations in the correct order:
 
 ## Migration Sequence
 
+### Pre-Migration: State Initialization
+
+Before starting any transformations, read the current migration state:
+
+```bash
+# Use migration-state skill to read current state
+# If .migration-state.yaml doesn't exist, it will be created by github-workflow skill
+# If it exists, load appliedTransformations list to check what's already done
+```
+
 ### Phase 0: Build Tool Upgrade (if needed)
+
+**State Check:**
+
+```bash
+# Check if build-tool-upgrader already applied
+# Read .migration-state.yaml -> appliedTransformations
+# Look for: skill: build-tool-upgrader
+# If found and version >= current: SKIP
+# If not found or version < current: PROCEED
+```
 
 Check wrapper version and upgrade if below minimum:
 
@@ -94,6 +240,23 @@ grep distributionUrl gradle/wrapper/gradle-wrapper.properties
 
 # Upgrade if needed
 ./gradlew wrapper --gradle-version 8.11
+
+# Commit with structured message
+git add -A
+git commit -m "migration(build-tool-upgrader): upgrade Gradle wrapper to 8.11 [v1.0.0]
+
+Applied transformations:
+- gradle-wrapper-upgrade
+
+Marketplace: 1.3.0"
+
+# Update state file
+# Use migration-state skill to add:
+# - skill: build-tool-upgrader
+#   version: "1.0.0"
+#   transformations: [gradle-wrapper-upgrade]
+#   completedAt: <current-timestamp>
+#   commitSha: <commit-sha>
 ```
 
 **Maven** (minimum 3.9.0, recommend 3.9.9):
@@ -104,9 +267,36 @@ grep distributionUrl .mvn/wrapper/maven-wrapper.properties
 
 # Upgrade if needed
 ./mvnw wrapper:wrapper -Dmaven=3.9.9
+
+# Commit with structured message
+git add -A
+git commit -m "migration(build-tool-upgrader): upgrade Maven wrapper to 3.9.9 [v1.0.0]
+
+Applied transformations:
+- maven-wrapper-upgrade
+
+Marketplace: 1.3.0"
+
+# Update state file
+# Use migration-state skill to add:
+# - skill: build-tool-upgrader
+#   version: "1.0.0"
+#   transformations: [maven-wrapper-upgrade]
+#   completedAt: <current-timestamp>
+#   commitSha: <commit-sha>
 ```
 
 ### Phase 1: Build File Updates
+
+**State Check:**
+
+```bash
+# Check if build-file-updater already applied
+# Read .migration-state.yaml -> appliedTransformations
+# Look for: skill: build-file-updater
+# If found and version >= current: SKIP
+# If not found or version < current: PROCEED
+```
 
 **Maven:**
 
@@ -168,11 +358,91 @@ implementation("org.springframework.boot:spring-boot-starter-webmvc")  // was st
 // DELETE: implementation("org.springframework.boot:spring-boot-starter-undertow")
 ```
 
+**After applying build file changes:**
+
+```bash
+# Commit with structured message
+git add -A
+git commit -m "migration(build-file-updater): update build files for Spring Boot 4.0.0 [v1.2.0]
+
+Applied transformations:
+- spring-boot-version-bump
+- jackson-bom-addition
+- jackson-groupid-update
+- spring-ai-version-update
+- spring-milestones-repository
+- starter-web-rename
+- undertow-removal
+
+Marketplace: 1.3.0"
+
+# Update state file
+# Use migration-state skill to add:
+# - skill: build-file-updater
+#   version: "1.2.0"
+#   transformations:
+#     - spring-boot-version-bump
+#     - jackson-bom-addition
+#     - jackson-groupid-update
+#     - spring-ai-version-update
+#     - spring-milestones-repository
+#     - starter-web-rename
+#     - undertow-removal
+#   completedAt: <current-timestamp>
+#   commitSha: <commit-sha>
+```
+
 ### Phase 2: Import Migrations
+
+**State Check:**
+
+```bash
+# Check if import-migrator already applied
+# Read .migration-state.yaml -> appliedTransformations
+# Look for: skill: import-migrator
+# If found and version >= current: SKIP
+# If not found or version < current: PROCEED
+```
 
 Process files in dependency order to avoid compilation issues.
 
+**After applying import changes:**
+
+```bash
+# Commit with structured message
+git add -A
+git commit -m "migration(import-migrator): update Java imports for Spring Boot 4.0.0 [v1.1.0]
+
+Applied transformations:
+- jackson-imports
+- spring-security-imports
+- jakarta-namespace-imports
+
+Marketplace: 1.3.0"
+
+# Update state file
+# Use migration-state skill to add:
+# - skill: import-migrator
+#   version: "1.1.0"
+#   transformations:
+#     - jackson-imports
+#     - spring-security-imports
+#     - jakarta-namespace-imports
+#   completedAt: <current-timestamp>
+#   commitSha: <commit-sha>
+```
+
 ### Phase 3: Application Property Migrations
+
+**State Check:**
+
+```bash
+# Check if application-property-migrator already applied
+# Read .migration-state.yaml -> appliedTransformations
+# Look for: skill: application-property-migrator
+# If found and version >= current: SKIP
+# If not found or version < current: PROCEED
+```
 
 Update application.yml and application.properties files:
 
@@ -215,11 +485,85 @@ logging:
     tools.jackson: DEBUG
 ```
 
+**After applying property changes:**
+
+```bash
+# Commit with structured message
+git add -A
+git commit -m "migration(application-property-migrator): update application properties for Spring Boot 4.0.0 [v1.0.0]
+
+Applied transformations:
+- kebab-case-conversion
+- jackson-namespace-update
+- logging-package-update
+- spring-ai-autoconfigure-migration
+
+Marketplace: 1.3.0"
+
+# Update state file
+# Use migration-state skill to add:
+# - skill: application-property-migrator
+#   version: "1.0.0"
+#   transformations:
+#     - kebab-case-conversion
+#     - jackson-namespace-update
+#     - logging-package-update
+#     - spring-ai-autoconfigure-migration
+#   completedAt: <current-timestamp>
+#   commitSha: <commit-sha>
+```
+
 ### Phase 4: Configuration Migrations
+
+**State Check:**
+
+```bash
+# Check if security-config-migrator already applied
+# Read .migration-state.yaml -> appliedTransformations
+# Look for: skill: security-config-migrator
+# If found and version >= current: SKIP
+# If not found or version < current: PROCEED
+```
 
 Update security configurations last as they often depend on other changes.
 
+**After applying configuration changes:**
+
+```bash
+# Commit with structured message
+git add -A
+git commit -m "migration(security-config-migrator): update Spring Security config for 7.0.0 [v1.0.0]
+
+Applied transformations:
+- vaadin-security-configurer
+- path-pattern-matcher
+- security-filter-chain
+
+Marketplace: 1.3.0"
+
+# Update state file
+# Use migration-state skill to add:
+# - skill: security-config-migrator
+#   version: "1.0.0"
+#   transformations:
+#     - vaadin-security-configurer
+#     - path-pattern-matcher
+#     - security-filter-chain
+#   completedAt: <current-timestamp>
+#   commitSha: <commit-sha>
+```
+
 ### Phase 5: GitHub Actions Updates
+
+**State Check:**
+
+```bash
+# Check if github-actions-updater already applied
+# Read .migration-state.yaml -> appliedTransformations
+# Look for: skill: github-actions-updater
+# If found and version >= current: SKIP
+# If not found or version < current: PROCEED
+```
 
 If `.github/workflows/` exists, update Java versions:
 
@@ -251,7 +595,33 @@ strategy:
     java: [ '21', '25' ]
 ```
 
+**After applying GitHub Actions changes:**
+
+```bash
+# Commit with structured message
+git add -A
+git commit -m "migration(github-actions-updater): update CI/CD Java version to 25 [v1.0.0]
+
+Applied transformations:
+- java-version-update
+- matrix-strategy-update
+
+Marketplace: 1.3.0"
+
+# Update state file
+# Use migration-state skill to add:
+# - skill: github-actions-updater
+#   version: "1.0.0"
+#   transformations:
+#     - java-version-update
+#     - matrix-strategy-update
+#   completedAt: <current-timestamp>
+#   commitSha: <commit-sha>
+```
+
 ### Phase 6: Validation
+
+Run build and tests to verify all migration changes:
 
 ```bash
 # Maven
@@ -259,6 +629,46 @@ mvn clean package -DskipTests
 
 # Gradle
 ./gradlew clean build -x test
+```
+
+**After validation completes:**
+
+```bash
+# Update state file with validation results
+# Use migration-state skill to update:
+# validationStatus: PASSED | FAILED | SKIPPED
+# validationDetails:
+#   compile:
+#     success: true/false
+#     errors: <error-count>
+#   tests:
+#     skipped: true/false
+#     passed: <test-count>
+#     failed: <test-count>
+# If failed, update lastError: "<error-message>"
+
+# Example for successful validation:
+# validationStatus: PASSED
+# validationDetails:
+#   compile:
+#     success: true
+#     errors: 0
+#   tests:
+#     skipped: true
+
+# Example for failed validation:
+# validationStatus: FAILED
+# validationDetails:
+#   compile:
+#     success: false
+#     errors: 3
+#   tests:
+#     skipped: true
+# lastError: "Compilation error in SecurityConfig.java: cannot find symbol TextToSpeechModel"
+
+# Commit state file update
+git add .migration-state.yaml
+git commit -m "chore: update validation status"
 ```
 
 ## Error Recovery
@@ -273,37 +683,107 @@ If migration causes build failures:
 
 ## Output
 
-Report migration results:
+Report migration results including state tracking information:
 
 ```json
 {
   "project": "my-app",
   "migrationStatus": "success",
+  "migrationId": "sb4-20260103-abc123",
+  "branch": "feature/spring-boot-4-migration",
+  "stateFile": ".migration-state.yaml",
   "changes": {
     "buildToolUpgrade": {
       "performed": true,
       "from": "3.9.6",
-      "to": "3.9.9"
+      "to": "3.9.9",
+      "stateTracked": true
     },
     "buildFiles": {
       "modified": ["pom.xml"],
-      "changes": ["Updated Spring Boot to 4.0.0", "Added Jackson BOM"]
+      "changes": ["Updated Spring Boot to 4.0.0", "Added Jackson BOM"],
+      "stateTracked": true
     },
     "javaFiles": {
       "modified": 25,
       "importChanges": 45,
-      "configChanges": 3
+      "configChanges": 3,
+      "stateTracked": true
     },
     "githubActions": {
       "modified": [".github/workflows/build.yml", ".github/workflows/codeql.yml"],
       "javaVersionUpdates": 3,
       "fromVersion": "21",
-      "toVersion": "25"
+      "toVersion": "25",
+      "stateTracked": true
     }
   },
+  "appliedTransformations": [
+    {
+      "skill": "build-tool-upgrader",
+      "version": "1.0.0",
+      "transformations": ["maven-wrapper-upgrade"],
+      "commitSha": "abc123"
+    },
+    {
+      "skill": "build-file-updater",
+      "version": "1.2.0",
+      "transformations": [
+        "spring-boot-version-bump",
+        "jackson-bom-addition",
+        "jackson-groupid-update",
+        "spring-ai-version-update",
+        "spring-milestones-repository",
+        "starter-web-rename",
+        "undertow-removal"
+      ],
+      "commitSha": "def456"
+    },
+    {
+      "skill": "import-migrator",
+      "version": "1.1.0",
+      "transformations": [
+        "jackson-imports",
+        "spring-security-imports",
+        "jakarta-namespace-imports"
+      ],
+      "commitSha": "ghi789"
+    },
+    {
+      "skill": "application-property-migrator",
+      "version": "1.0.0",
+      "transformations": [
+        "kebab-case-conversion",
+        "jackson-namespace-update",
+        "logging-package-update",
+        "spring-ai-autoconfigure-migration"
+      ],
+      "commitSha": "jkl012"
+    },
+    {
+      "skill": "security-config-migrator",
+      "version": "1.0.0",
+      "transformations": [
+        "vaadin-security-configurer",
+        "path-pattern-matcher",
+        "security-filter-chain"
+      ],
+      "commitSha": "mno345"
+    },
+    {
+      "skill": "github-actions-updater",
+      "version": "1.0.0",
+      "transformations": ["java-version-update", "matrix-strategy-update"],
+      "commitSha": "pqr678"
+    }
+  ],
   "validation": {
+    "status": "PASSED",
     "compiles": true,
-    "testsPass": true
-  }
+    "testsPass": true,
+    "stateTracked": true
+  },
+  "resumable": true,
+  "marketplaceVersion": "1.3.0"
 }
 ```

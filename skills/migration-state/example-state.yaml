@@ -1,0 +1,108 @@
+# Example .migration-state.yaml file
+# This file demonstrates a complete migration state after several transformations
+
+migrationId: "sb4-20260103-abc12345"
+branch: "feature/spring-boot-4-migration"
+startedAt: "2026-01-03T10:30:00Z"
+lastUpdatedAt: "2026-01-03T14:25:00Z"
+marketplaceVersion: "1.3.0"
+
+# Target versions for this migration
+targetVersions:
+  spring-boot: "4.0.0"
+  jackson: "3.0.0"
+  spring-security: "7.0.0"
+  spring-cloud: "2025.1.0"
+  spring-ai: "1.1.0"
+  java: "21"
+
+# Transformations that have been successfully applied
+appliedTransformations:
+  # First transformation: Jackson migration
+  - skill: jackson-migrator
+    version: "1.1.0"
+    transformations:
+      - jackson-imports
+      - jackson-groupid
+      - jackson-exceptions
+    completedAt: "2026-01-03T10:35:00Z"
+    commitSha: "abc123def456789"
+
+  # Second transformation: Spring Security migration
+  - skill: spring-security-migrator
+    version: "1.0.0"
+    transformations:
+      - security-config
+      - authorizations
+      - csrf-config
+      - session-management
+    completedAt: "2026-01-03T10:42:00Z"
+    commitSha: "def456abc789012"
+
+  # Third transformation: Build file updates
+  - skill: build-file-updater
+    version: "1.0.0"
+    transformations:
+      - spring-boot-parent-version
+      - spring-cloud-bom
+      - jackson-bom
+    completedAt: "2026-01-03T10:50:00Z"
+    commitSha: "789012abc456def"
+
+  # Fourth transformation: Spring AI migration
+  - skill: spring-ai-migrator
+    version: "1.1.0"
+    transformations:
+      - tts-model-rename
+      - speed-parameter-type
+      - advisor-constants
+    completedAt: "2026-01-03T11:15:00Z"
+    commitSha: "012abc456def789"
+
+  # Fifth transformation: Application properties
+  - skill: application-property-migrator
+    version: "1.0.0"
+    transformations:
+      - spring-security-properties
+      - actuator-properties
+      - logging-properties
+    completedAt: "2026-01-03T11:30:00Z"
+    commitSha: "456def789012abc"
+
+# Transformations still pending
+pendingTransformations:
+  - vaadin-migrator  # Detected Vaadin usage, not yet migrated
+  - openrewrite-executor  # Final cleanup pass
+
+# Validation status
+validationStatus: "PASSED"
+
+# Detailed validation results
+validationDetails:
+  compile:
+    success: true
+    errors: 0
+    warnings: 5
+    warningSummary: "5 deprecation warnings in UserService.java"
+
+  tests:
+    skipped: false
+    passed: 150
+    failed: 0
+    duration: "45s"
+    coverage: 87.5
+
+# No errors in last run
+lastError: null
+
+# Additional metadata (optional)
+metadata:
+  javaVersion: "21.0.1"
+  buildTool: "maven"
+  buildToolVersion: "3.9.6"
+  originalSpringBootVersion: "3.2.1"
+  migrationAttempts: 2
+  previousFailures:
+    - timestamp: "2026-01-02T15:20:00Z"
+      reason: "Compilation failed due to Jackson imports"
+      marketplaceVersion: "1.2.0"
