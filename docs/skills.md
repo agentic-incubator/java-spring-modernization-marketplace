@@ -81,6 +81,62 @@ Catalogs migration-relevant dependencies.
 - Plugin dependencies
 - Repository requirements (Spring Milestones for -M1, -RC releases)
 
+### dependency-updater
+
+Upgrades all dependencies and plugins to their latest stable/milestone compatible versions. Supports Maven and Gradle with configurable filtering.
+
+**Detects:**
+
+- Outdated dependencies (direct, managed, transitive)
+- Outdated plugins (Maven, Gradle)
+- Property-based version declarations
+- Gradle version catalogs (`libs.versions.toml`)
+
+**Capabilities:**
+
+- **Report mode**: Display available updates without changes
+- **Update mode**: Apply updates with validation
+- **Three filter strategies**:
+  - `stable-only` (default): Excludes alpha, beta, RC, milestone, snapshot
+  - `include-milestones`: Excludes alpha, beta, snapshot; includes RC and milestones
+  - `aggressive`: Excludes snapshots only
+- Handles Spring Boot BOM-managed dependencies (skips with INFO log)
+- Auto-adds Spring Milestones repository for milestone versions
+- Creates automatic backups for rollback (`pom.xml.versionsBackup`, `build.gradle.backup`)
+- Validates builds and tests after updates
+- Integrates with migration-state for idempotency
+
+**Maven Tools:**
+
+- `mvn versions:display-dependency-updates` (report)
+- `mvn versions:use-latest-releases` (update dependencies)
+- `mvn versions:update-plugins` (update plugins)
+- `mvn versions:update-properties` (update property-based versions)
+- `mvn versions:revert` (rollback)
+
+**Gradle Tools:**
+
+- `ben-manes/gradle-versions-plugin` (report via `dependencyUpdates` task)
+- `patrikerdes/use-latest-versions-plugin` (apply updates via `useLatestVersions` task)
+
+**Example:**
+
+```bash
+# Report mode shows available updates
+guava: 32.1.0 → 33.0.0
+maven-compiler-plugin: 3.11.0 → 3.13.0
+spring-security-core: (managed by Spring Boot BOM - skipped)
+
+# Update mode applies updates with validation
+15 dependencies updated
+Compilation: ✅ PASSED
+Tests: ✅ PASSED (150 passed, 0 failed)
+```
+
+**Used by:** discovery-agent (project analysis phase)
+
+**Depends on:** build-tool-detector, build-runner, migration-state
+
 ### pattern-detector
 
 Finds code patterns requiring migration.
@@ -454,7 +510,7 @@ Creates pull requests with migration summaries.
 
 | Category         | Skills                                                                                                                                                                              |
 | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Discovery        | build-tool-detector, build-tool-upgrader, version-detector, dependency-scanner, pattern-detector, github-actions-detector, deployment-java-detector                                 |
+| Discovery        | build-tool-detector, build-tool-upgrader, version-detector, dependency-scanner, dependency-updater, pattern-detector, github-actions-detector, deployment-java-detector             |
 | Recipe Discovery | recipe-discovery                                                                                                                                                                    |
 | Migration        | jackson-migrator, security-config-migrator, spring-ai-migrator, application-property-migrator, import-migrator, build-file-updater, github-actions-updater, deployment-java-updater |
 | Execution        | build-runner, openrewrite-executor                                                                                                                                                  |

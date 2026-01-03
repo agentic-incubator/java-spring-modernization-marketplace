@@ -482,12 +482,24 @@ When updating Java versions, keep the distribution unchanged:
 
 When migrating a project with multiple changes, follow this order:
 
-1. **Build files first** - Add BOMs, update versions
-2. **Imports second** - Update package names
-3. **Configurations third** - Security, themes, etc.
-4. **Validate last** - Build and test
+1. **Dependency analysis** - Check current versions and available updates
+   - Run version-detector to identify current framework versions
+   - Run dependency-scanner to catalog migration-relevant dependencies
+   - Run dependency-updater (optional) to check for available updates
+2. **Pre-migration dependency updates (optional)** - Update non-breaking dependencies
+   - Apply stable dependency updates to create a clean baseline
+   - Validate builds between updates
+   - Helps isolate migration issues from dependency update issues
+3. **Build files** - Add BOMs, update versions, add repositories
+4. **Imports** - Update package names (Jackson, Spring Security, etc.)
+5. **Configurations** - Security configs, theme configs, property migrations
+6. **Validate** - Build and test
 
 This order prevents compilation errors during migration.
+
+**Note**: Dependency updates can be done before migration (to establish a stable baseline) or after
+migration (once breaking changes are resolved). For Spring Boot 4 migration, you may need
+`include-milestones` filter strategy to get milestone dependencies.
 
 ## OpenRewrite Recipes
 

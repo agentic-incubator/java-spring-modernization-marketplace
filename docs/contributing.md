@@ -233,6 +233,40 @@ pnpm run fix
 - Link to any related issues
 - Test results or examples
 
+## Recent Contributions
+
+### dependency-updater (v1.0.0) - January 2026
+
+A Discovery skill that upgrades dependencies and plugins to their latest stable/milestone compatible versions.
+
+**Pattern:** Discovery skill that integrates with the migration workflow
+
+**Key Features:**
+
+- Two modes: report (display updates) and update (apply with validation)
+- Three filter strategies: stable-only, include-milestones, aggressive
+- Supports Maven (versions-maven-plugin) and Gradle (gradle-versions-plugin)
+- Handles BOM-managed dependencies, version catalogs, property-based versions
+- Integrates with migration-state for idempotency
+
+**Integration Points:**
+
+- Uses: build-tool-detector, build-runner, migration-state
+- Used by: discovery-agent, parallel-orchestrator
+
+**Files:**
+
+- `/skills/dependency-updater/SKILL.md` - Complete documentation
+- `/skills/dependency-updater/metadata.yaml` - Version tracking and transformations
+
+This contribution demonstrates:
+
+- How to create a comprehensive discovery skill
+- Integration with existing build tool detection
+- Idempotent transformation patterns
+- Maven and Gradle dual support
+- Migration state tracking
+
 ## Ideas for Contributions
 
 ### New Migration Skills

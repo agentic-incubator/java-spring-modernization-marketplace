@@ -18,7 +18,7 @@ learning system that improves with each migration.
 The Spring Modernization Marketplace provides:
 
 - **9 specialized agents** for orchestrating migrations
-- **19 skills** for discovery, migration, and validation tasks
+- **28 reusable skills** for discovery, migration, and validation tasks
 - **10 slash commands** for user interaction
 - Static pattern detection and recipe-based transformations
 

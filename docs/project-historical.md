@@ -8,8 +8,8 @@ transparency into AI-assisted development.
 
 The Spring Modernization Marketplace was built over 2 days (December 10-11, 2025) through 7 Claude
 Code sessions, resulting in 14 git commits. The project demonstrates how conversational AI
-development can rapidly produce a complete plugin marketplace with 9 commands, 9 agents,
-and 18+ skills.
+development can rapidly produce a complete plugin marketplace with 10 commands, 9 agents,
+and 28 reusable skills (as of January 2026).
 
 **Purpose:** Help users understand what prompts and interactions led to the modernization intelligence in this repository.
 

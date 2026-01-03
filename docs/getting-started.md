@@ -161,6 +161,35 @@ Runs the full build with tests to ensure everything works.
 /openrewrite spring-boot-4 /path/to/project
 ```
 
+### Check for Dependency Updates
+
+Before or during migration, check for available dependency updates:
+
+```text
+# Ask Claude to check for updates
+"Check for available dependency updates in this project"
+
+# Review the report
+Available Updates:
+- Dependencies: 15 updates
+- Plugins: 3 updates
+- BOM-managed (skipped): 8
+
+# Apply stable updates with validation
+"Apply stable dependency updates and validate the build"
+
+# Result
+✅ 15 dependencies updated
+✅ Compilation: PASSED
+✅ Tests: PASSED (150 passed, 0 failed)
+```
+
+**Note**: The dependency-updater skill supports three filter strategies:
+
+- `stable-only` (default): Only stable releases
+- `include-milestones`: Includes RC and milestone versions (for Spring Boot 4 early adoption)
+- `aggressive`: All versions except snapshots
+
 ## Next Steps
 
 - [Commands Reference](commands.md) - All available slash commands

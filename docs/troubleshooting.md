@@ -204,6 +204,191 @@ rm -rf ~/.gradle/caches
 ./mvnw test -Dtest=FailingTestClass -X
 ```
 
+## Dependency Update Errors
+
+### Compilation Fails After Dependency Update
+
+**Error:**
+
+```text
+[ERROR] package tools.jackson.databind does not exist
+```
+
+**Cause:** Dependency update introduced breaking API changes (e.g., Jackson 2→3).
+
+**Solution:**
+
+1. **Rollback first:**
+
+   ```bash
+   # Maven
+   mvn versions:revert
+
+   # Gradle
+   cp build.gradle.backup build.gradle
+   git checkout build.gradle
+   ```
+
+2. **Run migration skill first:**
+
+   ```bash
+   /fix-jackson /path/to/project
+   ```
+
+3. **Then retry dependency update:**
+
+   ```text
+   "Apply stable dependency updates"
+   ```
+
+### Tests Fail After Dependency Update
+
+**Error:** Tests fail but compilation succeeds.
+
+**Cause:** Behavioral changes in updated dependencies.
+
+**Solution:**
+
+1. **Review failing tests:**
+
+   ```bash
+   # Maven
+   mvn test
+
+   # Gradle
+   ./gradlew test
+   ```
+
+2. **Options:**
+   - Update test expectations if changes are intentional
+   - Rollback and update incrementally (one dependency at a time)
+   - Check dependency changelogs for breaking changes
+
+3. **Incremental update approach:**
+
+   ```text
+   "Update only Jackson dependencies and validate"
+   "Update only Spring Security dependencies and validate"
+   ```
+
+### Version Conflicts
+
+**Error:**
+
+```text
+[ERROR] Conflict between dependency versions
+[ERROR] Dependency convergence error for com.google.guava:guava
+```
+
+**Cause:** Transitive dependency version mismatches after update.
+
+**Solution:**
+
+1. **Analyze dependency tree:**
+
+   ```bash
+   # Maven
+   mvn dependency:tree
+   mvn dependency:tree -Dverbose
+
+   # Gradle
+   ./gradlew dependencies
+   ./gradlew dependencies --configuration compileClasspath
+   ```
+
+2. **Add explicit dependency management (Maven):**
+
+   ```xml
+   <dependencyManagement>
+       <dependencies>
+           <dependency>
+               <groupId>com.google.guava</groupId>
+               <artifactId>guava</artifactId>
+               <version>33.0.0</version>
+           </dependency>
+       </dependencies>
+   </dependencyManagement>
+   ```
+
+3. **Use Spring Boot BOM to align versions:**
+   - Let Spring Boot manage compatible versions
+   - Avoid overriding BOM-managed dependencies
+
+### BOM-Managed Dependency Not Updated
+
+**Issue:** Dependency wasn't updated even though newer version exists.
+
+**Cause:** Version is managed by Spring Boot BOM (spring-boot-starter-parent).
+
+**Solution:**
+
+This is expected behavior. BOM-managed dependencies are skipped with INFO log:
+
+```text
+ℹ️  org.springframework.security:spring-security-core
+   Current: (managed by spring-boot-starter-parent:4.0.0)
+   Action: Update Spring Boot parent version instead
+```
+
+To update BOM-managed dependencies:
+
+```bash
+# Maven
+mvn versions:update-parent
+
+# Or manually update parent version in pom.xml
+<parent>
+    <version>4.0.1</version>  <!-- Updated -->
+</parent>
+```
+
+### Maven Versions Plugin Backup Files
+
+**Issue:** `pom.xml.versionsBackup` files left behind.
+
+**Solution:**
+
+```bash
+# Commit changes (deletes backups)
+mvn versions:commit
+
+# Or manually clean up
+rm pom.xml.versionsBackup
+```
+
+### Milestone Repository Not Added
+
+**Error:**
+
+```text
+[ERROR] Failed to resolve org.springframework.ai:spring-ai-openai:2.0.0-M1
+```
+
+**Cause:** Milestone version requires Spring Milestones repository.
+
+**Solution:**
+
+The dependency-updater should auto-add this, but if not:
+
+**Maven:**
+
+```xml
+<repositories>
+    <repository>
+        <id>spring-milestones</id>
+        <url>https://repo.spring.io/milestone</url>
+    </repository>
+</repositories>
+```
+
+**Gradle:**
+
+```kotlin
+repositories {
+    maven { url = uri("https://repo.spring.io/milestone") }
+}
+```
+
 ## GitHub Workflow Errors
 
 ### `gh: command not found`

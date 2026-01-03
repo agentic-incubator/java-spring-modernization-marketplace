@@ -1,0 +1,91 @@
+skill:
+  name: dependency-updater
+  version: 1.0.0
+  description: Upgrade all dependencies and plugins to latest stable/milestone compatible versions
+
+  transformations:
+    - id: dependency-updates
+      version: 1.0.0
+      description: Update regular dependencies to latest compatible versions
+      detection: "<dependency>|implementation\\(|api\\("
+
+    - id: plugin-updates
+      version: 1.0.0
+      description: Update build plugins to latest versions
+      detection: "<plugin>|id\\(.*\\) version"
+
+    - id: property-updates
+      version: 1.0.0
+      description: Update Maven properties or Gradle version catalog
+      detection: "<properties>|\\[versions\\]"
+
+    - id: milestone-repo-addition
+      version: 1.0.0
+      description: Add Spring Milestones repository when milestone versions detected
+      detection: "-M\\d+|-RC\\d+"
+
+  filterStrategies:
+    - id: stable-only
+      description: Stable releases only (exclude alpha, beta, RC, milestone, snapshot)
+      mavenIgnorePattern: '(?i).*-(alpha|beta|m|rc)([-.]?\d+)?|.*SNAPSHOT'
+      default: true
+
+    - id: include-milestones
+      description: Include milestones and RC (exclude alpha, beta, snapshot)
+      mavenIgnorePattern: '(?i).*-(alpha|beta)([-.]?\d+)?|.*SNAPSHOT'
+      default: false
+
+    - id: aggressive
+      description: Include all except snapshots
+      mavenIgnorePattern: '.*SNAPSHOT'
+      default: false
+
+  buildToolSupport:
+    maven:
+      plugin: org.codehaus.mojo:versions-maven-plugin:2.16.2
+      commands:
+        report: "mvn versions:display-dependency-updates versions:display-plugin-updates versions:display-property-updates"
+        updateDeps: "mvn versions:use-latest-releases -DallowMajorUpdates=false -DprocessDependencies=true -DprocessPlugins=false"
+        updatePlugins: "mvn versions:update-plugins -DallowMajorUpdates=false"
+        updateProperties: "mvn versions:update-properties -DallowMajorUpdates=false"
+        revert: "mvn versions:revert"
+        commit: "mvn versions:commit"
+
+    gradle:
+      plugins:
+        - com.github.ben-manes.versions:0.51.0
+        - se.patrikerdes.use-latest-versions:0.2.18
+      commands:
+        report: "./gradlew dependencyUpdates --no-parallel --refresh-dependencies"
+        update: "./gradlew useLatestVersions --no-parallel"
+
+  dependencies:
+    - skill: build-tool-detector
+      minVersion: 1.0.0
+      description: "Detect Maven vs Gradle"
+
+    - skill: build-runner
+      minVersion: 1.0.0
+      description: "Validate builds after updates"
+
+    - skill: migration-state
+      minVersion: 1.0.0
+      description: "Track idempotent operations"
+
+  integrations:
+    - skill: build-file-updater
+      description: "Update build files for specific migrations"
+
+    - skill: dependency-scanner
+      description: "Identify dependencies requiring migration"
+
+    - skill: version-detector
+      description: "Identify current framework versions"
+
+  validation:
+    required:
+      - compileWithoutTests
+      - fullTestSuite
+    optional:
+      - deprecationCheck
+      - dependencyTree

@@ -106,6 +106,7 @@ Analyzes project structure and dependencies.
 - `build-tool-upgrader`
 - `version-detector`
 - `dependency-scanner`
+- `dependency-updater`
 - `pattern-detector`
 - `github-actions-detector`
 
@@ -213,7 +214,7 @@ Agents delegate to skills for specific tasks:
 
 | Agent                 | Skills                                                                                                                                                                                                |
 | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| discovery-agent       | build-tool-detector, build-tool-upgrader, version-detector, dependency-scanner, pattern-detector, github-actions-detector                                                                             |
+| discovery-agent       | build-tool-detector, build-tool-upgrader, version-detector, dependency-scanner, dependency-updater, pattern-detector, github-actions-detector                                                         |
 | migration-agent       | build-tool-upgrader, jackson-migrator, security-config-migrator, spring-ai-migrator, application-property-migrator, import-migrator, build-file-updater, openrewrite-executor, github-actions-updater |
 | validation-agent      | build-runner                                                                                                                                                                                          |
-| parallel-orchestrator | github-workflow, pr-submitter, build-tool-detector, version-detector, dependency-scanner                                                                                                              |
+| parallel-orchestrator | github-workflow, pr-submitter, build-tool-detector, version-detector, dependency-scanner, dependency-updater                                                                                          |
