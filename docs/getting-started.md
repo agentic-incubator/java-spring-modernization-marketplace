@@ -22,6 +22,21 @@ claude plugin marketplace add agentic-incubator/java-spring-modernization-market
 claude plugin install spring-m11n
 ```
 
+> **📍 Where do plugins get installed?**
+>
+> Plugins are installed at the **user level** in a Claude Code managed cache, not in your project directory.
+> The plugin configuration (which plugins to use) is stored in `.claude/settings.json` files that can be
+> committed to git for team sharing.
+>
+> - **Plugin files**: User-level cache (managed by Claude Code)
+> - **Configuration**: `.claude/settings.json` (project level, git-committed)
+> - **Personal overrides**: `.claude/settings.local.json` (gitignored)
+>
+> When team members clone your repo, they'll be prompted to install the marketplace and plugins locally.
+> The actual plugin files stay in their user cache, while your team shares the configuration via git.
+>
+> _Source: [Claude Code Plugin Documentation](https://docs.anthropic.com/claude/docs/claude-code)_
+
 ### Verify Installation
 
 ```bash
