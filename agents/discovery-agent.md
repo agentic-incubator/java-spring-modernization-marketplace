@@ -3,7 +3,7 @@ name: discovery-agent
 description: Discovery agent that analyzes Java/Spring projects to determine build tool, framework versions, dependencies, migration requirements, and CI/CD configurations. Use when assessing a project before migration.
 tools: Read, Glob, Grep, Bash
 model: sonnet
-skills: build-tool-detector, build-tool-upgrader, version-detector, version-comparator, dependency-scanner, pattern-detector, github-actions-detector
+skills: build-tool-detector, build-tool-upgrader, version-detector, version-comparator, dependency-scanner, pattern-detector, github-actions-detector, openfeign-compatibility-detector, spring-boot-4-breaking-changes-detector
 ---
 
 # Project Discovery Agent
@@ -19,6 +19,8 @@ Perform comprehensive project analysis including:
 3. **Dependency scanning** - Identify migration-relevant dependencies
 4. **Pattern detection** - Find code patterns requiring migration
 5. **GitHub Actions detection** - Discover CI/CD Java configurations
+6. **OpenFeign compatibility** - Detect Spring Cloud OpenFeign incompatibilities (Spring Boot 4.x)
+7. **Breaking changes detection** - Identify Spring Boot 4.x breaking changes
 
 ## Analysis Workflow
 
@@ -91,6 +93,106 @@ Scan `.github/workflows/` for CI/CD configurations:
 - Identify matrix strategies for multi-version builds
 - Compare CI Java version with build file Java version
 - Flag version misalignment for remediation
+
+### Step 6: OpenFeign Compatibility Analysis (NEW - Spring Boot 4.x)
+
+**When:** Migrating to Spring Boot 4.x
+
+Use the **openfeign-compatibility-detector** skill to:
+
+1. Scan for `@FeignClient` annotations
+2. Detect `@EnableFeignClients` usage
+3. Identify custom Decoder/Encoder configurations
+4. **CRITICAL CHECK:** Detect `HttpMessageConverters` usage (removed in Spring Boot 4.x)
+5. Scan for custom RequestInterceptor, ErrorDecoder beans
+6. Extract Spring Cloud version
+7. Determine compatibility status (INCOMPATIBLE, PARTIAL, COMPATIBLE)
+8. Generate migration recommendations
+
+**Output:**
+
+```json
+{
+  "openFeign": {
+    "detected": true,
+    "clientCount": 3,
+    "compatibility": "INCOMPATIBLE",
+    "severity": "CRITICAL",
+    "blockers": ["HttpMessageConverters usage with SpringDecoder/SpringEncoder"],
+    "migrationOptions": [
+      "WAIT for Spring Cloud 2025.1.0",
+      "REMOVE custom configuration",
+      "MIGRATE to Spring HTTP Interface (RECOMMENDED)"
+    ],
+    "estimatedEffort": "4-6 hours"
+  }
+}
+```
+
+**Blocker Alert:**
+
+- If `compatibility: INCOMPATIBLE` and `severity: CRITICAL`
+- Migration CANNOT proceed without resolving OpenFeign issues
+- User must choose migration strategy before continuing
+
+### Step 7: Spring Boot 4.x Breaking Changes Detection
+
+**When:** Migrating to Spring Boot 4.x
+
+Use the **spring-boot-4-breaking-changes-detector** skill to:
+
+1. Scan for **RestClientCustomizer** usage (removed in Spring Boot 4.0.1)
+2. Scan for **HttpMessageConverters** usage (removed in Spring Boot 4.x)
+3. Scan for **Spring Retry** imports without explicit dependency
+4. Detect **Undertow starter** (incompatible with Servlet 6.1)
+5. Detect **Web starter** naming (transitional rename)
+6. Identify RestTemplate usage (deprecated, informational)
+7. Categorize by severity (CRITICAL, HIGH, MEDIUM, LOW)
+8. Generate remediation guidance for each
+
+**Output:**
+
+```json
+{
+  "breakingChanges": {
+    "detected": true,
+    "totalIssues": 4,
+    "criticalIssues": 2,
+    "blockers": [
+      "Undertow starter incompatible with Servlet 6.1",
+      "HttpMessageConverters removed (blocks custom Feign config)"
+    ],
+    "issues": [
+      {
+        "id": "BOOT4-003",
+        "api": "spring-boot-starter-undertow",
+        "severity": "CRITICAL",
+        "impact": "Runtime failure",
+        "remediation": "Remove Undertow, use Tomcat or Jetty",
+        "automationPotential": "100%"
+      },
+      {
+        "id": "BOOT4-004",
+        "api": "org.springframework.retry.support.RetryTemplate",
+        "severity": "MEDIUM",
+        "impact": "ClassNotFoundException at runtime",
+        "remediation": "Add explicit spring-retry dependency",
+        "automationPotential": "100%"
+      }
+    ],
+    "estimatedTotalEffort": "2-4 hours",
+    "automationCoverage": "75%"
+  }
+}
+```
+
+**Auto-Remediable Issues:**
+
+- ✅ Undertow removal (100% automation)
+- ✅ Spring Retry dependency addition (100% automation)
+- ✅ Web starter rename (100% automation)
+- ⚠️ RestClientCustomizer migration (90% automation, requires validation)
+- ⚠️ HttpMessageConverters migration (60% automation, strategy decision required)
 
 ## Output Format
 
@@ -166,6 +268,23 @@ Scan `.github/workflows/` for CI/CD configurations:
       "distributions": ["liberica"],
       "versionAligned": false,
       "alignmentIssue": "Build file specifies Java 25, GitHub Actions uses Java 21"
+    },
+    "openFeign": {
+      "detected": true,
+      "clientCount": 3,
+      "compatibility": "INCOMPATIBLE",
+      "severity": "CRITICAL",
+      "blockers": ["HttpMessageConverters usage with SpringDecoder/SpringEncoder"],
+      "migrationOptions": ["MIGRATE to Spring HTTP Interface (RECOMMENDED)"],
+      "estimatedEffort": "4-6 hours"
+    },
+    "breakingChanges": {
+      "detected": true,
+      "totalIssues": 4,
+      "criticalIssues": 2,
+      "blockers": ["Undertow starter incompatible with Servlet 6.1"],
+      "estimatedTotalEffort": "2-4 hours",
+      "automationCoverage": "75%"
     }
   },
   "migrationPlan": {

@@ -126,6 +126,206 @@ Migrate Vaadin 24 to Vaadin 25 for Spring Boot 4 compatibility including theme c
 
 ---
 
+### openfeign-compatibility-detector
+
+**Version:** 1.0.0
+**Location:** `skills/openfeign-compatibility-detector/SKILL.md`
+
+Detect Spring Cloud OpenFeign usage and compatibility issues with Spring Boot 4.x.
+
+**Detections:**
+
+- `@FeignClient` annotation usage
+- Custom Decoder/Encoder configurations
+- HttpMessageConverters usage (blocker in Boot 4.x)
+- Spring Cloud version compatibility
+
+**Dependencies:**
+
+- version-detector >= 1.0.0
+
+---
+
+### spring-boot-4-breaking-changes-detector
+
+**Version:** 1.0.0
+**Location:** `skills/spring-boot-4-breaking-changes-detector/SKILL.md`
+
+Comprehensive detector for all Spring Boot 4.x breaking changes including API removals, dependency incompatibilities, and starter changes.
+
+**Detections:**
+
+- RestClientCustomizer removal
+- HttpMessageConverters removal
+- Spring Retry transitive dependency removal
+- Undertow starter incompatibility
+- Web starter rename
+
+**Dependencies:**
+
+- version-detector >= 1.0.0
+
+---
+
+### junit4-to-junit5-migrator
+
+**Version:** 1.0.0
+**Location:** `skills/junit4-to-junit5-migrator/SKILL.md`
+
+Automate JUnit4 to JUnit5 migration including imports, annotations, runners, and build configuration.
+
+**Transformations:**
+
+- `junit-imports` (v1.0.0) - Update import statements
+- `junit-annotations` (v1.0.0) - Update test annotations
+- `junit-runners` (v1.0.0) - Migrate Spring runners
+- `junit-build-config` (v1.0.0) - Add useJUnitPlatform()
+
+**Dependencies:**
+
+- build-file-updater >= 1.0.0
+- migration-state >= 1.0.0
+
+---
+
+### gradle-9-syntax-migrator
+
+**Version:** 1.0.0
+**Location:** `skills/gradle-9-syntax-migrator/SKILL.md`
+
+Migrate Gradle build files to Gradle 9.x syntax requirements.
+
+**Transformations:**
+
+- `gradle-java-block-migration` (v1.0.0) - Move sourceCompatibility to java {} block
+- `gradle-test-platform-config` (v1.0.0) - Add test { useJUnitPlatform() }
+- `gradle-wrapper-version-fix` (v1.0.0) - Validate wrapper version precision
+
+**Dependencies:**
+
+- build-tool-detector >= 1.0.0
+- migration-state >= 1.0.0
+
+---
+
+### dependency-conflict-analyzer
+
+**Version:** 1.0.0
+**Location:** `skills/dependency-conflict-analyzer/SKILL.md`
+
+Detect transitive dependency conflicts, particularly Jackson 2.x vs 3.x version conflicts.
+
+**Detections:**
+
+- Mixed Jackson versions in dependency tree
+- Transitive dependency conflicts
+- BOM requirement validation
+
+**Dependencies:**
+
+- version-detector >= 1.0.0
+
+---
+
+### spring-ai-version-validator
+
+**Version:** 1.0.0
+**Location:** `skills/spring-ai-version-validator/SKILL.md`
+
+Validate and auto-correct Spring AI version formats (X.Y.Z-M# not X.Y-M#).
+
+**Transformations:**
+
+- `spring-ai-version-format-fix` (v1.0.0) - Correct milestone version format
+- `maven-cache-cleanup` (v1.0.0) - Clear failed artifact cache
+
+**Dependencies:**
+
+- version-detector >= 1.0.0
+- migration-state >= 1.0.0
+
+---
+
+### openfeign-to-httpinterface-migrator
+
+**Version:** 1.0.0
+**Location:** `skills/openfeign-to-httpinterface-migrator/SKILL.md`
+
+Automate migration from Spring Cloud OpenFeign to Spring HTTP Interface clients.
+
+**Transformations:**
+
+- `feign-interface-annotations` (v1.0.0) - @FeignClient → @HttpExchange
+- `feign-method-annotations` (v1.0.0) - @GetMapping → @GetExchange, etc.
+- `feign-configuration-migration` (v1.0.0) - Decoder → ClientHttpMessageConvertersCustomizer
+- `feign-bean-generation` (v1.0.0) - Create HttpServiceProxyFactory beans
+- `feign-dependency-replacement` (v1.0.0) - Replace OpenFeign with RestClient
+- `feign-cleanup` (v1.0.0) - Remove Feign artifacts
+
+**Dependencies:**
+
+- openfeign-compatibility-detector >= 1.0.0
+- build-file-updater >= 1.0.0
+- migration-state >= 1.0.0
+
+---
+
+### library-migration-classifier
+
+**Version:** 1.0.0
+**Location:** `skills/library-migration-classifier/SKILL.md`
+
+Classify dependency changes as version upgrade vs library migration for effort estimation.
+
+**Classifications:**
+
+- Version Upgrade (LOW effort)
+- Version Upgrade Major (MEDIUM effort)
+- Library Migration (HIGH effort)
+
+**Dependencies:**
+
+- version-detector >= 1.0.0
+
+---
+
+### testcontainers-module-validator
+
+**Version:** 1.0.0
+**Location:** `skills/testcontainers-module-validator/SKILL.md`
+
+Ensure required Testcontainers modules are declared when containers are used.
+
+**Transformations:**
+
+- `testcontainers-module-addition` (v1.0.0) - Add missing module dependencies
+
+**Dependencies:**
+
+- build-file-updater >= 1.0.0
+
+---
+
+### multi-module-dependency-analyzer
+
+**Version:** 1.0.0
+**Location:** `skills/multi-module-dependency-analyzer/SKILL.md`
+
+Build dependency graph for multi-module projects and determine optimal build order.
+
+**Analysis:**
+
+- Module dependency graph (DAG)
+- Topological sort for build order
+- Blocking module identification
+- Parallelization opportunities
+
+**Dependencies:**
+
+- build-tool-detector >= 1.0.0
+
+---
+
 ## Usage Patterns
 
 ### 1. List All Skills

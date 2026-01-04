@@ -1,9 +1,9 @@
 ---
 name: validation-agent
-description: Validation agent that verifies migration success by running builds, tests, and analyzing errors. Use when validating that migrations completed successfully.
+description: Validation agent that verifies migration success by running builds, tests, analyzing errors, detecting dependency conflicts, and validating version formats. Use when validating that migrations completed successfully.
 tools: Read, Glob, Grep, Bash
 model: sonnet
-skills: build-runner
+skills: build-runner, dependency-conflict-analyzer, spring-ai-version-validator, testcontainers-module-validator, multi-module-dependency-analyzer
 ---
 
 # Validation Agent
@@ -18,6 +18,10 @@ Validate migrations through:
 2. **Test execution** - Verify tests pass
 3. **Error analysis** - Diagnose and suggest fixes for failures
 4. **Cleanup** - Format code and remove warnings
+5. **Dependency conflict detection** - Identify transitive dependency conflicts
+6. **Version format validation** - Validate Spring AI version formats
+7. **Testcontainers validation** - Ensure required modules present
+8. **Multi-module validation** - Verify build order and module health
 
 ## Validation Sequence
 
@@ -82,6 +86,137 @@ mvn spotless:apply
 ```bash
 ./gradlew spotlessApply
 ```
+
+---
+
+### Step 5: Dependency Conflict Detection
+
+**When:** Migrating to Spring Boot 4.x with Jackson 3.x
+
+Use the **dependency-conflict-analyzer** skill to detect transitive dependency conflicts:
+
+**Maven:**
+
+```bash
+mvn dependency:tree | grep -E "jackson-databind|jackson-core"
+```
+
+**Gradle:**
+
+```bash
+./gradlew dependencies | grep -E "jackson-databind|jackson-core"
+```
+
+**Detects:**
+
+- Mixed Jackson 2.x and 3.x versions in classpath
+- Spring AI 2.0.0-M1 bringing Jackson 3.x
+- Legacy dependencies bringing Jackson 2.x
+
+**Auto-Remediation:**
+
+- Add Jackson BOM to enforce version consistency
+- Exclude older Jackson versions from transitive dependencies
+
+**Output:**
+
+```yaml
+conflicts:
+  - library: 'jackson-databind'
+    versions: ['2.17.2', '3.0.2']
+    resolution: 'Pin to Jackson 3.0.2 via BOM'
+    automationPotential: '100%'
+```
+
+---
+
+### Step 6: Version Format Validation
+
+**When:** Spring AI milestone/RC versions detected
+
+Use the **spring-ai-version-validator** skill to validate version formats:
+
+**Validates:**
+
+- Spring AI version format: X.Y.Z-M# not X.Y-M#
+- Example: 2.0.0-M1 ✅ vs 2.0-M1 ❌
+
+**Auto-Corrects:**
+
+```xml
+<!-- Before -->
+<spring-ai.version>2.0-M1</spring-ai.version>
+
+<!-- After -->
+<spring-ai.version>2.0.0-M1</spring-ai.version>
+```
+
+**Maven Cache Cleanup:**
+
+```bash
+# Clear failed artifact cache
+rm -rf ~/.m2/repository/org/springframework/ai
+
+# Force re-download
+mvn clean compile -U
+```
+
+---
+
+### Step 7: Testcontainers Module Validation
+
+**When:** Testcontainers detected in tests
+
+Use the **testcontainers-module-validator** skill to ensure modules present:
+
+**Detects:**
+
+- Container imports in test code
+- Missing module dependencies
+
+**Auto-Adds:**
+
+```xml
+<!-- If CassandraContainer used but module missing -->
+<dependency>
+    <groupId>org.testcontainers</groupId>
+    <artifactId>cassandra</artifactId>
+    <scope>test</scope>
+</dependency>
+```
+
+---
+
+### Step 8: Multi-Module Build Validation
+
+**When:** Multi-module project detected
+
+Use the **multi-module-dependency-analyzer** skill to:
+
+1. Build dependency graph
+2. Determine optimal build order
+3. Identify blocking modules
+4. Validate modules in correct order
+
+**Bottom-Up Validation:**
+
+```bash
+# Maven - build by dependency levels
+mvn clean install -pl <level-0-modules>
+mvn clean install -pl <level-1-modules>
+mvn clean install -pl <level-2-modules>
+```
+
+**Output:**
+
+```yaml
+multiModuleValidation:
+  buildOrder: ['client', 'entities', 'mcp-server']
+  blockingModules: ['entities']
+  recommendation: 'entities is critical - failures block 3 modules'
+```
+
+---
 
 ## Error Analysis
 

@@ -1,9 +1,9 @@
 ---
 name: migration-agent
-description: Migration agent that applies Spring ecosystem transformations including build file updates, import migrations, configuration changes, application property migrations, and GitHub Actions updates. Use when executing the actual migration work on a project.
+description: Migration agent that applies Spring ecosystem transformations including build file updates, import migrations, configuration changes, application property migrations, GitHub Actions updates, testing framework migrations, and build tool syntax updates. Use when executing the actual migration work on a project.
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: inherit
-skills: migration-state, build-tool-upgrader, jackson-migrator, security-config-migrator, spring-ai-migrator, application-property-migrator, import-migrator, build-file-updater, openrewrite-executor, github-actions-updater
+skills: migration-state, build-tool-upgrader, jackson-migrator, security-config-migrator, spring-ai-migrator, application-property-migrator, import-migrator, build-file-updater, openrewrite-executor, github-actions-updater, junit4-to-junit5-migrator, gradle-9-syntax-migrator, openfeign-to-httpinterface-migrator
 ---
 
 # Migration Agent
@@ -20,7 +20,9 @@ Execute migration transformations in the correct order:
 4. **Application property migrations** - Update YAML/properties files (kebab-case, namespaces, logging packages)
 5. **Configuration migrations** - Update security and other configurations
 6. **GitHub Actions updates** - Align CI/CD Java versions with build files
-7. **Validation** - Run build to verify changes
+7. **Testing framework migration** - JUnit4 → JUnit5 migration
+8. **Build tool syntax migration** - Gradle 9.x syntax updates
+9. **Validation** - Run build to verify changes
 
 ## State Tracking
 
@@ -972,6 +974,219 @@ mvn clean package -DskipTests
 git add .migration-state.yaml
 git commit -m "chore: update validation status"
 ```
+
+---
+
+### Phase 9: Testing Framework Migration
+
+**When:** FULL_MIGRATION tier only
+
+Migrate from JUnit4 to JUnit5 (Jupiter) test framework.
+
+**State Check:**
+
+```bash
+# Check if junit4-to-junit5-migrator already applied
+# Read .migration-state.yaml -> appliedTransformations
+# Look for: skill: junit4-to-junit5-migrator
+# If found and version >= current: SKIP
+# If not found or version < current: PROCEED
+```
+
+**Detection:**
+
+```bash
+# Detect JUnit4 usage
+grep -r "import org\.junit\.Test" --include="*.java"
+grep -r "@RunWith" --include="*.java"
+```
+
+**Execution:**
+
+```bash
+# Use junit4-to-junit5-migrator skill
+# Performs:
+# 1. Import migrations (org.junit -> org.junit.jupiter.api)
+# 2. Annotation migrations (@RunWith -> @ExtendWith, @Before -> @BeforeEach)
+# 3. Runner migrations (SpringRunner -> SpringExtension)
+# 4. Build file updates (add test { useJUnitPlatform() } for Gradle)
+# 5. Dependency updates (junit -> junit-jupiter)
+
+# Commit changes
+git add -A
+git commit -m "migration(junit4-to-junit5-migrator): migrate JUnit4 to JUnit5 [v1.0.0]
+
+Applied transformations:
+- junit-imports
+- junit-annotations
+- junit-runners
+- junit-build-config
+
+Marketplace: 1.3.0"
+
+# Update state file via migration-state skill
+```
+
+**Validation:**
+
+```bash
+# Run tests to verify migration
+./gradlew test  # or mvn test
+
+# Check test discovery
+# JUnit5 requires test { useJUnitPlatform() } in Gradle
+```
+
+---
+
+### Phase 10: Build Tool Syntax Migration
+
+**When:** FULL_MIGRATION or MINOR_UPGRADE tiers with Gradle 9.x
+
+Migrate Gradle build files to Gradle 9.x syntax.
+
+**State Check:**
+
+```bash
+# Check if gradle-9-syntax-migrator already applied
+# Read .migration-state.yaml -> appliedTransformations
+# Look for: skill: gradle-9-syntax-migrator
+# If found and version >= current: SKIP
+# If not found or version < current: PROCEED
+```
+
+**Detection:**
+
+```bash
+# Check Gradle version
+grep distributionUrl gradle/wrapper/gradle-wrapper.properties | grep -E "gradle-9\."
+
+# Detect deprecated syntax
+grep -E "^sourceCompatibility\s*=" build.gradle build.gradle.kts
+```
+
+**Execution:**
+
+```bash
+# Use gradle-9-syntax-migrator skill
+# Performs:
+# 1. Move sourceCompatibility/targetCompatibility to java {} block
+# 2. Add test { useJUnitPlatform() } if JUnit5 detected
+# 3. Validate wrapper version format (9.1 -> 9.1.0)
+
+# Commit changes
+git add -A
+git commit -m "migration(gradle-9-syntax-migrator): migrate to Gradle 9.x syntax [v1.0.0]
+
+Applied transformations:
+- gradle-java-block-migration
+- gradle-test-platform-config
+- gradle-wrapper-version-fix
+
+Marketplace: 1.3.0"
+
+# Update state file via migration-state skill
+```
+
+**Validation:**
+
+```bash
+# Run build to verify syntax
+./gradlew clean build -x test
+```
+
+---
+
+### Phase 11: OpenFeign Migration (NEW - Optional)
+
+**When:** FULL_MIGRATION tier AND OpenFeign incompatibility detected AND user approved
+
+Migrate from Spring Cloud OpenFeign to Spring HTTP Interface.
+
+**State Check:**
+
+```bash
+# Check if openfeign-to-httpinterface-migrator already applied
+# Read .migration-state.yaml -> appliedTransformations
+# Look for: skill: openfeign-to-httpinterface-migrator
+# If found and version >= current: SKIP
+# If not found or version < current: PROCEED
+```
+
+**Prerequisites:**
+
+```bash
+# Must have OpenFeign compatibility analysis
+# User must approve migration strategy
+# Backup current state
+git commit -am "checkpoint: before OpenFeign migration"
+```
+
+**Execution:**
+
+```bash
+# Use openfeign-to-httpinterface-migrator skill
+# Performs:
+# 1. Analyze all @FeignClient interfaces
+# 2. Migrate interface annotations (@FeignClient → @HttpExchange)
+# 3. Migrate method annotations (@GetMapping → @GetExchange, etc.)
+# 4. Migrate custom configurations (Decoder → ClientHttpMessageConvertersCustomizer)
+# 5. Generate HttpServiceProxyFactory beans for each client
+# 6. Update dependencies (remove OpenFeign, add RestClient)
+# 7. Remove @EnableFeignClients annotation
+# 8. Clean up Feign configuration classes
+
+# Commit changes
+git add -A
+git commit -m "migration(openfeign-to-httpinterface-migrator): migrate from OpenFeign to HTTP Interface [v1.0.0]
+
+Applied transformations:
+- feign-interface-annotations
+- feign-method-annotations
+- feign-configuration-migration
+- feign-bean-generation
+- feign-dependency-replacement
+- feign-cleanup
+
+Clients migrated: 3
+Configurations migrated: 1
+
+Marketplace: 1.4.0"
+
+# Update state file via migration-state skill
+```
+
+**Validation:**
+
+```bash
+# Compile to verify syntax
+mvn clean compile
+
+# Run tests to verify HTTP clients work
+mvn test
+
+# Integration tests if available
+# Manual API testing recommended
+```
+
+**Rollback Strategy:**
+
+```bash
+# If migration fails, rollback to checkpoint
+git reset --hard HEAD~1
+
+# Or if already committed state
+git revert HEAD
+```
+
+**User Approval Required:**
+
+- This phase MUST NOT run without explicit user approval
+- Present migration options from openfeign-compatibility-detector
+- Get user decision before proceeding
+- Document chosen strategy in migration state
+
+---
 
 ## Error Recovery
 
