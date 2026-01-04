@@ -286,6 +286,59 @@ Marketplace: 1.3.0"
 #   commitSha: <commit-sha>
 ```
 
+### Phase 0.5: Migration Tier Classification
+
+**Purpose**: Determine the appropriate migration tier based on current and target versions to execute only necessary phases.
+
+**Execution**:
+
+```bash
+# Get current Spring Boot version
+CURRENT_VERSION=$(detect_spring_boot_version)
+
+# Read target version from config (default: 4.0.1)
+TARGET_VERSION="${CONFIG_TARGET_VERSION:-4.0.1}"
+
+# Use version-comparator skill to classify tier
+MIGRATION_TIER=$(classify_migration_tier "$CURRENT_VERSION" "$TARGET_VERSION")
+
+# Write tier to migration state
+# Update .migration-state.yaml:
+#   migrationTier: $MIGRATION_TIER
+#   currentVersion:
+#     spring-boot: $CURRENT_VERSION
+#   targetVersions:
+#     spring-boot: $TARGET_VERSION
+
+# Determine phase execution based on tier
+case "$MIGRATION_TIER" in
+  FULL_MIGRATION)
+    # Execute all phases
+    PHASES="0 1 1.5 2 3 4 5 6 7 8"
+    ;;
+  PATCH_UPGRADE|MINOR_UPGRADE)
+    # Skip import/property/config migrations (phases 2, 3, 4)
+    PHASES="1 1.5 6 7 8"
+    ;;
+  COMPREHENSIVE_REFRESH)
+    # Only dependency, doc, CI, deployment updates
+    PHASES="1.5 6 7 8"
+    ;;
+  SKIP|SKIP_NEWER)
+    echo "Migration not required: $MIGRATION_TIER"
+    exit 0
+    ;;
+esac
+```
+
+**Output**:
+
+- Migration tier written to `.migration-state.yaml`
+- Phase execution list determined
+- Log tier classification decision
+
+---
+
 ### Phase 1: Build File Updates
 
 **State Check:**
@@ -391,6 +444,93 @@ Marketplace: 1.3.0"
 #   completedAt: <current-timestamp>
 #   commitSha: <commit-sha>
 ```
+
+### Phase 1.5: Dependency Updates
+
+**Purpose**: Upgrade all dependencies and plugins to latest compatible versions for Spring Boot 4.x ecosystem.
+
+**State Check**:
+
+```bash
+# Check if dependency-updater already applied
+# Read .migration-state.yaml -> appliedTransformations
+# Look for: skill: dependency-updater
+# If found and version >= current: SKIP
+# If not found or version < current: PROCEED
+```
+
+**Execution**:
+
+```bash
+# Use dependency-updater skill with include-milestones filter
+# Mode: include-milestones (for Spring AI 2.0.0-M1 compatibility)
+
+# Update dependencies
+dependency-updater --filter include-milestones --mode update
+
+# Auto-add Spring Milestones repository if milestone versions detected
+if grep -q '\-M[0-9]\+\|-RC[0-9]\+' pom.xml build.gradle*; then
+  # Add Spring Milestones repository
+  # Maven: Add to <repositories> section
+  # Gradle: Add maven { url "https://repo.spring.io/milestone" }
+fi
+
+# Validate compilation after updates
+./mvnw clean compile -DskipTests || ./gradlew clean compileJava -x test
+```
+
+**Updates Applied**:
+
+- **Dependencies**: Latest compatible versions (include-milestones)
+- **Plugins**: Latest build plugin versions
+- **Properties**: Maven properties / Gradle version catalog
+- **Repositories**: Spring Milestones if needed for milestone dependencies
+
+**Example Updates**:
+
+```xml
+<!-- Maven: Before -->
+<dependency>
+  <groupId>com.google.guava</groupId>
+  <artifactId>guava</artifactId>
+  <version>32.1.0</version>
+</dependency>
+
+<!-- After: dependency-updater -->
+<version>33.2.0</version>
+
+<!-- Spring AI with milestone -->
+<dependency>
+  <groupId>org.springframework.ai</groupId>
+  <artifactId>spring-ai-openai-spring-boot-starter</artifactId>
+  <version>2.0.0-M1</version> <!-- Milestone for Boot 4 compat -->
+</dependency>
+
+<!-- Milestones repository auto-added -->
+<repository>
+  <id>spring-milestones</id>
+  <url>https://repo.spring.io/milestone</url>
+</repository>
+```
+
+**State Update**:
+
+```yaml
+appliedTransformations:
+  - skill: dependency-updater
+    version: '1.0.0'
+    transformations:
+      - dependency-updates
+      - plugin-updates
+      - property-updates
+      - milestone-repo-addition
+    completedAt: <current-timestamp>
+    commitSha: <commit-sha>
+    config:
+      filterMode: include-milestones
+```
+
+---
 
 ### Phase 2: Import Migrations
 
@@ -619,7 +759,169 @@ Marketplace: 1.3.0"
 #   commitSha: <commit-sha>
 ```
 
-### Phase 6: Validation
+### Phase 6: Documentation Updates
+
+**Purpose**: Update documentation to reflect new Spring Boot, dependency, and Java versions.
+
+**State Check**:
+
+```bash
+# Check if documentation-migrator already applied
+# Read .migration-state.yaml -> appliedTransformations
+# Look for: skill: documentation-migrator
+# If found and version >= current: SKIP
+# If not found or version < current: PROCEED
+```
+
+**Execution**:
+
+```bash
+# Use documentation-migrator skill to update:
+# - README.md prerequisites section
+# - General version references across docs/
+# - docs/getting-started.md installation instructions
+# - docs/migrations.md version compatibility matrix
+
+documentation-migrator \
+  --update-readme-prerequisites \
+  --update-version-refs \
+  --update-getting-started \
+  --update-migration-guide
+```
+
+**Updates Applied**:
+
+- **README.md**: Prerequisites section (Java, Spring Boot, framework versions)
+- **docs/getting-started.md**: Installation and setup instructions
+- **docs/migrations.md**: Version compatibility matrix
+- **General docs**: Version mentions in prose
+
+**Example Updates**:
+
+```markdown
+<!-- Before -->
+
+## Prerequisites
+
+- Java 17 or higher
+- Spring Boot 3.5.x
+- Maven 3.8+ or Gradle 7.0+
+
+<!-- After -->
+
+## Prerequisites
+
+- Java 21 or higher
+- Spring Boot 4.0.x
+- Maven 3.9+ or Gradle 8.5+
+```
+
+**State Update**:
+
+```yaml
+appliedTransformations:
+  - skill: documentation-migrator
+    version: '1.0.0'
+    transformations:
+      - readme-prerequisites
+      - general-version-refs
+      - getting-started-guide
+      - migration-guide-versions
+      - aggregate-doc-report
+    completedAt: <current-timestamp>
+    commitSha: <commit-sha>
+    documentationChanges:
+      filesUpdated:
+        - README.md
+        - docs/getting-started.md
+        - docs/migrations.md
+      linesChanged: 67
+```
+
+---
+
+### Phase 7: Deployment Configuration Updates
+
+**Purpose**: Update deployment configurations (Docker, Kubernetes, Cloud platforms) to match new Java version.
+
+**State Check**:
+
+```bash
+# Check if deployment-java-updater already applied
+# Read .migration-state.yaml -> appliedTransformations
+# Look for: skill: deployment-java-updater
+# If found and version >= current: SKIP
+# If not found or version < current: PROCEED
+```
+
+**Execution**:
+
+```bash
+# Use deployment-java-updater skill to update:
+# - Dockerfile base images
+# - Kubernetes container specs
+# - Cloud Foundry manifest.yml
+# - Fly.io fly.toml
+# - Heroku system.properties
+# - Paketo project.toml
+
+deployment-java-updater --target-java-version 21
+```
+
+**Platforms Supported**:
+
+- **Docker**: Update `FROM` base image (e.g., `bellsoft/liberica-openjdk-alpine:21`)
+- **Kubernetes**: Update container image specs in manifests
+- **Cloud Foundry**: Update `JBP_CONFIG_OPEN_JDK_JRE` in manifest.yml
+- **Fly.io**: Update `BP_JVM_VERSION` in fly.toml
+- **Heroku**: Update `java.runtime.version` in system.properties
+- **Paketo/CNB**: Update `BP_JVM_VERSION` in project.toml
+
+**Example Updates**:
+
+```dockerfile
+# Dockerfile: Before
+FROM eclipse-temurin:17-jdk-jammy
+
+# After
+FROM eclipse-temurin:21-jdk-jammy
+```
+
+```yaml
+# fly.toml: Before
+[build.args]
+BP_JVM_VERSION = "17"
+
+# After
+[build.args]
+BP_JVM_VERSION = "21"
+```
+
+**State Update**:
+
+```yaml
+appliedTransformations:
+  - skill: deployment-java-updater
+    version: '1.0.0'
+    transformations:
+      - docker-base-image
+      - kubernetes-manifests
+      - cloud-foundry-manifest
+      - flyio-toml
+      - heroku-properties
+    completedAt: <current-timestamp>
+    commitSha: <commit-sha>
+    deploymentChanges:
+      filesUpdated:
+        - Dockerfile
+        - k8s/deployment.yaml
+        - fly.toml
+      javaVersion: '21'
+```
+
+---
+
+### Phase 8: Validation
 
 Run build and tests to verify all migration changes:
 

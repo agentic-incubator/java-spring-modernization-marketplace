@@ -3,7 +3,7 @@ name: discovery-agent
 description: Discovery agent that analyzes Java/Spring projects to determine build tool, framework versions, dependencies, migration requirements, and CI/CD configurations. Use when assessing a project before migration.
 tools: Read, Glob, Grep, Bash
 model: sonnet
-skills: build-tool-detector, build-tool-upgrader, version-detector, dependency-scanner, pattern-detector, github-actions-detector
+skills: build-tool-detector, build-tool-upgrader, version-detector, version-comparator, dependency-scanner, pattern-detector, github-actions-detector
 ---
 
 # Project Discovery Agent
@@ -117,13 +117,19 @@ Scan `.github/workflows/` for CI/CD configurations:
       "spring-ai": "1.0.0"
     },
     "targetVersions": {
-      "spring-boot": "4.0.0",
+      "spring-boot": "4.0.1",
       "spring-cloud": "2025.1.0",
       "spring-security": "7.0.0",
       "java": "25",
       "jackson": "3.0.2",
       "vaadin": "25.0.0",
-      "spring-ai": "1.1.0"
+      "spring-ai": "2.0.0-M1"
+    },
+    "migrationTier": "FULL_MIGRATION",
+    "versionComparison": {
+      "patchUpgrade": false,
+      "minorUpgrade": false,
+      "majorUpgrade": true
     },
     "dependencies": {
       "jackson": {
@@ -164,6 +170,7 @@ Scan `.github/workflows/` for CI/CD configurations:
   },
   "migrationPlan": {
     "required": true,
+    "tier": "FULL_MIGRATION",
     "phases": [
       "Upgrade build tool wrapper (if needed)",
       "Update build files",
@@ -171,14 +178,107 @@ Scan `.github/workflows/` for CI/CD configurations:
       "Migrate security configuration",
       "Migrate Vaadin theme",
       "Migrate Spring AI TTS",
-      "Update GitHub Actions workflows (if present)"
+      "Update dependencies (dependency-updater)",
+      "Update documentation (documentation-migrator)",
+      "Update GitHub Actions workflows (github-actions-updater)",
+      "Update deployment configs (deployment-java-updater)",
+      "Validate build and tests"
     ],
     "estimatedChanges": {
       "buildFiles": 1,
       "javaFiles": 25,
       "configFiles": 2,
-      "workflowFiles": 2
+      "documentationFiles": 3,
+      "workflowFiles": 2,
+      "deploymentFiles": 1
     }
+  }
+}
+```
+
+## Migration Tier Classification
+
+After detecting current and target versions, use the version-comparator skill to classify the migration tier.
+
+### Classification Logic
+
+```bash
+# Get current Spring Boot version from version-detector
+CURRENT_VERSION=$(detect_spring_boot_version)
+
+# Read target version from config (default: 4.0.1)
+TARGET_VERSION="${CONFIG_TARGET_VERSION:-4.0.1}"
+
+# Use version-comparator skill to classify tier
+MIGRATION_TIER=$(classify_migration_tier "$CURRENT_VERSION" "$TARGET_VERSION")
+
+# Determine which upgrade types are needed
+PATCH_UPGRADE=$(needs_patch_upgrade "$CURRENT_VERSION" "$TARGET_VERSION" && echo "true" || echo "false")
+MINOR_UPGRADE=$(needs_minor_upgrade "$CURRENT_VERSION" "$TARGET_VERSION" && echo "true" || echo "false")
+MAJOR_UPGRADE=$(needs_major_upgrade "$CURRENT_VERSION" "$TARGET_VERSION" && echo "true" || echo "false")
+```
+
+### Migration Tiers
+
+| Tier                      | Scenario          | Example       | Phases    | Migration Scope                                                          |
+| ------------------------- | ----------------- | ------------- | --------- | ------------------------------------------------------------------------ |
+| **FULL_MIGRATION**        | Major upgrade     | 3.5.7 → 4.0.1 | All       | Wrapper + imports + properties + configs + deps + docs + CI + deployment |
+| **MINOR_UPGRADE**         | Minor bump        | 4.0.1 → 4.1.0 | Selective | Build files + deps + docs + CI + deployment                              |
+| **PATCH_UPGRADE**         | Patch bump        | 4.0.0 → 4.0.1 | Selective | Build files + deps + docs + CI + deployment                              |
+| **COMPREHENSIVE_REFRESH** | Same version      | 4.0.1 → 4.0.1 | Minimal   | Deps + docs + CI + deployment (no version change)                        |
+| **SKIP**                  | Already on target | 4.0.1 → 4.0.1 | None      | No migration needed                                                      |
+| **SKIP_NEWER**            | On newer          | 4.0.2 → 4.0.1 | None      | No migration (log warning)                                               |
+
+### Tier-Specific Phase Lists
+
+**FULL_MIGRATION** (2.x/3.x → 4.x):
+
+- Upgrade build tool wrapper (if needed)
+- Update build files (Spring Boot, Spring Cloud, Jackson, dependencies)
+- Migrate Jackson imports (com.fasterxml.→ tools.jackson)
+- Migrate security configuration
+- Migrate Vaadin theme (if present)
+- Migrate Spring AI TTS (if present)
+- Update dependencies (dependency-updater with include-milestones)
+- Update documentation (documentation-migrator)
+- Update GitHub Actions workflows (github-actions-updater)
+- Update deployment configs (deployment-java-updater)
+- Validate build and tests
+
+**PATCH_UPGRADE** / **MINOR_UPGRADE** (4.0.0 → 4.0.1 or 4.0.x → 4.1.x):
+
+- Update build files (Spring Boot version bump)
+- Update dependencies (dependency-updater with include-milestones)
+- Update documentation (documentation-migrator)
+- Update GitHub Actions workflows (github-actions-updater)
+- Update deployment configs (deployment-java-updater)
+- Validate build and tests
+
+**COMPREHENSIVE_REFRESH** (4.0.1 → 4.0.1, same version):
+
+- Update dependencies (dependency-updater with include-milestones)
+- Update documentation (documentation-migrator)
+- Update GitHub Actions workflows (github-actions-updater)
+- Update deployment configs (deployment-java-updater)
+- Validate build and tests
+
+### Output Migration Plan by Tier
+
+Include tier in migrationPlan object:
+
+```json
+{
+  "migrationPlan": {
+    "required": true,
+    "tier": "PATCH_UPGRADE",
+    "phases": [
+      "Update Spring Boot version in build files",
+      "Update dependencies (dependency-updater)",
+      "Update documentation (documentation-migrator)",
+      "Update GitHub Actions (github-actions-updater)",
+      "Update deployment configs (deployment-java-updater)",
+      "Validate build and tests"
+    ]
   }
 }
 ```

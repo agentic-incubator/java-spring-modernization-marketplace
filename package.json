@@ -1,7 +1,7 @@
 {
   "name": "spring-modernization-marketplace",
-  "version": "1.2.0",
-  "description": "Claude Code plugin marketplace for Spring ecosystem modernization with documentation migration support",
+  "version": "1.3.0",
+  "description": "Claude Code plugin marketplace for Spring ecosystem modernization with migration tier classification and enhanced phase support",
   "private": true,
   "packageManager": "pnpm@9.15.0",
   "scripts": {

@@ -44,6 +44,10 @@ https://github.com/org/repo3
   "branchName": "feature/spring-boot-4-migration",
   "parallel": true,
   "createPRs": true,
+  "config": {
+    "targetSpringBootVersion": "4.0.1",
+    "dependencyMode": "include-milestones"
+  },
   "repos": [
     {
       "url": "https://github.com/org/repo1",
@@ -59,6 +63,19 @@ https://github.com/org/repo3
   ]
 }
 ```
+
+**Config Options**:
+
+| Field                     | Description                              | Default              | Values                                            |
+| ------------------------- | ---------------------------------------- | -------------------- | ------------------------------------------------- |
+| `targetSpringBootVersion` | Target Spring Boot version for migration | `4.0.1`              | `4.0.x`, `4.1.x`, etc.                            |
+| `dependencyMode`          | Filter strategy for dependency updates   | `include-milestones` | `stable-only`, `include-milestones`, `aggressive` |
+
+**Dependency Modes**:
+
+- **`stable-only`**: Only stable releases (excludes alpha, beta, RC, milestone, snapshot) - Most conservative
+- **`include-milestones`**: Includes RC and milestone versions (needed for Spring AI 2.0 with Boot 4) - Recommended for Boot 4
+- **`aggressive`**: All versions except snapshots - For development/testing
 
 ## Options
 

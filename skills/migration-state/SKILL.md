@@ -29,13 +29,25 @@ branch: 'feature/spring-boot-4-migration'
 startedAt: '2026-01-03T10:30:00Z'
 lastUpdatedAt: '2026-01-03T11:45:00Z'
 marketplaceVersion: '1.2.0'
+migrationTier: 'PATCH_UPGRADE' # FULL_MIGRATION | MINOR_UPGRADE | PATCH_UPGRADE | COMPREHENSIVE_REFRESH | SKIP | SKIP_NEWER
+
+currentVersion:
+  spring-boot: '4.0.0'
+  jackson: '2.17.2'
+  spring-security: '6.4.0'
+  spring-cloud: '2024.0.0'
+  java: '21'
 
 targetVersions:
-  spring-boot: '4.0.0'
-  jackson: '3.0.0'
+  spring-boot: '4.0.1'
+  jackson: '3.0.2'
   spring-security: '7.0.0'
   spring-cloud: '2025.1.0'
-  spring-ai: '1.1.0'
+  spring-ai: '2.0.0-M1'
+  java: '21'
+
+config:
+  dependencyMode: 'include-milestones' # stable-only | include-milestones | aggressive
 
 appliedTransformations:
   - skill: jackson-migrator
@@ -83,11 +95,21 @@ branch: 'feature/spring-boot-4-migration'
 startedAt: '2026-01-03T10:30:00Z'
 lastUpdatedAt: '2026-01-03T11:45:00Z'
 marketplaceVersion: '1.2.0'
+migrationTier: 'PATCH_UPGRADE'
+
+currentVersion:
+  spring-boot: '4.0.0'
+  jackson: '2.17.2'
+  spring-cloud: '2024.0.0'
+  java: '21'
 
 targetVersions:
-  spring-boot: '4.0.0'
-  jackson: '3.0.0'
+  spring-boot: '4.0.1'
+  jackson: '3.0.2'
   spring-security: '7.0.0'
+
+config:
+  dependencyMode: 'include-milestones'
 
 appliedTransformations:
   - skill: jackson-migrator

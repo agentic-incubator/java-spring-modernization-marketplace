@@ -1,0 +1,45 @@
+skill:
+  name: version-comparator
+  version: 1.0.0
+  description: Semantic version comparison utilities for migration tier classification
+
+  # Core comparison functions
+  functions:
+    - id: compare_versions
+      description: Compare two semantic versions (-1 if v1 < v2, 0 if equal, 1 if v1 > v2)
+      params: [version1, version2]
+      return: integer
+
+    - id: needs_patch_upgrade
+      description: Check if version1 needs a patch upgrade to reach version2
+      params: [version1, version2]
+      return: boolean
+
+    - id: needs_minor_upgrade
+      description: Check if version1 needs a minor upgrade to reach version2
+      params: [version1, version2]
+      return: boolean
+
+    - id: needs_major_upgrade
+      description: Check if version1 needs a major upgrade to reach version2
+      params: [version1, version2]
+      return: boolean
+
+    - id: parse_version
+      description: Parse semantic version into components (major, minor, patch, suffix)
+      params: [version]
+      return: object
+
+  dependencies:
+    - skill: build-tool-detector
+      minVersion: 1.0.0
+      description: "Required to determine build file locations"
+
+  usedBy:
+    - discovery-agent
+    - migration-agent
+    - parallel-orchestrator
+
+  relatedSkills:
+    - version-detector
+    - dependency-scanner

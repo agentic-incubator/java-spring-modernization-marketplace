@@ -68,11 +68,28 @@ mapfile -t REPOS < repos.txt
 ```json
 {
   "workspace": "/tmp/migrations",
+  "branchName": "feature/spring-boot-4-migration",
+  "config": {
+    "targetSpringBootVersion": "4.0.1",
+    "dependencyMode": "include-milestones"
+  },
   "repos": [
     { "url": "https://github.com/org/repo1", "tier": 1 },
     { "url": "https://github.com/org/repo2", "dependsOn": ["repo1"] }
   ]
 }
+```
+
+**Parse Configuration**:
+
+```bash
+# Read configuration from repos.json
+TARGET_VERSION=$(jq -r '.config.targetSpringBootVersion // "4.0.1"' repos.json)
+DEPENDENCY_MODE=$(jq -r '.config.dependencyMode // "include-milestones"' repos.json)
+
+# Export for use in discovery and migration agents
+export CONFIG_TARGET_VERSION="$TARGET_VERSION"
+export CONFIG_DEPENDENCY_MODE="$DEPENDENCY_MODE"
 ```
 
 ## Workflow Execution
@@ -135,18 +152,68 @@ Collect results:
   "repo1": {
     "buildTool": "maven",
     "springBootVersion": "3.3.5",
+    "targetVersion": "4.0.1",
+    "migrationTier": "FULL_MIGRATION",
     "migrations": ["jackson", "security"],
     "isLibrary": true,
     "exports": ["com.org.common"]
   },
   "repo2": {
     "buildTool": "gradle-kotlin",
-    "springBootVersion": "3.4.0",
-    "migrations": ["jackson"],
+    "springBootVersion": "4.0.0",
+    "targetVersion": "4.0.1",
+    "migrationTier": "PATCH_UPGRADE",
+    "migrations": ["dependencies", "docs", "ci"],
     "isLibrary": false,
     "imports": ["com.org.common"]
+  },
+  "repo3": {
+    "buildTool": "maven",
+    "springBootVersion": "4.0.1",
+    "targetVersion": "4.0.1",
+    "migrationTier": "SKIP",
+    "migrations": [],
+    "isLibrary": false
   }
 }
+```
+
+**Tier-Based Migration Decisions**:
+
+```bash
+# For each repository after discovery
+for repo in "${!DISCOVERY[@]}"; do
+  tier=$(echo "${DISCOVERY[$repo]}" | jq -r '.migrationTier')
+
+  case "$tier" in
+    FULL_MIGRATION)
+      # Execute all phases
+      echo "$repo: Full migration required (${current_version} → ${target_version})"
+      phases="wrapper build-files imports properties configs deps docs ci deployment validation"
+      ;;
+    PATCH_UPGRADE|MINOR_UPGRADE)
+      # Execute selective phases
+      echo "$repo: ${tier} required (${current_version} → ${target_version})"
+      phases="build-files deps docs ci deployment validation"
+      ;;
+    COMPREHENSIVE_REFRESH)
+      # No version change, just refresh ecosystem
+      echo "$repo: Refreshing dependencies, docs, and CI"
+      phases="deps docs ci deployment validation"
+      ;;
+    SKIP)
+      echo "$repo: Already on target version ${target_version}"
+      continue  # Skip this repo
+      ;;
+    SKIP_NEWER)
+      echo "$repo: On newer version ${current_version} > target ${target_version}"
+      continue  # Skip this repo
+      ;;
+  esac
+
+  # Execute migration with tier-specific phases
+  migrate_repo "$repo" "$phases"
+done
 ```
 
 ### Phase 3: Build Dependency Graph
@@ -471,14 +538,18 @@ Use skills directly:
     "successful": [
       {
         "name": "repo1",
-        "tier": 1,
+        "dependencyTier": 1,
+        "migrationTier": "FULL_MIGRATION",
+        "versionChange": "3.3.5 → 4.0.1",
         "pr": "https://github.com/org/repo1/pull/42",
         "workflow": "direct",
         "permission": "WRITE"
       },
       {
         "name": "repo2",
-        "tier": 2,
+        "dependencyTier": 2,
+        "migrationTier": "PATCH_UPGRADE",
+        "versionChange": "4.0.0 → 4.0.1",
         "pr": "https://github.com/org/repo2/pull/18",
         "workflow": "fork",
         "permission": "READ",
@@ -488,7 +559,9 @@ Use skills directly:
     "failed": [
       {
         "name": "repo3",
-        "tier": 2,
+        "dependencyTier": 2,
+        "migrationTier": "FULL_MIGRATION",
+        "versionChange": "3.5.7 → 4.0.1",
         "phase": "validation",
         "error": "3 test failures"
       }
@@ -496,7 +569,10 @@ Use skills directly:
     "skipped": [
       {
         "name": "repo4",
-        "reason": "Already on Spring Boot 4.x"
+        "migrationTier": "SKIP",
+        "currentVersion": "4.0.1",
+        "targetVersion": "4.0.1",
+        "reason": "Already on target version"
       }
     ]
   },
@@ -507,7 +583,12 @@ Use skills directly:
     "skipped": 1,
     "prsCreated": 2,
     "directPush": 1,
-    "forkBased": 1
+    "forkBased": 1,
+    "byMigrationTier": {
+      "FULL_MIGRATION": 2,
+      "PATCH_UPGRADE": 1,
+      "SKIP": 1
+    }
   },
   "workspace": "/tmp/migration-workspace"
 }

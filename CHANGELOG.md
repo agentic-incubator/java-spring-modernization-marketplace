@@ -5,6 +5,139 @@ All notable changes to the Spring Modernization Marketplace will be documented i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-01-04
+
+### Added
+
+#### Migration Tier Classification System
+
+- **Intelligent Migration Scoping**: Automatic detection of migration complexity based on version differences
+  - **FULL_MIGRATION**: Major upgrades (e.g., 3.5.7 → 4.0.1) - All phases executed
+  - **MINOR_UPGRADE**: Minor version bumps (e.g., 4.0.1 → 4.1.0) - Selective phases
+  - **PATCH_UPGRADE**: Patch updates (e.g., 4.0.0 → 4.0.1) - Selective phases
+  - **COMPREHENSIVE_REFRESH**: Same version refresh (e.g., 4.0.1 → 4.0.1) - Dependencies, docs, CI/CD only
+  - **SKIP**: Already on target version - No migration needed
+  - **SKIP_NEWER**: On newer version than target - No migration with warning
+
+- **New Skill**:
+  - `version-comparator`: Semantic version comparison and tier classification
+    - Analyzes current vs. target Spring Boot versions
+    - Determines patch, minor, or major upgrade requirements
+    - Classifies appropriate migration tier
+    - Integrated into discovery-agent workflow
+
+- **Enhanced Migration Phases**: Four new phases for comprehensive migration lifecycle
+  - **Phase 0.5**: Migration Tier Classification - Determines appropriate migration scope
+  - **Phase 1.5**: Dependency Updates - Upgrades all dependencies and plugins (with milestone support)
+  - **Phase 6**: Documentation Updates - Updates docs to reflect new versions (via `documentation-migrator`)
+  - **Phase 7**: Deployment Configuration Updates - Updates Docker, Kubernetes, Cloud platform configs (Java version)
+
+#### Configuration System
+
+- **Configurable Target Versions**: Control migration targets via configuration
+  - `targetSpringBootVersion`: Specify desired Spring Boot version (default: `4.0.1`)
+  - Target versions for Spring Cloud, Spring Security, Jackson, Spring AI, Java
+  - Configuration passed from orchestrators to discovery and migration agents
+
+- **Dependency Update Modes**: Control dependency update aggressiveness
+  - `stable-only`: Most conservative - excludes alpha, beta, RC, milestone, snapshot
+  - `include-milestones`: Recommended for Boot 4 - includes RC and milestone versions (needed for Spring AI 2.0)
+  - `aggressive`: For development/testing - all versions except snapshots
+  - Default: `include-milestones` for Spring Boot 4 compatibility
+
+#### Enhanced State Tracking
+
+- **Migration Tier in State**: State files now track detected migration tier
+  - `migrationTier` field records classification decision
+  - `currentVersion` and `targetVersions` tracked separately
+  - `config` object stores configuration options (dependencyMode, etc.)
+  - Phase execution list determined by tier
+
+- **Version Comparison Metadata**: State includes version upgrade analysis
+  - `versionComparison.patchUpgrade`: Boolean indicating patch-level changes
+  - `versionComparison.minorUpgrade`: Boolean indicating minor-level changes
+  - `versionComparison.majorUpgrade`: Boolean indicating major-level changes
+
+#### Enhanced Orchestration
+
+- **Tier-Based Phase Execution**: Parallel orchestrator executes only necessary phases
+  - FULL_MIGRATION: All phases (wrapper, build, imports, properties, configs, deps, docs, CI, deployment, validation)
+  - PATCH/MINOR_UPGRADE: Selective phases (build, deps, docs, CI, deployment, validation)
+  - COMPREHENSIVE_REFRESH: Minimal phases (deps, docs, CI, deployment, validation)
+  - SKIP/SKIP_NEWER: No phases executed
+
+- **Configuration Propagation**: Configuration flows from command → orchestrator → agents
+  - `repos.json` includes `config` object with target versions and dependency mode
+  - Exported as environment variables for discovery and migration agents
+  - Ensures consistent version targets across parallel migrations
+
+- **Enhanced Reporting**: Migration reports include tier classification
+  - `migrationTier` in repository result objects
+  - `versionChange` shows before → after versions
+  - `byMigrationTier` statistics in summary (count by tier)
+  - `dependencyTier` renamed to clarify separation from migration tier
+
+### Changed
+
+- **Discovery Agent**: Now classifies migration tier based on version analysis
+  - Integrated `version-comparator` skill into discovery workflow
+  - Outputs migration tier in discovery report
+  - Determines tier-specific phase list
+  - Enhanced output includes version comparison metadata
+
+- **Migration Agent**: Executes phases based on detected tier
+  - Phase 0.5 added before Phase 1 for tier classification
+  - Conditional phase execution based on tier
+  - Enhanced state updates with tier and version metadata
+  - Improved phase descriptions and logging
+
+- **Parallel Orchestrator**: Respects tier classifications for efficient migrations
+  - Parses configuration from `repos.json`
+  - Skips repositories already on target or newer versions
+  - Tier-based statistics in final report
+  - Enhanced error handling for SKIP scenarios
+
+- **Target Versions Updated**:
+  - Spring Boot: `4.0.0` → `4.0.1`
+  - Spring AI: `1.1.0` → `2.0.0-M1` (milestone for Boot 4 compatibility)
+
+- **State Schema Enhanced**: Added tier classification fields (backward compatible)
+  - `migrationTier`: Classification result
+  - `currentVersion`: Original detected versions
+  - `config`: Configuration options used
+  - `versionComparison`: Upgrade type analysis
+
+- **Package Version**: Bumped to 1.3.0 with updated description
+- **Package Description**: Updated to mention "migration tier classification and enhanced phase support"
+
+### Technical Details
+
+**Migration Tier Decision Logic**:
+
+```yaml
+# Current: 3.5.7, Target: 4.0.1 → FULL_MIGRATION (major upgrade)
+# Current: 4.0.0, Target: 4.0.1 → PATCH_UPGRADE (patch bump)
+# Current: 4.0.1, Target: 4.1.0 → MINOR_UPGRADE (minor bump)
+# Current: 4.0.1, Target: 4.0.1 → COMPREHENSIVE_REFRESH (same version)
+# Current: 4.0.1, Target: 4.0.1 (no changes) → SKIP
+# Current: 4.0.2, Target: 4.0.1 → SKIP_NEWER (already ahead)
+```
+
+**Dependency Mode Impact**:
+
+- `stable-only`: Safest for production migrations, may exclude needed dependencies
+- `include-milestones`: Required for Spring AI 2.0 compatibility with Boot 4
+- `aggressive`: Useful for testing bleeding-edge versions
+
+**Phase Execution by Tier**:
+
+| Tier                  | Wrapper | Build | Imports | Props | Configs | Deps | Docs | CI  | Deploy | Validate |
+| --------------------- | ------- | ----- | ------- | ----- | ------- | ---- | ---- | --- | ------ | -------- |
+| FULL_MIGRATION        | ✓       | ✓     | ✓       | ✓     | ✓       | ✓    | ✓    | ✓   | ✓      | ✓        |
+| PATCH/MINOR_UPGRADE   | -       | ✓     | -       | -     | -       | ✓    | ✓    | ✓   | ✓      | ✓        |
+| COMPREHENSIVE_REFRESH | -       | -     | -       | -     | -       | ✓    | ✓    | ✓   | ✓      | ✓        |
+| SKIP/SKIP_NEWER       | -       | -     | -       | -     | -       | -    | -    | -   | -      | -        |
+
 ## [1.2.0] - 2026-01-03
 
 ### Added
@@ -323,11 +456,93 @@ documentationState:
 
 ## Version History
 
+- **1.3.0** (2026-01-04) - Migration tier classification, configurable target versions, enhanced phase support
 - **1.2.0** (2026-01-03) - Documentation migration with hybrid architecture, aggregated reporting
 - **1.1.0** (2026-01-03) - Idempotent migration operations, state management, resume capability
 - **1.0.0** (2025-12-XX) - Initial release with full migration framework
 
 ## Upgrade Guide
+
+### From 1.2.0 to 1.3.0
+
+**Backward Compatible**: No breaking changes. All 1.2.0 migrations continue to work.
+
+**New Features Available**:
+
+1. **Migration Tier Classification**: Automatic detection of migration complexity
+   - Analyzes current vs. target Spring Boot versions
+   - Determines appropriate migration scope (FULL_MIGRATION, PATCH_UPGRADE, etc.)
+   - Executes only necessary phases based on tier
+   - Skips repositories already on target or newer versions
+
+2. **Configurable Target Versions**: Control migration targets via configuration
+   - Specify `targetSpringBootVersion` in `repos.json` (default: `4.0.1`)
+   - Configure `dependencyMode`: `stable-only`, `include-milestones`, or `aggressive`
+   - Configuration propagates from orchestrator to all agents
+
+3. **Enhanced Migration Phases**: Four new phases for comprehensive lifecycle
+   - Phase 0.5: Migration Tier Classification
+   - Phase 1.5: Dependency Updates (with milestone support)
+   - Phase 6: Documentation Updates
+   - Phase 7: Deployment Configuration Updates
+
+4. **Intelligent Phase Execution**: Tier-based phase selection
+   - FULL_MIGRATION: All phases (major upgrades like 3.x → 4.x)
+   - PATCH/MINOR_UPGRADE: Selective phases (version bumps within 4.x)
+   - COMPREHENSIVE_REFRESH: Dependencies, docs, CI/CD only (same version)
+   - SKIP: No migration needed (already on target or newer)
+
+**Migration Path**:
+
+```bash
+# Existing 1.2.0 migrations automatically benefit from tier classification
+/spring-m11n:migrate /path/to/project
+
+# Tier is detected automatically based on current vs. target version
+# Only necessary phases are executed
+
+# Configure custom target version and dependency mode
+# Create repos.json with config object:
+{
+  "config": {
+    "targetSpringBootVersion": "4.0.1",
+    "dependencyMode": "include-milestones"
+  },
+  "repos": [...]
+}
+
+# Parallel migrations respect tier classifications
+/spring-m11n:migrate-github repos.json
+```
+
+**State File Enhancement**:
+
+- State files now include tier classification (backward compatible)
+- Old state files work without modification
+- New state files include `migrationTier`, `currentVersion`, `config`, `versionComparison`
+- Enhanced reporting shows tier and version changes
+
+**Configuration Options**:
+
+```json
+{
+  "config": {
+    "targetSpringBootVersion": "4.0.1",
+    "dependencyMode": "include-milestones"
+  }
+}
+```
+
+**Dependency Modes**:
+
+- `stable-only`: Most conservative, excludes milestones/RCs
+- `include-milestones`: Recommended for Boot 4 (needed for Spring AI 2.0)
+- `aggressive`: All versions except snapshots
+
+**Updated Target Versions**:
+
+- Spring Boot: 4.0.1 (was 4.0.0)
+- Spring AI: 2.0.0-M1 (was 1.1.0)
 
 ### From 1.1.0 to 1.2.0
 
