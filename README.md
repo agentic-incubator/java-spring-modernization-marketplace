@@ -79,55 +79,6 @@ For portfolios, the orchestrator:
 3. Migrates in tiers (libraries first)
 4. Creates PRs for each successful migration
 
-## Documentation Migration (New in v1.2.0)
-
-Automatically updates documentation to align with migrated code:
-
-### What Gets Updated
-
-- **README prerequisites** - Java, Spring Boot, framework version requirements
-- **Code examples** - Import statements, dependency snippets in markdown
-- **Version references** - General version mentions across all docs
-- **Getting started guides** - Installation and setup instructions
-- **Migration guides** - Version compatibility matrices
-
-### How It Works
-
-**Hybrid Architecture:**
-
-- **Skill-specific updates**: Each migrator (Jackson, Security, etc.) updates its domain-specific doc examples
-- **Cross-cutting updates**: Central documentation-migrator handles general version references
-- **Aggregated reporting**: Single unified report showing all documentation changes
-
-**Example:**
-
-```markdown
-# Before migration
-
-## Prerequisites
-
-- Java 17 or higher
-- Spring Boot 3.2.x
-- Jackson 2.17+
-
-# After migration
-
-## Prerequisites
-
-- Java 21 or higher
-- Spring Boot 4.0.x
-- Jackson 3.0+
-```
-
-**Features:**
-
-- ✅ Optional execution (only runs if docs are detected)
-- ✅ Tracks changes separately from code
-- ✅ Prevents duplication through section-based boundaries
-- ✅ Generates `.migration-summary/docs-changes.md` report
-
-See `skills/documentation-migrator/SKILL.md` for details.
-
 ## Documentation
 
 | Guide                                                  | Description                          |
