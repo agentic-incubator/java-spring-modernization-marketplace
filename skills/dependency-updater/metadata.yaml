@@ -1,28 +1,38 @@
 skill:
   name: dependency-updater
-  version: 1.0.0
-  description: Upgrade all dependencies and plugins to latest stable/milestone compatible versions
+  version: 2.0.0
+  description: Upgrade all dependencies and plugins to latest stable/milestone compatible versions with compatibility validation and incremental rollback
 
   transformations:
     - id: dependency-updates
-      version: 1.0.0
-      description: Update regular dependencies to latest compatible versions
+      version: 2.0.0
+      description: Update regular dependencies to latest compatible versions with validation
       detection: "<dependency>|implementation\\(|api\\("
 
     - id: plugin-updates
-      version: 1.0.0
-      description: Update build plugins to latest versions
+      version: 2.0.0
+      description: Update build plugins to latest versions with validation
       detection: "<plugin>|id\\(.*\\) version"
 
     - id: property-updates
-      version: 1.0.0
-      description: Update Maven properties or Gradle version catalog
+      version: 2.0.0
+      description: Update Maven properties or Gradle version catalog with validation
       detection: "<properties>|\\[versions\\]"
 
     - id: milestone-repo-addition
-      version: 1.0.0
+      version: 2.0.0
       description: Add Spring Milestones repository when milestone versions detected
       detection: "-M\\d+|-RC\\d+"
+
+    - id: compatibility-validation
+      version: 2.0.0
+      description: Validate dependency updates with compilation and tests
+      detection: ".*"  # Runs after all updates
+
+    - id: incremental-rollback
+      version: 2.0.0
+      description: Roll back incompatible dependency updates and suggest migration skills
+      detection: "compilation|test failure"
 
   filterStrategies:
     - id: stable-only
@@ -89,3 +99,64 @@ skill:
     optional:
       - deprecationCheck
       - dependencyTree
+
+  compatibilityValidation:
+    enabled: true
+    compilation:
+      enabled: true  # Always run compilation validation
+      command:
+        maven: "mvn clean compile -DskipTests"
+        gradle: "./gradlew compileJava -x test"
+
+    tests:
+      enabled: true  # Default: run tests (opt-out with --skip-tests)
+      command:
+        maven: "mvn test"
+        gradle: "./gradlew test"
+
+    incrementalRollback:
+      enabled: true
+      maxRetries: 3  # Max rollback attempts per dependency
+      maxTotalRollbacks: 5  # Max total rollbacks before failing
+
+    migrationSkillMapping:
+      - pattern: "tools.jackson|com.fasterxml.jackson"
+        suggestedSkill: jackson-migrator
+        reason: "Jackson 2 → 3 migration required"
+
+      - pattern: "org.springframework.security"
+        suggestedSkill: security-config-migrator
+        reason: "Spring Security 6 → 7 configuration changes"
+
+      - pattern: "org.springframework.ai"
+        suggestedSkill: spring-ai-migrator
+        reason: "Spring AI 1.x → 2.x API changes"
+
+      - pattern: "com.vaadin"
+        suggestedSkill: vaadin-migrator
+        reason: "Vaadin 24 → 25 theme/security changes"
+
+    errorClassification:
+      - pattern: "package .* does not exist"
+        classification: "Import/GroupId Change"
+        suggestedAction: "Run related migrator skill"
+
+      - pattern: "cannot find symbol: class"
+        classification: "API Removal/Rename"
+        suggestedAction: "Check migration guide"
+
+      - pattern: "method .* not found"
+        classification: "API Change"
+        suggestedAction: "Check changelogs"
+
+      - pattern: "incompatible types"
+        classification: "Type System Change"
+        suggestedAction: "Major version migration required"
+
+      - pattern: "NoClassDefFoundError"
+        classification: "Transitive Dependency"
+        suggestedAction: "Check dependency tree"
+
+    thresholds:
+      minSuccessRate: 50  # Minimum 50% success rate required
+      allowPartialSuccess: true  # Allow some updates to succeed

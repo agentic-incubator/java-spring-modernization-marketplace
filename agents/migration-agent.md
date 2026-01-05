@@ -447,46 +447,132 @@ Marketplace: 1.3.0"
 #   commitSha: <commit-sha>
 ```
 
-### Phase 1.5: Dependency Updates
+### Phase 1.5: Dependency Updates (Enhanced v2.0.0)
 
-**Purpose**: Upgrade all dependencies and plugins to latest compatible versions for Spring Boot 4.x ecosystem.
+**Purpose**: Upgrade all dependencies and plugins to latest compatible versions with comprehensive validation and automatic rollback.
 
 **State Check**:
 
 ```bash
-# Check if dependency-updater already applied
+# Check if dependency-updater v2.0.0+ already applied
 # Read .migration-state.yaml -> appliedTransformations
 # Look for: skill: dependency-updater
-# If found and version >= current: SKIP
-# If not found or version < current: PROCEED
+# If found and version >= 2.0.0: SKIP
+# If not found or version < 2.0.0: PROCEED with v2.0.0
 ```
 
-**Execution**:
+**Filter Strategy Auto-Selection**:
+
+The dependency-updater automatically selects the appropriate filter strategy based on target versions:
+
+```yaml
+filterStrategy:
+  # If Spring AI 2.0.0-M* detected: use include-milestones
+  springBoot4WithSpringAiMilestone: "include-milestones"
+
+  # If Spring Boot 4.x stable: use stable-only
+  springBoot4Stable: "stable-only"
+
+  # Default for production migrations
+  default: "stable-only"
+```
+
+**Execution with Validation**:
 
 ```bash
-# Use dependency-updater skill with include-milestones filter
-# Mode: include-milestones (for Spring AI 2.0.0-M1 compatibility)
+# Use dependency-updater skill v2.0.0 with compatibility validation
+# Default: Validates compilation + tests with incremental rollback
 
-# Update dependencies
-dependency-updater --filter include-milestones --mode update
+# Standard execution (validation enabled)
+dependency-updater --filter auto
 
-# Auto-add Spring Milestones repository if milestone versions detected
-if grep -q '\-M[0-9]\+\|-RC[0-9]\+' pom.xml build.gradle*; then
-  # Add Spring Milestones repository
-  # Maven: Add to <repositories> section
-  # Gradle: Add maven { url "https://repo.spring.io/milestone" }
-fi
+# Fast mode (skip test validation)
+dependency-updater --filter auto --skip-tests
 
-# Validate compilation after updates
-./mvnw clean compile -DskipTests || ./gradlew clean compileJava -x test
+# Custom retry attempts
+dependency-updater --filter auto --max-retries=5
 ```
+
+**Validation Workflow (NEW in v2.0.0)**:
+
+1. **Apply dependency updates** via maven-versions-plugin or gradle-versions-plugin
+2. **Validate compilation**: `mvn clean compile -DskipTests` or `./gradlew compileJava -x test`
+3. **Validate tests** (unless --skip-tests): `mvn test` or `./gradlew test`
+4. **Incremental rollback** if validation fails:
+   - Parse error logs to identify problematic dependency
+   - Check for related migration skill (e.g., jackson-migrator for Jackson updates)
+   - If migration skill exists: roll back and suggest running skill first
+   - If no migration skill: roll back dependency and retry
+   - Continue until compilation succeeds or max retries reached
+5. **Generate compatibility report** with actionable next steps
 
 **Updates Applied**:
 
-- **Dependencies**: Latest compatible versions (include-milestones)
-- **Plugins**: Latest build plugin versions
-- **Properties**: Maven properties / Gradle version catalog
-- **Repositories**: Spring Milestones if needed for milestone dependencies
+- **Dependencies**: Latest compatible versions (with validation)
+- **Plugins**: Latest build plugin versions (with validation)
+- **Properties**: Maven properties / Gradle version catalog (with validation)
+- **Repositories**: Spring Milestones if milestone versions detected
+- **Rollbacks**: Automatic rollback of incompatible updates
+
+**Migration Skill Integration (NEW in v2.0.0)**:
+
+When dependency updates fail validation, the skill automatically suggests related migration skills:
+
+```yaml
+migrationSkillMapping:
+  - pattern: "tools.jackson|com.fasterxml.jackson"
+    suggestedSkill: jackson-migrator
+    reason: "Jackson 2 → 3 migration required"
+
+  - pattern: "org.springframework.security"
+    suggestedSkill: security-config-migrator
+    reason: "Spring Security 6 → 7 configuration changes"
+
+  - pattern: "org.springframework.ai"
+    suggestedSkill: spring-ai-migrator
+    reason: "Spring AI 1.x → 2.x API changes"
+```
+
+**Example Execution Flow**:
+
+```text
+=== Dependency Updates (Phase 1.5) ===
+
+Project: /path/to/my-spring-app
+Build Tool: Maven
+Filter Strategy: include-milestones (Spring AI 2.0.0-M1 detected)
+
+Step 1: Applying dependency updates...
+✅ Updated 25 dependencies/plugins
+
+Step 2: Validating compilation...
+✅ Compilation PASSED (45s)
+
+Step 3: Validating tests...
+❌ Tests FAILED (5 failures)
+
+Step 4: Analyzing failures...
+⚠️  jackson-databind 3.0.2: Compilation failed
+    Error: package tools.jackson.databind does not exist
+    Suggested: Run jackson-migrator first
+
+Step 5: Rolling back incompatible updates...
+↩️  Rolled back jackson-databind 3.0.2 → 2.17.0
+✅ Compilation PASSED after rollback
+
+Step 6: Generating compatibility report...
+
+📊 Summary:
+  Total Updates: 25
+  Successful: 23 (92%)
+  Rolled Back: 2 (8%)
+
+🔧 Next Steps:
+  1. Run jackson-migrator
+  2. Run security-config-migrator
+  3. Retry dependency-updater
+  Expected final success rate: 100%
+```
 
 **Example Updates**:
 
@@ -498,10 +584,10 @@ fi
   <version>32.1.0</version>
 </dependency>
 
-<!-- After: dependency-updater -->
+<!-- After: dependency-updater v2.0.0 (validated) -->
 <version>33.2.0</version>
 
-<!-- Spring AI with milestone -->
+<!-- Spring AI with milestone (validated) -->
 <dependency>
   <groupId>org.springframework.ai</groupId>
   <artifactId>spring-ai-openai-spring-boot-starter</artifactId>
@@ -520,17 +606,48 @@ fi
 ```yaml
 appliedTransformations:
   - skill: dependency-updater
-    version: '1.0.0'
+    version: '2.0.0'  # Enhanced version with validation
     transformations:
       - dependency-updates
       - plugin-updates
       - property-updates
       - milestone-repo-addition
+      - compatibility-validation  # NEW
+      - incremental-rollback  # NEW
     completedAt: <current-timestamp>
     commitSha: <commit-sha>
     config:
       filterMode: include-milestones
+      validationEnabled: true
+      testsEnabled: true  # or false if --skip-tests used
+    validation:
+      compilation:
+        success: true
+        duration: '45s'
+        rollbacksRequired: 2
+      tests:
+        success: true
+        passed: 150
+        failed: 0
+        duration: '120s'
+      rollbacks:
+        - dependency: "tools.jackson:jackson-databind"
+          fromVersion: "3.0.2"
+          toVersion: "2.17.0"
+          reason: "Compilation failed - imports not migrated"
+          suggestedSkill: "jackson-migrator"
+    summary:
+      totalUpdates: 25
+      successful: 23
+      rolledBack: 2
+      successRate: "92%"
 ```
+
+**Performance**:
+
+- Typical execution time: **2-4 minutes** (20-30 dependencies)
+- With `--skip-tests`: **1-2 minutes** (compilation only)
+- Rollback + retry: **+20-30 seconds per dependency**
 
 ---
 
