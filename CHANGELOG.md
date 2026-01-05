@@ -5,6 +5,75 @@ All notable changes to the Spring Modernization Marketplace will be documented i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2026-01-05
+
+### Added
+
+#### OpenAPI Generator Library Migration (v1.0.0)
+
+- **openapi-generator-library-migrator**: New skill for migrating from spring-cloud (Feign) to spring-http-interface
+  - Automatic library configuration migration
+  - configPackage inference and addition (required for spring-http-interface)
+  - templateDirectory addition for Framework 7 template customization
+  - Feign-specific option removal (interfaceOnly, useTags, java8, etc.)
+  - Application.yml Feign URL mapping cleanup
+  - Code regeneration and validation
+  - Coordination with openfeign-to-httpinterface-migrator for mixed scenarios
+- **/migrate-openapi-library** command for standalone library migration
+
+#### Spring AI Jackson Compatibility (v2.2.0)
+
+- **spring-ai-migrator v2.2.0**: Jackson 2/3 coexistence layer for Spring AI 2.0.0-M\* compatibility
+  - Automatic Jackson 2 dependency addition (jackson-databind 2.18.2, jackson-datatype-jsr310 2.18.2)
+  - JacksonConfiguration.java generation with ObjectMapper bean
+  - Package detection and placement in `<base-package>.config`
+  - Version-gated (milestone only, skips GA releases)
+  - Temporary workaround with removal guidance
+- **JacksonConfiguration.java template**: Comprehensive template with JavaDoc and JavaTimeModule support
+- **Dual Jackson environment support**: Jackson 2 for Spring AI, Jackson 3 for Spring Boot 4
+
+#### Migration Agent Enhancements
+
+- **Phase 2.5: Spring AI Jackson Compatibility** (conditional)
+  - Detects Spring AI 2.0.0-M\* + Spring Boot 4.x
+  - Adds Jackson 2 compatibility layer automatically
+  - State tracking with removal guidance
+- **Phase 11 Enhancement**: OpenAPI Generator Migration
+  - Step 2a: Library Migration (NEW - conditional for spring-cloud library)
+  - Step 2b: Plugin Update (existing, now conditional)
+  - Step 3: Validation
+  - Complete migration flow for OpenAPI-generated clients
+
+#### Template Path Flexibility
+
+- **Framework 7 template restructuring**: Supports both path structures
+  - Standard: `templates/libraries/spring-http-interface/` (OpenAPI Generator convention)
+  - Simplified: `templates/spring-http-interface/` (backwards compatibility)
+- **Flexible detection**: Glob patterns support multiple path conventions
+- **Injection strategy**: Mirrors detected structure or uses standard convention
+- **Build configuration guidance**: templateDirectory points to parent directory
+
+### Fixed
+
+- **spring-framework-7-migrator**: Corrected template paths to use OpenAPI Generator convention (`templates/libraries/`)
+  - Updated bundled template location
+  - Fixed documentation examples
+  - Added template path flexibility section
+  - Updated command documentation
+- **dependency-conflict-analyzer**: Fixed incorrect Jackson conflict resolution advice
+  - Corrected: Spring AI 2.0.0-M\* **requires** Jackson 2 (not 3)
+  - Updated: Recommendation now suggests Jackson 2/3 coexistence instead of pinning to Jackson 3
+  - Added: Special case handling for Spring AI milestone + Boot 4 scenario
+  - Added: Detection pattern and remediation workflow
+
+### Changed
+
+- **migration-agent**: Enhanced OpenAPI Generator Migration (Phase 11)
+  - Renamed from "Plugin Update" to "Migration" to reflect broader scope
+  - Added library migration step before plugin update
+  - Improved flow diagram with conditional steps
+- **Commands documentation**: Updated path examples to reflect OpenAPI Generator conventions
+
 ## [1.5.0] - 2026-01-05
 
 ### Added

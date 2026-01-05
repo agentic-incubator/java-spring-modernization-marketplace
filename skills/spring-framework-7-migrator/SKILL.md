@@ -245,7 +245,7 @@ public HttpServiceProxyFactory factory(WebClient client) {
 
 ### Bundled Template
 
-**Location**: `skills/spring-framework-7-migrator/templates/spring-http-interface/httpInterfacesConfiguration.mustache`
+**Location**: `skills/spring-framework-7-migrator/templates/libraries/spring-http-interface/httpInterfacesConfiguration.mustache`
 
 **Content**:
 
@@ -309,6 +309,70 @@ public abstract class HttpInterfacesAbstractConfigurator {
    find . -name "httpInterfacesConfiguration.mustache" -o -name "apiAbstractConfigurator.mustache"
    ```
 
+### Template Path Flexibility
+
+OpenAPI Generator uses a nested template structure that varies by project:
+
+**Standard OpenAPI Generator Structure** (with `/libraries/` subdirectory):
+
+```text
+src/main/resources/templates/
+  └── libraries/
+      └── spring-http-interface/
+          └── httpInterfacesConfiguration.mustache
+```
+
+**Simplified Structure** (some projects omit `/libraries/`):
+
+```text
+src/main/resources/templates/
+  └── spring-http-interface/
+      └── httpInterfacesConfiguration.mustache
+```
+
+**Detection Strategy**:
+
+Use flexible glob patterns to support both structures:
+
+```bash
+# Find template using glob pattern (supports both structures)
+CUSTOM_TEMPLATE=$(find . -path "*/templates/*spring-http-interface/httpInterfacesConfiguration.mustache" | head -1)
+
+# Detect which structure is used
+if echo "$CUSTOM_TEMPLATE" | grep -q "/libraries/"; then
+    TEMPLATE_STRUCTURE="libraries/spring-http-interface"
+else
+    TEMPLATE_STRUCTURE="spring-http-interface"
+fi
+
+# Set injection path accordingly
+TEMPLATE_INJECT_PATH="src/main/resources/templates/$TEMPLATE_STRUCTURE"
+```
+
+**Injection Strategy**:
+
+1. **If custom template exists**: Mirror the detected structure when injecting bundled template
+2. **If no custom template**: Prefer standard `/libraries/` structure (OpenAPI Generator convention)
+3. **Backwards compatibility**: Support both paths for existing projects
+
+**Build Configuration**:
+
+The `<templateDirectory>` or `templateDir` configuration points to the **parent** templates directory:
+
+Maven:
+
+```xml
+<templateDirectory>${project.basedir}/src/main/resources/templates</templateDirectory>
+```
+
+Gradle:
+
+```groovy
+templateDir = file("${projectDir}/src/main/resources/templates")
+```
+
+Both configurations expect the library subdirectory structure (with or without `/libraries/`) beneath the parent directory.
+
 ### Template Injection Workflow
 
 #### Step 1: Detect Existing Templates
@@ -329,8 +393,8 @@ CUSTOM_TEMPLATE=$(find . -path "*/templates/*/httpInterfacesConfiguration.mustac
 ```text
 Does custom template exist?
 ├─ NO → Copy bundled template to default location
-│       └─ Maven: src/main/resources/templates/spring-http-interface/
-│       └─ Gradle: src/main/resources/templates/spring-http-interface/
+│       └─ Maven: src/main/resources/templates/libraries/spring-http-interface/
+│       └─ Gradle: src/main/resources/templates/libraries/spring-http-interface/
 │
 └─ YES → Enter Manual Merge Workflow
          ├─ Generate diff
@@ -365,7 +429,7 @@ When custom templates exist, follow this workflow:
 
 ```bash
 # Copy bundled template to temp location
-cp skills/spring-framework-7-migrator/templates/spring-http-interface/httpInterfacesConfiguration.mustache /tmp/framework7.mustache
+cp skills/spring-framework-7-migrator/templates/libraries/spring-http-interface/httpInterfacesConfiguration.mustache /tmp/framework7.mustache
 
 # Generate diff
 diff -u <custom-template-path> /tmp/framework7.mustache > /tmp/framework7-diff.patch
@@ -376,7 +440,7 @@ diff -u <custom-template-path> /tmp/framework7.mustache > /tmp/framework7-diff.p
 Show user the diff with explanations:
 
 ```text
-Found custom template: src/main/resources/templates/spring-http-interface/httpInterfacesConfiguration.mustache
+Found custom template: src/main/resources/templates/libraries/spring-http-interface/httpInterfacesConfiguration.mustache
 
 Changes required for Spring Framework 7 compatibility:
 
@@ -495,7 +559,7 @@ appliedTransformations:
           - src/main/java/com/example/service/ApiClientFactory.java:42
       - id: openapi-generator-template-injection
         templatesInjected: true
-        templatePath: src/main/resources/templates/spring-http-interface/httpInterfacesConfiguration.mustache
+        templatePath: src/main/resources/templates/libraries/spring-http-interface/httpInterfacesConfiguration.mustache
         mergeStrategy: automatic # or 'manual' or 'skipped'
     validation:
       compilation: success

@@ -691,6 +691,138 @@ Marketplace: 1.3.0"
 #   commitSha: <commit-sha>
 ```
 
+---
+
+### Phase 2.5: Spring AI Jackson Compatibility (NEW - Conditional)
+
+**When**: Spring AI 2.0.0-M\* (milestone) + Spring Boot 4.x detected
+
+**Prerequisites:**
+
+```bash
+# Detect Spring AI milestone version
+SPRING_AI_VERSION=$(grep -oP 'spring-ai\.version.*>\K2\.0\.0-M\d+' pom.xml || \
+                     grep -oP 'springAiVersion.*=.*"\K2\.0\.0-M\d+' build.gradle*)
+
+# Detect Spring Boot 4.x
+SPRING_BOOT_VERSION=$(grep -oP '<version>\K4\.\d+\.\d+' pom.xml || \
+                       grep -oP 'springBootVersion.*=.*"\K4\.\d+\.\d+' build.gradle*)
+
+# Skip if not both present
+if [ -z "$SPRING_AI_VERSION" ] || [ -z "$SPRING_BOOT_VERSION" ]; then
+    echo "Spring AI 2.0.0-M* + Boot 4 not detected. Skipping Phase 2.5."
+    exit 0
+fi
+
+echo "Detected Spring AI $SPRING_AI_VERSION + Spring Boot $SPRING_BOOT_VERSION"
+echo "Jackson 2 compatibility layer needed"
+```
+
+**State Check:**
+
+```bash
+# Check if spring-ai-migrator v2.2.0+ already applied jackson-2-compatibility-layer
+if grep -q "jackson-2-compatibility-layer" .migration-state.yaml; then
+    echo "Jackson 2 compatibility layer already applied. Skipping Phase 2.5."
+    exit 0
+fi
+```
+
+**Execution:**
+
+```bash
+# Use spring-ai-migrator skill (v2.2.0+)
+# Performs:
+# 1. Add Jackson 2 dependencies (jackson-databind 2.18.2, jackson-datatype-jsr310 2.18.2)
+# 2. Detect base package from main application class
+# 3. Create JacksonConfiguration.java in <base-package>.config
+# 4. Validate compilation (dual Jackson environment)
+
+# Commit changes
+git add -A
+git commit -m "migration(spring-ai-migrator): add Jackson 2 compatibility layer [v2.2.0]
+
+Applied transformations:
+- jackson-2-compatibility-layer
+
+Reason: Spring AI 2.0.0-M1 requires Jackson 2 while Boot 4 uses Jackson 3
+Temporary: Remove when Spring AI 2.0 GA adds Jackson 3 support
+
+Jackson 2 version: 2.18.2
+Jackson 3 version: 3.0.3 (from Boot 4 BOM)
+Configuration class: src/main/java/.../config/JacksonConfiguration.java
+
+Marketplace: 1.6.0"
+
+# Update state file via migration-state skill
+```
+
+**Example Output**:
+
+```text
+Phase 2.5: Spring AI Jackson Compatibility
+
+  Detection:
+    ✅ Spring AI: 2.0.0-M1 (milestone release)
+    ✅ Spring Boot: 4.0.0
+    ℹ️  Jackson 2 compatibility layer required
+
+  Adding Jackson 2 dependencies:
+    ✅ jackson-databind:2.18.2
+    ✅ jackson-datatype-jsr310:2.18.2
+
+  Creating configuration class:
+    ℹ️  Detected base package: me.pacphi.mattermost
+    ℹ️  Config package: me.pacphi.mattermost.config
+    ✅ Created: src/main/java/me/pacphi/mattermost/config/JacksonConfiguration.java
+
+  Validation:
+    ✅ Compilation successful
+    ✅ Dual Jackson environment verified:
+       - Jackson 2: 2.18.2 (for Spring AI)
+       - Jackson 3: 3.0.3 (for Spring Boot 4)
+
+  ⚠️  Removal note:
+    This is a TEMPORARY workaround for Spring AI milestone releases.
+    Remove when upgrading to Spring AI 2.0.0 GA or later:
+      1. Delete JacksonConfiguration.java
+      2. Remove Jackson 2 dependencies from build file
+      3. Run tests to verify
+```
+
+**State Update**:
+
+```yaml
+appliedTransformations:
+  - skill: spring-ai-migrator
+    version: '2.2.0'
+    transformations:
+      - tts-model-rename
+      - speed-parameter
+      - advisor-constants
+      - autoconfigure-provider-selection
+      - autoconfigure-class-split
+      - milestones-repository
+      - jackson-2-compatibility-layer # NEW transformation
+    jacksonCompatibility:
+      applied: true
+      jackson2Version: '2.18.2'
+      jackson3Version: '3.0.3'
+      coexistenceMode: true
+      configurationClass: 'src/main/java/me/pacphi/mattermost/config/JacksonConfiguration.java'
+      reason: 'Spring AI 2.0.0-M1 requires Jackson 2'
+      temporaryWorkaround: true
+      expectedRemovalVersion: '2.0.0'
+    completedAt: <current-timestamp>
+    commitSha: <commit-sha>
+```
+
+**Next Phase:**
+
+- Continue to Phase 3 (Application Property Migrations)
+
+---
+
 ### Phase 3: Application Property Migrations
 
 **State Check:**
@@ -1214,25 +1346,138 @@ Marketplace: 1.3.0"
 
 ---
 
-### Phase 11: OpenAPI Generator Plugin Update (NEW - Conditional)
+### Phase 11: OpenAPI Generator Migration (ENHANCED - Conditional)
 
-**When**: OpenAPI Generator plugin detected + spring-http-interface library
+**When**: OpenAPI Generator plugin detected
 
 **Prerequisites:**
 
 ```bash
-# Detect OpenAPI Generator usage
+# Step 1: Detect OpenAPI Generator usage
 # Use openapi-generator-detector skill
 DETECTION_RESULT=$(openapi-generator-detector --format json)
 HAS_OPENAPI=$(echo $DETECTION_RESULT | jq -r '.openapiGenerator.detected')
 LIBRARY=$(echo $DETECTION_RESULT | jq -r '.openapiGenerator.library')
 
-# Skip if not detected or not spring-http-interface
-if [ "$HAS_OPENAPI" != "true" ] || [ "$LIBRARY" != "spring-http-interface" ]; then
-    echo "OpenAPI Generator with spring-http-interface not detected. Skipping Phase 11."
+# Skip if not detected
+if [ "$HAS_OPENAPI" != "true" ]; then
+    echo "OpenAPI Generator not detected. Skipping Phase 11."
     exit 0
 fi
+
+echo "OpenAPI Generator detected with library: $LIBRARY"
 ```
+
+---
+
+#### Step 2a: Library Migration (NEW - Conditional)
+
+**When**: Library is `spring-cloud` (Feign)
+
+**State Check:**
+
+```bash
+# Check if openapi-generator-library-migrator already applied
+if grep -q "openapi-generator-library-migrator" .migration-state.yaml; then
+    CURRENT_LIBRARY=$(grep -oP '<library>\K[^<]+' pom.xml | head -1)
+    if [ "$CURRENT_LIBRARY" = "spring-http-interface" ]; then
+        echo "Library already migrated to spring-http-interface. Skipping Step 2a."
+    fi
+else
+    # Need to migrate
+    if [ "$LIBRARY" = "spring-cloud" ]; then
+        echo "Library migration required: spring-cloud → spring-http-interface"
+    fi
+fi
+```
+
+**Execution (if library is spring-cloud):**
+
+```bash
+# Use openapi-generator-library-migrator skill
+# Performs:
+# 1. Update library: spring-cloud → spring-http-interface
+# 2. Add configPackage (inferred from apiPackage)
+# 3. Add templateDirectory (for Framework 7 templates)
+# 4. Remove Feign-specific options (interfaceOnly, useTags, etc.)
+# 5. Clean application.yml (remove Feign URL mappings)
+# 6. Remove @EnableFeignClients (if no hand-written clients)
+# 7. Regenerate code: mvn generate-sources
+# 8. Validate compilation
+
+# Commit changes
+git add -A
+git commit -m "migration(openapi-generator-library-migrator): migrate library to spring-http-interface [v1.0.0]
+
+Applied transformations:
+- library-config-update
+- config-package-addition
+- template-directory-addition
+- feign-config-cleanup
+- application-yml-url-cleanup
+
+Library: spring-cloud → spring-http-interface
+configPackage: <inferred-package>
+URL mappings removed: <count>
+
+Marketplace: 1.6.0"
+
+# Update state file via migration-state skill
+```
+
+**Example Output**:
+
+```text
+Step 2a: Library Migration
+  Current library: spring-cloud
+  Target library: spring-http-interface
+
+  Configuration updates:
+    ✅ Library: spring-cloud → spring-http-interface
+    ✅ Added configPackage: me.pacphi.mattermost.configuration
+    ✅ Added templateDirectory
+    ✅ Removed Feign options: 7
+
+  Application.yml cleanup:
+    ✅ Removed URL mappings: 7 (channels, posts, users, ...)
+    ✅ Preserved base URL
+
+  Code regeneration:
+    ✅ Generated 24 files (@HttpExchange)
+
+  Validation:
+    ✅ Compilation successful
+```
+
+**State Update**:
+
+```yaml
+appliedTransformations:
+  - skill: openapi-generator-library-migrator
+    version: '1.0.0'
+    transformations:
+      - library-config-update
+      - config-package-addition
+      - template-directory-addition
+      - feign-config-cleanup
+      - application-yml-url-cleanup
+    libraryMigration:
+      from: 'spring-cloud'
+      to: 'spring-http-interface'
+      configPackage: 'me.pacphi.mattermost.configuration'
+      urlMappingsRemoved: 7
+    validation:
+      codeGeneration: success
+      compilation: success
+    completedAt: <current-timestamp>
+    commitSha: <commit-sha>
+```
+
+---
+
+#### Step 2b: Plugin Update (EXISTING - Conditional)
+
+**When**: Plugin version needs update for Framework 7 compatibility
 
 **State Check:**
 
@@ -1249,15 +1494,13 @@ fi
 ```bash
 # Use openapi-generator-plugin-updater skill
 # Performs:
-# 1. Detect OpenAPI Generator usage
-# 2. Check library configuration
-# 3. Detect Spring Framework version
-# 4. Check plugin version compatibility
-# 5. Update plugin if incompatible
-# 6. Trigger spring-framework-7-migrator if Framework 7
-# 7. Validate generated code compilation
+# 1. Detect current plugin version
+# 2. Detect Spring Framework version
+# 3. Check plugin version compatibility
+# 4. Update plugin if incompatible
+# 5. Validate generated code compilation
 
-# Commit changes
+# Commit changes (if plugin was updated)
 git add -A
 git commit -m "migration(openapi-generator-plugin-updater): update plugin for Framework 7 compatibility [v1.0.0]
 
@@ -1267,7 +1510,7 @@ Applied transformations:
 
 Plugin: 7.17.0 → 7.18.0 (Framework 7 compatibility)
 
-Marketplace: 1.5.0"
+Marketplace: 1.6.0"
 
 # Update state file via migration-state skill
 ```
@@ -1275,10 +1518,14 @@ Marketplace: 1.5.0"
 **Example Output**:
 
 ```text
-Phase 11: OpenAPI Generator Plugin Update
-  Plugin: 7.17.0 → 7.18.0 (Framework 7 compatibility)
-  Templates: Updated to Framework 7 API
-  Validation: ✅ Code generation successful
+Step 2b: Plugin Update
+  Current plugin: 7.17.0
+  Framework: 7.0.2
+  Target plugin: 7.18.0 (Framework 7 compatible)
+
+  ✅ Plugin updated
+  ✅ Code regenerated
+  ✅ Compilation successful
 ```
 
 **State Update**:
@@ -1295,6 +1542,46 @@ appliedTransformations:
       to: '7.18.0'
     completedAt: <current-timestamp>
     commitSha: <commit-sha>
+```
+
+---
+
+#### Step 3: Validation
+
+```bash
+# Validate code generation and compilation
+./mvnw clean compile -DskipTests || {
+    echo "❌ Compilation failed after OpenAPI Generator migration"
+    exit 1
+}
+
+echo "✅ Phase 11 complete: OpenAPI Generator Migration"
+```
+
+---
+
+**Complete Phase 11 Flow:**
+
+```text
+Phase 11: OpenAPI Generator Migration
+├─ Step 1: Detection
+│   └─ Detect OpenAPI Generator presence and library
+│
+├─ Step 2a: Library Migration (if library = spring-cloud)
+│   ├─ Update library configuration
+│   ├─ Add configPackage, templateDirectory
+│   ├─ Remove Feign options
+│   ├─ Clean application.yml
+│   ├─ Regenerate code
+│   └─ Commit
+│
+├─ Step 2b: Plugin Update (if version incompatible)
+│   ├─ Update plugin version
+│   ├─ Regenerate code
+│   └─ Commit
+│
+└─ Step 3: Validation
+    └─ Compile to verify
 ```
 
 **Next Phase:**

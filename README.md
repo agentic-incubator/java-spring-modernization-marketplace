@@ -15,9 +15,9 @@ This marketplace handles it: clone, analyze, migrate, validate, and submit PRsâ€
 
 | Category | Count | Highlights                                                                                                                                                                            |
 | -------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Commands | 15    | `/migrate`, `/analyze`, `/migrate-github`, `/update-openapi-generator`, `/migrate-framework-7`, `/detect-breaking-changes`                                                            |
+| Commands | 16    | `/migrate`, `/analyze`, `/migrate-github`, `/update-openapi-generator`, `/migrate-openapi-library`, `/migrate-framework-7`, `/detect-breaking-changes`                                |
 | Agents   | 10    | Orchestrator, parallel-orchestrator, migration, discovery, validation, cleanup, analyzers                                                                                             |
-| Skills   | 42    | Dependency updater, Jackson, Security, OpenAPI Generator, Spring Framework 7, Documentation migration, Build tools, GitHub Actions, Property migration, OpenFeign, Testing frameworks |
+| Skills   | 43    | Dependency updater, Jackson, Security, OpenAPI Generator, Spring Framework 7, Documentation migration, Build tools, GitHub Actions, Property migration, OpenFeign, Testing frameworks |
 
 ## Quick Start
 
@@ -51,15 +51,17 @@ claude plugin install spring-m11n
 
 ## Supported Migrations
 
-| From              | To          | Key Changes                                                   |
-| ----------------- | ----------- | ------------------------------------------------------------- |
-| Spring Boot 3.x   | 4.x         | Starter renames, Undertow removal, Spring Milestones repo     |
-| Jackson 2.x       | 3.x         | GroupId `tools.jackson`, JacksonException, property namespace |
-| Spring Security 6 | 7           | Bean-based config, PathPatternMatcher                         |
-| Vaadin 24         | 25          | Lumo theme, security configurer                               |
-| Spring AI 1.x     | 2.0.0-M1    | TextToSpeechModel, provider selection, autoconfigure split    |
-| Properties        | Boot 4      | Kebab-case, logging packages, Jackson namespace               |
-| **Documentation** | **Aligned** | **README, prerequisites, code examples, version references**  |
+| From               | To             | Key Changes                                                                          |
+| ------------------ | -------------- | ------------------------------------------------------------------------------------ |
+| Spring Boot 3.x    | 4.x            | Starter renames, Undertow removal, Spring Milestones repo                            |
+| Jackson 2.x        | 3.x            | GroupId `tools.jackson`, JacksonException, property namespace                        |
+| Spring Security 6  | 7              | Bean-based config, PathPatternMatcher                                                |
+| Vaadin 24          | 25             | Lumo theme, security configurer                                                      |
+| Spring AI 1.x      | 2.0.0-M1       | TextToSpeechModel, provider selection, autoconfigure split, Jackson 2/3 coexistence  |
+| OpenFeign          | HTTP Interface | Library migration (spring-cloud â†’ spring-http-interface), configPackage, URL cleanup |
+| Spring Framework 6 | 7              | HttpServiceProxyFactory API, WebClientAdapter API, template path flexibility         |
+| Properties         | Boot 4         | Kebab-case, logging packages, Jackson namespace                                      |
+| **Documentation**  | **Aligned**    | **README, prerequisites, code examples, version references**                         |
 
 ## How It Works
 

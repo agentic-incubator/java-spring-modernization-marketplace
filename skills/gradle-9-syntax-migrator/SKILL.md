@@ -217,7 +217,6 @@ Valid Gradle 9.x versions:
 
 ## References
 
-- **Migration Learnings:** docs/planning/migration-learnings.md (Section 4)
 - **Gradle 9.0 Release Notes:** <https://docs.gradle.org/9.0/release-notes.html>
 
 ---

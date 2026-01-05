@@ -74,8 +74,11 @@ When custom templates exist and `--inject-templates` is used:
 2. Explains required changes
 3. Asks user: apply diff, manual edit, or skip
 
+**Note**: Supports both path structures: `templates/libraries/spring-http-interface/` (OpenAPI Generator convention)
+and `templates/spring-http-interface/` (simplified).
+
 ```text
-Found custom template: src/main/resources/templates/spring-http-interface/httpInterfacesConfiguration.mustache
+Found custom template: src/main/resources/templates/libraries/spring-http-interface/httpInterfacesConfiguration.mustache
 
 Changes required for Spring Framework 7 compatibility:
 
@@ -137,7 +140,7 @@ Migrating API patterns...
 
 Injecting Framework 7 templates...
   ⚠️  Custom template detected:
-      src/main/resources/templates/spring-http-interface/httpInterfacesConfiguration.mustache
+      src/main/resources/templates/libraries/spring-http-interface/httpInterfacesConfiguration.mustache
 
 [Shows diff and prompts user]
 
@@ -202,7 +205,7 @@ Step 2: Template Injection
 
   Detecting custom templates...
     ⚠️  Custom template found:
-        src/main/resources/templates/spring-http-interface/httpInterfacesConfiguration.mustache
+        src/main/resources/templates/libraries/spring-http-interface/httpInterfacesConfiguration.mustache
 
   Generating diff...
 

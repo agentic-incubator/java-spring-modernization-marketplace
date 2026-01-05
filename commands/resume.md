@@ -544,4 +544,3 @@ Solution:
 - [Resume Migration Skill](../skills/resume-migration/SKILL.md)
 - [Migration State Skill](../skills/migration-state/SKILL.md)
 - [Post-Merge Cleanup Skill](../skills/post-merge-cleanup/SKILL.md)
-- [Idempotent Migration Plan](../docs/planning/idempotent-migration-plan.md)
