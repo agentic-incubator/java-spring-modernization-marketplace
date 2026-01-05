@@ -718,7 +718,6 @@ public class UserServiceTest {
 
 ## References
 
-- **Migration Learnings:** docs/planning/migration-learnings.md (Section 6.1)
 - **JUnit 5 User Guide:** <https://junit.org/junit5/docs/current/user-guide/>
 - **Spring Boot Testing:** <https://docs.spring.io/spring-boot/reference/testing/index.html>
 - **OpenRewrite JUnit5 Migration:** <https://docs.openrewrite.org/recipes/java/testing/junit5>

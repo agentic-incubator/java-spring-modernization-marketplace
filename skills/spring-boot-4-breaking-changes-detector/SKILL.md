@@ -677,7 +677,6 @@ breakingChanges:
 
 ## References
 
-- **Migration Learnings:** docs/planning/migration-learnings.md (Sections 1, 2, 5)
 - **Spring Boot 4.0 Release Notes:** <https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-4.0-Release-Notes>
 - **Related Skills:** openfeign-compatibility-detector, jackson-migrator, security-config-migrator
 

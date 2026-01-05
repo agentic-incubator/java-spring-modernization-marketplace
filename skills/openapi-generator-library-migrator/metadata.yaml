@@ -1,0 +1,91 @@
+skill:
+  name: openapi-generator-library-migrator
+  version: 1.0.0
+  description: Migrate OpenAPI Generator library from spring-cloud (Feign) to spring-http-interface for Spring Boot 4 compatibility
+  tags:
+    - openapi-generator
+    - spring-cloud
+    - spring-http-interface
+    - feign
+    - migration
+    - spring-boot-4
+
+transformations:
+  - id: library-config-update
+    version: 1.0.0
+    description: Update OpenAPI Generator library configuration from spring-cloud to spring-http-interface
+    detection: "<library>spring-cloud</library>"
+    automationPotential: 95
+    userApprovalRequired: false
+
+  - id: config-package-addition
+    version: 1.0.0
+    description: Add required configPackage option for spring-http-interface library
+    detection: "spring-http-interface library without configPackage"
+    automationPotential: 100
+    userApprovalRequired: false
+
+  - id: template-directory-addition
+    version: 1.0.0
+    description: Add templateDirectory configuration for Framework 7 template customization
+    detection: "spring-http-interface library without templateDirectory"
+    automationPotential: 100
+    userApprovalRequired: false
+
+  - id: feign-config-cleanup
+    version: 1.0.0
+    description: Remove Feign-specific options incompatible with spring-http-interface
+    detection: "interfaceOnly|useTags|java8|performBeanValidation|useOptional|basePackage|invokerPackage"
+    automationPotential: 90
+    userApprovalRequired: false
+
+  - id: application-yml-url-cleanup
+    version: 1.0.0
+    description: Remove Feign client URL mappings from application.yml
+    detection: "client URL mapping pattern in application.yml"
+    automationPotential: 85
+    userApprovalRequired: false
+
+dependencies:
+  requires:
+    - openapi-generator-detector
+  recommendedBefore:
+    - spring-framework-7-migrator
+    - openapi-generator-plugin-updater
+  coordinatesWith:
+    - openfeign-to-httpinterface-migrator
+
+compatibilityMatrix:
+  springBoot:
+    minVersion: "4.0.0"
+  springCloud:
+    incompatibleVersions: ["2025.0.0", "2025.0.1", "2025.0.2"]
+    compatibleVersions: ["2025.1.0+"]
+  openapiGenerator:
+    minVersion: "7.8.0"
+    recommendedVersion: "7.18.0"
+
+validation:
+  preChecks:
+    - openapi-generator-plugin-exists
+    - library-is-spring-cloud
+    - build-file-syntax-valid
+  postChecks:
+    - code-generation-succeeds
+    - compilation-succeeds
+    - http-exchange-annotations-present
+    - feign-client-annotations-absent
+    - configurator-class-generated
+
+stateTracking:
+  trackTransformations: true
+  trackValidation: true
+  trackFilesModified: true
+  commitChanges: true
+
+safetyMechanisms:
+  backup: true
+  xmlValidation: true
+  yamlValidation: true
+  rollbackOnFailure: true
+  idempotentExecution: true

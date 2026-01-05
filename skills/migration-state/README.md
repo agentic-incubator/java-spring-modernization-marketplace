@@ -367,7 +367,6 @@ Phase 1 (Part A) provides core state management. Future phases will add:
 
 ## Related Documentation
 
-- [Idempotent Migration Plan](../../../docs/planning/idempotent-migration-plan.md) - Overall strategy
 - [SKILL.md](./SKILL.md) - Detailed implementation guide
 - [metadata.yaml](./metadata.yaml) - Skill metadata and dependencies
 - [example-state.yaml](./example-state.yaml) - Complete state file example
@@ -378,4 +377,3 @@ For issues or questions:
 
 1. Check `SKILL.md` for detailed function documentation
 2. Review `example-state.yaml` for state structure examples
-3. Consult `docs/planning/idempotent-migration-plan.md` for design rationale

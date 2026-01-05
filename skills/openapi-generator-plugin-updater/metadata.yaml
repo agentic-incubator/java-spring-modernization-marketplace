@@ -1,0 +1,104 @@
+skill:
+  name: openapi-generator-plugin-updater
+  version: 1.0.0
+  description: Intelligent OpenAPI Generator maven/gradle plugin version management with Spring Framework compatibility validation
+
+  transformations:
+    - id: plugin-version-detection
+      version: 1.0.0
+      description: Detect current OpenAPI Generator plugin version in Maven/Gradle
+      detection: "openapi-generator-maven-plugin|org\\.openapi\\.generator"
+
+    - id: framework-version-detection
+      version: 1.0.0
+      description: Detect Spring Framework version to determine compatible plugin version
+      detection: "springframework.*</version>|org\\.springframework.*version"
+
+    - id: plugin-version-update
+      version: 1.0.0
+      description: Update OpenAPI Generator plugin to compatible version
+      detection: "<version>[0-9.]+</version>|version.*\"[0-9.]+\""
+
+    - id: template-compatibility-validation
+      version: 1.0.0
+      description: Validate template compatibility with plugin version
+      detection: "spring-http-interface|templateDirectory"
+
+    - id: framework-7-template-trigger
+      version: 1.0.0
+      description: Trigger spring-framework-7-migrator for template updates if needed
+      detection: "spring\\.framework.*7\\.|springframework.*7\\."
+
+  compatibilityMatrix:
+    springFramework:
+      "7.x":
+        minimumPlugin: "7.18.0"
+        recommendedPlugin: "7.18.0"
+        templateRequired: "spring-http-interface-framework-7"
+        reason: "Spring Framework 7 API compatibility (HttpServiceProxyFactory.builderFor)"
+
+      "6.x":
+        minimumPlugin: "7.0.0"
+        recommendedPlugin: "7.17.0"
+        templateRequired: "spring-http-interface-framework-6"
+        reason: "Spring Framework 6 API compatibility (HttpServiceProxyFactory.builder)"
+
+  buildToolSupport:
+    maven:
+      pluginCoordinates: "org.openapitools:openapi-generator-maven-plugin"
+      versionElement: "<version>"
+      configurationPath: "pom.xml"
+      detectionPattern: "<artifactId>openapi-generator-maven-plugin</artifactId>"
+
+    gradle:
+      pluginId: "org.openapi.generator"
+      versionFormat: 'id("org.openapi.generator") version'
+      configurationPath: "build.gradle|build.gradle.kts"
+      detectionPattern: "id\\(\"org\\.openapi\\.generator\"\\)"
+
+  libraryDetection:
+    springHttpInterface:
+      maven: "<library>spring-http-interface</library>"
+      gradle: "library.*=.*['\"]spring-http-interface['\"]"
+      requiresTemplateValidation: true
+
+  dependencies:
+    - skill: version-detector
+      minVersion: 1.0.0
+      description: "Detect Spring Framework version"
+
+    - skill: build-tool-detector
+      minVersion: 1.0.0
+      description: "Detect Maven vs Gradle"
+
+    - skill: pattern-detector
+      minVersion: 1.0.0
+      description: "Detect OpenAPI Generator configuration patterns"
+
+  integrations:
+    - skill: spring-framework-7-migrator
+      description: "Coordinate template updates for Framework 7"
+      triggerCondition: "Spring Framework 7.x detected + spring-http-interface library"
+
+    - skill: dependency-updater
+      description: "Delegate to plugin updater for OpenAPI Generator"
+      delegationPattern: "openapi-generator-maven-plugin|org.openapi.generator"
+
+  validation:
+    required:
+      - pluginVersionDetection
+      - frameworkCompatibilityCheck
+    optional:
+      - templateValidation
+      - generatedCodeCompilation
+
+  updateStrategy:
+    conservative:
+      description: "Update only if current version incompatible with target framework"
+      matchesFrameworkVersion: true
+
+    latest:
+      description: "Update to latest compatible version"
+      alwaysUpdateToRecommended: true
+
+    default: "conservative"

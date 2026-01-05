@@ -5,6 +5,181 @@ All notable changes to the Spring Modernization Marketplace will be documented i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2026-01-05
+
+### Added
+
+#### OpenAPI Generator Library Migration (v1.0.0)
+
+- **openapi-generator-library-migrator**: New skill for migrating from spring-cloud (Feign) to spring-http-interface
+  - Automatic library configuration migration
+  - configPackage inference and addition (required for spring-http-interface)
+  - templateDirectory addition for Framework 7 template customization
+  - Feign-specific option removal (interfaceOnly, useTags, java8, etc.)
+  - Application.yml Feign URL mapping cleanup
+  - Code regeneration and validation
+  - Coordination with openfeign-to-httpinterface-migrator for mixed scenarios
+- **/migrate-openapi-library** command for standalone library migration
+
+#### Spring AI Jackson Compatibility (v2.2.0)
+
+- **spring-ai-migrator v2.2.0**: Jackson 2/3 coexistence layer for Spring AI 2.0.0-M\* compatibility
+  - Automatic Jackson 2 dependency addition (jackson-databind 2.18.2, jackson-datatype-jsr310 2.18.2)
+  - JacksonConfiguration.java generation with ObjectMapper bean
+  - Package detection and placement in `<base-package>.config`
+  - Version-gated (milestone only, skips GA releases)
+  - Temporary workaround with removal guidance
+- **JacksonConfiguration.java template**: Comprehensive template with JavaDoc and JavaTimeModule support
+- **Dual Jackson environment support**: Jackson 2 for Spring AI, Jackson 3 for Spring Boot 4
+
+#### Migration Agent Enhancements
+
+- **Phase 2.5: Spring AI Jackson Compatibility** (conditional)
+  - Detects Spring AI 2.0.0-M\* + Spring Boot 4.x
+  - Adds Jackson 2 compatibility layer automatically
+  - State tracking with removal guidance
+- **Phase 11 Enhancement**: OpenAPI Generator Migration
+  - Step 2a: Library Migration (NEW - conditional for spring-cloud library)
+  - Step 2b: Plugin Update (existing, now conditional)
+  - Step 3: Validation
+  - Complete migration flow for OpenAPI-generated clients
+
+#### Template Path Flexibility
+
+- **Framework 7 template restructuring**: Supports both path structures
+  - Standard: `templates/libraries/spring-http-interface/` (OpenAPI Generator convention)
+  - Simplified: `templates/spring-http-interface/` (backwards compatibility)
+- **Flexible detection**: Glob patterns support multiple path conventions
+- **Injection strategy**: Mirrors detected structure or uses standard convention
+- **Build configuration guidance**: templateDirectory points to parent directory
+
+### Fixed
+
+- **spring-framework-7-migrator**: Corrected template paths to use OpenAPI Generator convention (`templates/libraries/`)
+  - Updated bundled template location
+  - Fixed documentation examples
+  - Added template path flexibility section
+  - Updated command documentation
+- **dependency-conflict-analyzer**: Fixed incorrect Jackson conflict resolution advice
+  - Corrected: Spring AI 2.0.0-M\* **requires** Jackson 2 (not 3)
+  - Updated: Recommendation now suggests Jackson 2/3 coexistence instead of pinning to Jackson 3
+  - Added: Special case handling for Spring AI milestone + Boot 4 scenario
+  - Added: Detection pattern and remediation workflow
+
+### Changed
+
+- **migration-agent**: Enhanced OpenAPI Generator Migration (Phase 11)
+  - Renamed from "Plugin Update" to "Migration" to reflect broader scope
+  - Added library migration step before plugin update
+  - Improved flow diagram with conditional steps
+- **Commands documentation**: Updated path examples to reflect OpenAPI Generator conventions
+
+## [1.5.0] - 2026-01-05
+
+### Added
+
+#### Phase 1: Dependency Updater Enhancement (v2.0.0)
+
+- **Compatibility Validation**: Automatic validation of dependency updates with compilation + tests
+- **Incremental Rollback**: Intelligent rollback of incompatible dependency updates
+- **--skip-tests Flag**: Fast validation mode (compilation only)
+- **Migration Skill Integration**: Automatic suggestion of related migration skills
+- **Error Classification**: Pattern matching for 5 common error types
+- **Compatibility Reporting**: Detailed success/rollback/skipped summary
+- **Filter Strategy Auto-Selection**: Automatically selects filter based on target versions
+
+#### Phase 2: OpenAPI Generator Intelligence
+
+- **openapi-generator-plugin-updater** (v1.0.0): New skill for Spring Framework compatibility
+  - Automatic plugin version selection for Framework 7
+  - Maven and Gradle support
+  - Conservative and latest update strategies
+  - Template compatibility validation
+- **Spring Framework 7 Support**: Automatic plugin version selection for Framework 7
+- **openapi-generator-detector** (v1.0.0): Reusable detection logic
+  - Maven and Gradle plugin detection
+  - Library configuration detection (spring-http-interface, spring-cloud)
+  - Custom template directory detection
+  - JSON, YAML, and text output formats
+- **spring-framework-7-migrator** (v1.0.0): API pattern migrations and template management
+  - HttpServiceProxyFactory.builder() → builderFor() migration
+  - WebClientAdapter.forClient() → create() migration
+  - Framework 7 compatible template bundling
+  - Manual merge workflow for custom templates
+  - Template diff generation and explanation
+  - User-controlled template customization
+- **Template Bundling**: Framework 7 compatible templates included
+- **Manual Merge Workflow**: User-controlled template customization
+
+#### Migration Agent Integration
+
+- **Phase 11**: OpenAPI Generator Plugin Update (conditional)
+  - Detects OpenAPI Generator with spring-http-interface library
+  - Updates plugin to Framework 7 compatible version
+  - Validates code generation
+  - Triggers Framework 7 API migration when needed
+- **Phase 11.5**: Spring Framework 7 API Migration (conditional)
+  - Detects Framework 7 API patterns
+  - Migrates HttpServiceProxyFactory and WebClientAdapter APIs
+  - Injects Framework 7 templates for OpenAPI Generator
+  - Validates compilation and code generation
+
+#### New Commands
+
+- **/update-openapi-generator**: Update OpenAPI Generator plugin to compatible version
+  - Auto-detects build tool (Maven/Gradle)
+  - Determines compatible plugin version based on Framework version
+  - Conservative and latest strategies
+  - Template compatibility validation
+- **/migrate-framework-7**: Migrate Spring Framework 6 to 7 API changes
+  - API pattern migration (HttpServiceProxyFactory, WebClientAdapter)
+  - Template injection for OpenAPI Generator
+  - Manual merge workflow for custom templates
+  - Dry run support
+  - Compilation validation
+
+#### Documentation
+
+- **docs/migrations/spring-framework-7.md**: Comprehensive Framework 7 migration guide
+  - Breaking API changes documentation
+  - Migration strategies (automated and manual)
+  - OpenAPI Generator integration
+  - Template management guide
+  - Troubleshooting guide
+  - Testing recommendations
+
+### Changed
+
+- **dependency-updater**: Upgraded from v1.0.0 to v2.0.0
+  - Enhanced with compatibility validation and rollback
+  - Added migration skill suggestions
+  - Added error classification
+  - Added filter strategy auto-selection
+- **migration-agent Phase 1.5**: Enhanced with validation and rollback
+  - Automatic validation after dependency updates
+  - Incremental rollback on failures
+  - Migration skill integration
+  - Detailed compatibility reporting
+- **migration-agent**: Added Phase 11 and 11.5 for OpenAPI Generator and Framework 7
+- **commands/migrate**: Updated documentation for new capabilities
+- **README.md**: Updated artifact counts (39 → 42 skills, 13 → 15 commands, 9 → 10 agents)
+- **package.json**: Version bumped to 1.5.0, description updated
+
+### Fixed
+
+- Dependency updates now validate compatibility before committing
+- OpenAPI Generator plugin updates respect Spring Framework version requirements
+- Template compatibility validated during plugin updates
+- Framework 7 API migrations prevent compilation errors
+
+### Documentation
+
+- Updated migration-agent.md with Phase 11 and 11.5
+- Added OpenAPI Generator delegation documentation
+- Added Spring Framework 7 migration guide
+- Updated commands documentation with new commands
+- Enhanced skill documentation with new features
+
 ## [1.4.0] - 2026-01-04
 
 ### Added

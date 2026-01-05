@@ -1,0 +1,43 @@
+skill:
+  name: openapi-generator-detector
+  version: 1.0.0
+  description: Detect OpenAPI Generator usage, library configuration, and custom templates
+
+  detectionPatterns:
+    - id: maven-plugin
+      pattern: "openapi-generator-maven-plugin"
+      location: pom.xml
+      description: Detect OpenAPI Generator Maven plugin
+
+    - id: gradle-plugin
+      pattern: "org\\.openapi\\.generator"
+      location: build.gradle|build.gradle.kts
+      description: Detect OpenAPI Generator Gradle plugin
+
+    - id: library-spring-http-interface
+      pattern: "<library>spring-http-interface</library>|library.*spring-http-interface"
+      description: Detect spring-http-interface library configuration
+
+    - id: library-spring-cloud
+      pattern: "<library>spring-cloud</library>|library.*spring-cloud"
+      description: Detect spring-cloud library configuration
+
+    - id: custom-templates-maven
+      pattern: "<templateDirectory>"
+      location: pom.xml
+      description: Detect custom template directory in Maven
+
+    - id: custom-templates-gradle
+      pattern: "templateDir|templates"
+      location: build.gradle|build.gradle.kts
+      description: Detect custom template directory in Gradle
+
+    - id: template-files
+      pattern: "*.mustache"
+      location: src/main/resources/templates/**
+      description: Detect mustache template files
+
+  outputFormats:
+    - json
+    - yaml
+    - text

@@ -275,6 +275,254 @@ repositories {
 }
 ```
 
+## Jackson 2 Compatibility Layer (Spring AI 2.0.0-M\*)
+
+**NEW in v2.2.0**: Spring AI 2.0.0-M\* milestone releases require Jackson 2 while Spring Boot 4 uses Jackson 3.
+This section covers the temporary compatibility layer needed for Spring AI milestones.
+
+### Problem
+
+**Spring AI 2.0.0-M1** requires Jackson 2 (`com.fasterxml.jackson.*` packages)
+**Spring Boot 4** uses Jackson 3 (`tools.jackson.*` packages)
+
+**Root Cause**: Spring AI's ChromaVectorStoreAutoConfiguration still imports Jackson 2's ObjectMapper:
+
+```java
+// From Spring AI 2.0.0-M1 source
+import com.fasterxml.jackson.databind.ObjectMapper;  // Jackson 2!
+```
+
+**Error Without Compatibility Layer**:
+
+```text
+No qualifying bean of type 'com.fasterxml.jackson.databind.ObjectMapper' available
+```
+
+### Version Gate (Milestone Only)
+
+This transformation **ONLY** applies when:
+
+- ✅ Spring AI version matches `2.0.0-M*` (milestone releases)
+- ✅ Spring Boot version is `4.0.0+`
+- ❌ Spring AI version is GA (`2.0.0`, `2.0.1`, etc.) - **SKIP** (GA likely supports Jackson 3)
+
+### Solution: Dual Jackson Environment
+
+Run both Jackson 2 and Jackson 3 simultaneously:
+
+- **Jackson 3**: Used by Spring Boot 4 (tools.jackson.\*)
+- **Jackson 2**: Provided explicitly for Spring AI (com.fasterxml.jackson.\*)
+
+### Before (Fails with Spring AI 2.0.0-M1 + Boot 4)
+
+**pom.xml**:
+
+```xml
+<parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>4.0.0</version>
+</parent>
+
+<properties>
+    <spring-ai.version>2.0.0-M1</spring-ai.version>
+</properties>
+
+<dependencies>
+    <dependency>
+        <groupId>org.springframework.ai</groupId>
+        <artifactId>spring-ai-openai-spring-boot-starter</artifactId>
+    </dependency>
+</dependencies>
+```
+
+**Result**: Application fails to start:
+
+```text
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Parameter 0 of constructor in org.springframework.ai.vectorstore.chroma.ChromaVectorStoreAutoConfiguration
+required a bean of type 'com.fasterxml.jackson.databind.ObjectMapper' that could not be found.
+```
+
+### After (Jackson 2 + 3 Coexistence)
+
+**pom.xml** (additions):
+
+```xml
+<!-- Jackson 2 dependencies for Spring AI compatibility (Spring AI 2.0.0-M1 requires Jackson 2) -->
+<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-databind</artifactId>
+    <version>2.18.2</version>
+</dependency>
+<dependency>
+    <groupId>com.fasterxml.jackson.datatype</groupId>
+    <artifactId>jackson-datatype-jsr310</artifactId>
+    <version>2.18.2</version>
+</dependency>
+```
+
+`src/main/java/<base-package>/config/JacksonConfiguration.java` (created):
+
+```java
+package com.example.config;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+/**
+ * Jackson 2 configuration for Spring AI compatibility.
+ *
+ * <p>Spring AI 2.0.0-M1 requires Jackson 2's {@link ObjectMapper} but Spring Boot 4
+ * only auto-configures Jackson 3's {@code tools.jackson.databind.json.JsonMapper}.
+ * This configuration provides a Jackson 2 ObjectMapper bean to satisfy Spring AI's
+ * requirements.
+ *
+ * <p>This is a temporary workaround until Spring AI 2.0 GA adds full Jackson 3 support
+ * (expected H1 2026).
+ *
+ * @see <a href="https://spring.io/blog/2025/10/07/introducing-jackson-3-support-in-spring/">Spring Jackson 3 Support</a>
+ * @see <a href="https://github.com/FasterXML/jackson/blob/main/jackson3/MIGRATING_TO_JACKSON_3.md">Jackson 3 Migration Guide</a>
+ */
+@Configuration
+public class JacksonConfiguration {
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    }
+}
+```
+
+**Result**: Application starts successfully with both Jackson versions:
+
+```text
+Dependency tree:
+  com.fasterxml.jackson.core:jackson-databind:2.18.2  (Jackson 2 - for Spring AI)
+  tools.jackson.core:jackson-databind:3.0.3          (Jackson 3 - for Spring Boot 4)
+```
+
+### Gradle Example
+
+**build.gradle.kts** (additions):
+
+```kotlin
+dependencies {
+    // Jackson 2 for Spring AI 2.0.0-M1 compatibility
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.18.2")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.2")
+}
+```
+
+### Package Detection Strategy
+
+The configuration class is placed in `<base-package>.config`:
+
+```bash
+# Find main application class
+MAIN_CLASS=$(grep -r "@SpringBootApplication" src/main/java/ -l)
+
+# Extract package: com.example.app.Application → com.example.app
+BASE_PACKAGE=$(grep "^package" "$MAIN_CLASS" | cut -d' ' -f2 | sed 's/;$//')
+
+# Use config subpackage: com.example.app.config
+CONFIG_PACKAGE="${BASE_PACKAGE}.config"
+
+# Create JacksonConfiguration.java in that package
+CONFIG_FILE="src/main/java/$(echo $CONFIG_PACKAGE | tr '.' '/')/JacksonConfiguration.java"
+```
+
+### When to Remove This Compatibility Layer
+
+**Remove when upgrading to Spring AI 2.0.0 GA or later** (GA releases support Jackson 3)
+
+**Removal Steps**:
+
+1. **Remove Jackson 2 dependencies** from `pom.xml` or `build.gradle.kts`:
+
+   ```bash
+   # Remove these lines
+   <dependency>
+       <groupId>com.fasterxml.jackson.core</groupId>
+       <artifactId>jackson-databind</artifactId>
+       <version>2.18.2</version>
+   </dependency>
+   <dependency>
+       <groupId>com.fasterxml.jackson.datatype</groupId>
+       <artifactId>jackson-datatype-jsr310</artifactId>
+       <version>2.18.2</version>
+   </dependency>
+   ```
+
+2. **Delete JacksonConfiguration.java**:
+
+   ```bash
+   rm src/main/java/com/example/config/JacksonConfiguration.java
+   ```
+
+3. **Verify application still compiles**:
+
+   ```bash
+   ./mvnw clean compile
+   ```
+
+4. **Run tests** to confirm no regressions:
+
+   ```bash
+   ./mvnw test
+   ```
+
+### Integration with Migration State
+
+```yaml
+appliedTransformations:
+  - skill: spring-ai-migrator
+    version: '2.2.0'
+    transformations:
+      - tts-model-rename
+      - speed-parameter
+      - advisor-constants
+      - autoconfigure-provider-selection
+      - autoconfigure-class-split
+      - milestones-repository
+      - jackson-2-compatibility-layer # NEW transformation
+    jacksonCompatibility:
+      applied: true
+      jackson2Version: '2.18.2'
+      jackson3Version: '3.0.2' # From Spring Boot 4 BOM
+      coexistenceMode: true
+      configurationClass: 'src/main/java/com/example/config/JacksonConfiguration.java'
+      reason: 'Spring AI 2.0.0-M1 requires Jackson 2'
+      temporaryWorkaround: true
+      expectedRemovalVersion: '2.0.0' # Remove when Spring AI GA
+      removalGuidance: |
+        When upgrading to Spring AI 2.0.0 GA or later:
+        1. Remove Jackson 2 dependencies from build file
+        2. Delete JacksonConfiguration.java
+        3. Run mvn clean compile to verify
+        4. Run tests to confirm no regressions
+    completedAt: '2026-01-05T12:00:00Z'
+    commitSha: 'abc123def456'
+```
+
+### Important Notes
+
+1. **Temporary workaround**: This is explicitly a temporary solution for milestone releases
+2. **GA releases**: Spring AI 2.0.0 GA and later will support Jackson 3 natively
+3. **No conflicts**: Jackson 2 and 3 can coexist safely due to different package names
+4. **Performance impact**: Negligible - both libraries are loaded but used by different components
+5. **Spring Boot 4 still uses Jackson 3**: Your application code should use Jackson 3 APIs (tools.jackson.\*)
+
 ## Benefits of Migration
 
 - **Spring Boot 4 compatibility** - Required for autoconfigure module split
