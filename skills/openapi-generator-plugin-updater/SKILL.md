@@ -18,11 +18,11 @@ Intelligently updates OpenAPI Generator maven/gradle plugin versions based on Sp
 
 ## Spring Framework Compatibility Matrix
 
-| Spring Framework | Minimum Plugin | Recommended | Template API | Reason |
-|------------------|----------------|-------------|--------------|--------|
-| **7.x** | 7.18.0 | 7.18.0 | `.builderFor()` | Framework 7 API changes |
-| **6.x** | 7.0.0 | 7.17.0 | `.builder()` | Framework 6 API |
-| **5.x** | 6.0.0 | 6.6.0 | `.builder()` | Legacy support |
+| Spring Framework | Minimum Plugin | Recommended | Template API    | Reason                  |
+| ---------------- | -------------- | ----------- | --------------- | ----------------------- |
+| **7.x**          | 7.18.0         | 7.18.0      | `.builderFor()` | Framework 7 API changes |
+| **6.x**          | 7.0.0          | 7.17.0      | `.builder()`    | Framework 6 API         |
+| **5.x**          | 6.0.0          | 6.6.0       | `.builder()`    | Legacy support          |
 
 ## When This Skill Applies
 
@@ -317,20 +317,20 @@ appliedTransformations:
 
     pluginUpdate:
       buildTool: maven
-      from: "7.17.0"
-      to: "7.18.0"
-      reason: "Spring Framework 7.0.0 compatibility"
-      library: "spring-http-interface"
+      from: '7.17.0'
+      to: '7.18.0'
+      reason: 'Spring Framework 7.0.0 compatibility'
+      library: 'spring-http-interface'
 
     frameworkCompatibility:
-      springFramework: "7.0.0"
-      requiredPlugin: "7.18.0"
+      springFramework: '7.0.0'
+      requiredPlugin: '7.18.0'
       compatible: true
 
     templateUpdate:
       triggered: true
-      skill: "spring-framework-7-migrator"
-      reason: "Framework 7 API changes require template update"
+      skill: 'spring-framework-7-migrator'
+      reason: 'Framework 7 API changes require template update'
 ```
 
 ### Idempotent Execution
@@ -566,13 +566,13 @@ If plugin version managed in parent POM:
 
 ## Related Skills
 
-| Skill | Purpose | Integration |
-|-------|---------|-------------|
-| **spring-framework-7-migrator** | Template updates for Framework 7 | Triggered when Framework 7 detected |
-| **version-detector** | Detect Spring Framework version | Used to determine required plugin version |
-| **dependency-updater** | General dependency/plugin updates | Delegates OpenAPI Generator to this skill |
-| **build-tool-detector** | Detect Maven vs Gradle | Used to determine update commands |
-| **pattern-detector** | Detect configuration patterns | Used to find library configuration |
+| Skill                           | Purpose                           | Integration                               |
+| ------------------------------- | --------------------------------- | ----------------------------------------- |
+| **spring-framework-7-migrator** | Template updates for Framework 7  | Triggered when Framework 7 detected       |
+| **version-detector**            | Detect Spring Framework version   | Used to determine required plugin version |
+| **dependency-updater**          | General dependency/plugin updates | Delegates OpenAPI Generator to this skill |
+| **build-tool-detector**         | Detect Maven vs Gradle            | Used to determine update commands         |
+| **pattern-detector**            | Detect configuration patterns     | Used to find library configuration        |
 
 ## Version History
 

@@ -1,9 +1,9 @@
 ---
 name: migration-agent
-description: Migration agent that applies Spring ecosystem transformations including build file updates, import migrations, configuration changes, application property migrations, GitHub Actions updates, testing framework migrations, and build tool syntax updates. Use when executing the actual migration work on a project.
+description: Migration agent that applies Spring ecosystem transformations including build file updates, import migrations, configuration changes, application property migrations, GitHub Actions updates, testing framework migrations, build tool syntax updates, OpenAPI Generator plugin updates, and Spring Framework 7 API migrations. Use when executing the actual migration work on a project.
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: inherit
-skills: migration-state, build-tool-upgrader, jackson-migrator, security-config-migrator, spring-ai-migrator, application-property-migrator, import-migrator, build-file-updater, openrewrite-executor, github-actions-updater, junit4-to-junit5-migrator, gradle-9-syntax-migrator, openfeign-to-httpinterface-migrator
+skills: migration-state, build-tool-upgrader, jackson-migrator, security-config-migrator, spring-ai-migrator, application-property-migrator, import-migrator, build-file-updater, openrewrite-executor, github-actions-updater, junit4-to-junit5-migrator, gradle-9-syntax-migrator, openapi-generator-detector, openapi-generator-plugin-updater, spring-framework-7-migrator, openfeign-to-httpinterface-migrator
 ---
 
 # Migration Agent
@@ -468,13 +468,13 @@ The dependency-updater automatically selects the appropriate filter strategy bas
 ```yaml
 filterStrategy:
   # If Spring AI 2.0.0-M* detected: use include-milestones
-  springBoot4WithSpringAiMilestone: "include-milestones"
+  springBoot4WithSpringAiMilestone: 'include-milestones'
 
   # If Spring Boot 4.x stable: use stable-only
-  springBoot4Stable: "stable-only"
+  springBoot4Stable: 'stable-only'
 
   # Default for production migrations
-  default: "stable-only"
+  default: 'stable-only'
 ```
 
 **Execution with Validation**:
@@ -520,17 +520,17 @@ When dependency updates fail validation, the skill automatically suggests relate
 
 ```yaml
 migrationSkillMapping:
-  - pattern: "tools.jackson|com.fasterxml.jackson"
+  - pattern: 'tools.jackson|com.fasterxml.jackson'
     suggestedSkill: jackson-migrator
-    reason: "Jackson 2 → 3 migration required"
+    reason: 'Jackson 2 → 3 migration required'
 
-  - pattern: "org.springframework.security"
+  - pattern: 'org.springframework.security'
     suggestedSkill: security-config-migrator
-    reason: "Spring Security 6 → 7 configuration changes"
+    reason: 'Spring Security 6 → 7 configuration changes'
 
-  - pattern: "org.springframework.ai"
+  - pattern: 'org.springframework.ai'
     suggestedSkill: spring-ai-migrator
-    reason: "Spring AI 1.x → 2.x API changes"
+    reason: 'Spring AI 1.x → 2.x API changes'
 ```
 
 **Example Execution Flow**:
@@ -606,20 +606,20 @@ Step 6: Generating compatibility report...
 ```yaml
 appliedTransformations:
   - skill: dependency-updater
-    version: '2.0.0'  # Enhanced version with validation
+    version: '2.0.0' # Enhanced version with validation
     transformations:
       - dependency-updates
       - plugin-updates
       - property-updates
       - milestone-repo-addition
-      - compatibility-validation  # NEW
-      - incremental-rollback  # NEW
+      - compatibility-validation # NEW
+      - incremental-rollback # NEW
     completedAt: <current-timestamp>
     commitSha: <commit-sha>
     config:
       filterMode: include-milestones
       validationEnabled: true
-      testsEnabled: true  # or false if --skip-tests used
+      testsEnabled: true # or false if --skip-tests used
     validation:
       compilation:
         success: true
@@ -631,16 +631,16 @@ appliedTransformations:
         failed: 0
         duration: '120s'
       rollbacks:
-        - dependency: "tools.jackson:jackson-databind"
-          fromVersion: "3.0.2"
-          toVersion: "2.17.0"
-          reason: "Compilation failed - imports not migrated"
-          suggestedSkill: "jackson-migrator"
+        - dependency: 'tools.jackson:jackson-databind'
+          fromVersion: '3.0.2'
+          toVersion: '2.17.0'
+          reason: 'Compilation failed - imports not migrated'
+          suggestedSkill: 'jackson-migrator'
     summary:
       totalUpdates: 25
       successful: 23
       rolledBack: 2
-      successRate: "92%"
+      successRate: '92%'
 ```
 
 **Performance**:
@@ -1214,7 +1214,193 @@ Marketplace: 1.3.0"
 
 ---
 
-### Phase 11: OpenFeign Migration (NEW - Optional)
+### Phase 11: OpenAPI Generator Plugin Update (NEW - Conditional)
+
+**When**: OpenAPI Generator plugin detected + spring-http-interface library
+
+**Prerequisites:**
+
+```bash
+# Detect OpenAPI Generator usage
+# Use openapi-generator-detector skill
+DETECTION_RESULT=$(openapi-generator-detector --format json)
+HAS_OPENAPI=$(echo $DETECTION_RESULT | jq -r '.openapiGenerator.detected')
+LIBRARY=$(echo $DETECTION_RESULT | jq -r '.openapiGenerator.library')
+
+# Skip if not detected or not spring-http-interface
+if [ "$HAS_OPENAPI" != "true" ] || [ "$LIBRARY" != "spring-http-interface" ]; then
+    echo "OpenAPI Generator with spring-http-interface not detected. Skipping Phase 11."
+    exit 0
+fi
+```
+
+**State Check:**
+
+```bash
+# Check if openapi-generator-plugin-updater already applied
+# Read .migration-state.yaml -> appliedTransformations
+# Look for: skill: openapi-generator-plugin-updater
+# If found and version >= current: SKIP
+# If not found or version < current: PROCEED
+```
+
+**Execution:**
+
+```bash
+# Use openapi-generator-plugin-updater skill
+# Performs:
+# 1. Detect OpenAPI Generator usage
+# 2. Check library configuration
+# 3. Detect Spring Framework version
+# 4. Check plugin version compatibility
+# 5. Update plugin if incompatible
+# 6. Trigger spring-framework-7-migrator if Framework 7
+# 7. Validate generated code compilation
+
+# Commit changes
+git add -A
+git commit -m "migration(openapi-generator-plugin-updater): update plugin for Framework 7 compatibility [v1.0.0]
+
+Applied transformations:
+- openapi-plugin-version-update
+- framework-compatibility-check
+
+Plugin: 7.17.0 → 7.18.0 (Framework 7 compatibility)
+
+Marketplace: 1.5.0"
+
+# Update state file via migration-state skill
+```
+
+**Example Output**:
+
+```text
+Phase 11: OpenAPI Generator Plugin Update
+  Plugin: 7.17.0 → 7.18.0 (Framework 7 compatibility)
+  Templates: Updated to Framework 7 API
+  Validation: ✅ Code generation successful
+```
+
+**State Update**:
+
+```yaml
+appliedTransformations:
+  - skill: openapi-generator-plugin-updater
+    version: '1.0.0'
+    transformations:
+      - openapi-plugin-version-update
+      - framework-compatibility-check
+    pluginUpdate:
+      from: '7.17.0'
+      to: '7.18.0'
+    completedAt: <current-timestamp>
+    commitSha: <commit-sha>
+```
+
+**Next Phase:**
+
+- If Spring Framework 7.x detected: Continue to Phase 11.5
+- Otherwise: Skip to Phase 12
+
+---
+
+### Phase 11.5: Spring Framework 7 API Migration (NEW - Conditional)
+
+**When**: Spring Framework 7.x detected + HttpServiceProxyFactory usage
+
+**Prerequisites:**
+
+```bash
+# Detect Spring Framework version
+FRAMEWORK_VERSION=$(grep -oP '<spring.framework.version>\K[^<]+' pom.xml || \
+                     grep -oP 'springFrameworkVersion.*=.*"\K[\d\.]+' build.gradle*)
+
+# Skip if not Framework 7
+if ! echo "$FRAMEWORK_VERSION" | grep -q "^7\."; then
+    echo "Spring Framework 7 not detected. Skipping Phase 11.5."
+    exit 0
+fi
+
+# Detect HttpServiceProxyFactory usage
+if ! grep -r "HttpServiceProxyFactory" src/main/java/; then
+    echo "HttpServiceProxyFactory not detected. Skipping Phase 11.5."
+    exit 0
+fi
+```
+
+**State Check:**
+
+```bash
+# Check if spring-framework-7-migrator already applied
+# Read .migration-state.yaml -> appliedTransformations
+# Look for: skill: spring-framework-7-migrator
+# If found and version >= current: SKIP
+# If not found or version < current: PROCEED
+```
+
+**Execution:**
+
+```bash
+# Use spring-framework-7-migrator skill
+# Performs:
+# 1. Detect Framework 7 API patterns
+# 2. Migrate HttpServiceProxyFactory.builder() → builderFor()
+# 3. Migrate WebClientAdapter.forClient() → create()
+# 4. Inject Framework 7 templates (if OpenAPI Generator)
+# 5. Validate compilation
+
+# Commit changes
+git add -A
+git commit -m "migration(spring-framework-7-migrator): migrate to Framework 7 APIs [v1.0.0]
+
+Applied transformations:
+- http-service-proxy-factory-api
+- webclient-adapter-api
+- openapi-generator-template-injection
+
+Marketplace: 1.5.0"
+
+# Update state file via migration-state skill
+```
+
+**Example Output**:
+
+```text
+Phase 11.5: Spring Framework 7 API Migration
+  API Migrations:
+    ✅ HttpServiceProxyFactory.builder() → builderFor() (3 files)
+    ✅ WebClientAdapter.forClient() → create() (3 files)
+  Templates:
+    ✅ Injected Framework 7 compatible template
+  Validation:
+    ✅ Compilation successful
+```
+
+**State Update**:
+
+```yaml
+appliedTransformations:
+  - skill: spring-framework-7-migrator
+    version: '1.0.0'
+    transformations:
+      - http-service-proxy-factory-api
+      - webclient-adapter-api
+      - openapi-generator-template-injection
+    filesModified: 3
+    templatesInjected: true
+    completedAt: <current-timestamp>
+    commitSha: <commit-sha>
+    validation:
+      compilation: success
+      codeGeneration: success
+      patternsRemaining:
+        oldPatterns: 0
+        newPatterns: 3
+```
+
+---
+
+### Phase 12: OpenFeign Migration (NEW - Optional)
 
 **When:** FULL_MIGRATION tier AND OpenFeign incompatibility detected AND user approved
 

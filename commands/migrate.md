@@ -54,7 +54,7 @@ migrate --project /path/to/project --skip-tests
 **Filter Strategy**:
 
 - Automatically selects based on target versions
-- `include-milestones` for Spring AI 2.0.0-M* projects
+- `include-milestones` for Spring AI 2.0.0-M\* projects
 - `stable-only` for production projects
 
 **Example Output**:

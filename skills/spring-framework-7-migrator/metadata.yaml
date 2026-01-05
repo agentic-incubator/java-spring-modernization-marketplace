@@ -1,0 +1,37 @@
+skill:
+  name: spring-framework-7-migrator
+  version: 1.0.0
+  description: Migrate Spring Framework 6 → 7 API changes including HttpServiceProxyFactory and OpenAPI Generator templates
+
+  transformations:
+    - id: http-service-proxy-factory-api
+      version: 1.0.0
+      description: Migrate HttpServiceProxyFactory.builder() to builderFor()
+      detection: "HttpServiceProxyFactory\\s*\\.\\s*builder\\s*\\("
+      automationPotential: 95
+
+    - id: webclient-adapter-api
+      version: 1.0.0
+      description: Migrate WebClientAdapter.forClient() to create()
+      detection: "WebClientAdapter\\s*\\.\\s*forClient\\s*\\("
+      automationPotential: 100
+
+    - id: openapi-generator-template-injection
+      version: 1.0.0
+      description: Inject Framework 7 compatible templates
+      detection: "spring-http-interface.*library"
+      automationPotential: 80
+      userApprovalRequired: true
+
+  apiMigrations:
+    - pattern: "HttpServiceProxyFactory\\.builder\\("
+      replacement: "HttpServiceProxyFactory.builderFor("
+
+    - pattern: "WebClientAdapter\\.forClient\\("
+      replacement: "WebClientAdapter.create("
+
+  templateMergeStrategy: manual  # Show diff, explain, ask user
+  bundledTemplates:
+    - name: httpInterfacesConfiguration.mustache
+      location: templates/spring-http-interface/
+      frameworkVersion: "7.x"

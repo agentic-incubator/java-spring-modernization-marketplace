@@ -995,11 +995,11 @@ dependency-updater --max-retries=5
 migration:
   dependencyUpdates:
     validation:
-      compilation: true  # Always enabled
-      tests: true  # Set false to skip tests by default
-      incrementalRollback: true  # Enable automatic rollback
-      maxRetries: 3  # Max rollback attempts per dependency
-      failFast: false  # Continue after non-critical failures
+      compilation: true # Always enabled
+      tests: true # Set false to skip tests by default
+      incrementalRollback: true # Enable automatic rollback
+      maxRetries: 3 # Max rollback attempts per dependency
+      failFast: false # Continue after non-critical failures
 ```
 
 ### Incremental Rollback Logic
@@ -1022,7 +1022,7 @@ migration:
 
    Example error:
 
-   ```
+   ```text
    [ERROR] /path/to/MyService.java:[42,10] package tools.jackson.databind does not exist
    ```
 
@@ -1035,7 +1035,7 @@ migration:
      - artifact: jackson-databind
        groupId: tools.jackson
        suggestedSkill: jackson-migrator
-       reason: "GroupId changed from com.fasterxml..jackson to tools.jackson"
+       reason: 'GroupId changed from com.fasterxml..jackson to tools.jackson'
    ```
 
 5. **If migration skill exists, suggest it**
@@ -1141,13 +1141,13 @@ Validation: Compilation + Tests
 
 Errors are classified to suggest appropriate actions:
 
-| Error Pattern | Classification | Suggested Action |
-|---------------|----------------|------------------|
-| `package [groupId] does not exist` | Import/GroupId Change | Run related migrator skill |
-| `cannot find symbol: class [ClassName]` | API Removal/Rename | Check migration guide |
-| `method [method] not found` | API Change | Check changelogs |
-| `incompatible types` | Type System Change | Major version migration required |
-| `NoClassDefFoundError` | Transitive Dependency | Check dependency tree |
+| Error Pattern                           | Classification        | Suggested Action                 |
+| --------------------------------------- | --------------------- | -------------------------------- |
+| `package [groupId] does not exist`      | Import/GroupId Change | Run related migrator skill       |
+| `cannot find symbol: class [ClassName]` | API Removal/Rename    | Check migration guide            |
+| `method [method] not found`             | API Change            | Check changelogs                 |
+| `incompatible types`                    | Type System Change    | Major version migration required |
+| `NoClassDefFoundError`                  | Transitive Dependency | Check dependency tree            |
 
 ### Integration with Migration Skills
 
@@ -1155,21 +1155,21 @@ When rollback occurs due to API/import changes, the skill automatically suggests
 
 ```yaml
 migrationSkillMapping:
-  - pattern: "tools.jackson|com.fasterxml.jackson"
+  - pattern: 'tools.jackson|com.fasterxml.jackson'
     suggestedSkill: jackson-migrator
-    reason: "Jackson 2 → 3 migration required"
+    reason: 'Jackson 2 → 3 migration required'
 
-  - pattern: "org.springframework.security"
+  - pattern: 'org.springframework.security'
     suggestedSkill: security-config-migrator
-    reason: "Spring Security 6 → 7 configuration changes"
+    reason: 'Spring Security 6 → 7 configuration changes'
 
-  - pattern: "org.springframework.ai"
+  - pattern: 'org.springframework.ai'
     suggestedSkill: spring-ai-migrator
-    reason: "Spring AI 1.x → 2.x API changes"
+    reason: 'Spring AI 1.x → 2.x API changes'
 
-  - pattern: "com.vaadin"
+  - pattern: 'com.vaadin'
     suggestedSkill: vaadin-migrator
-    reason: "Vaadin 24 → 25 theme/security changes"
+    reason: 'Vaadin 24 → 25 theme/security changes'
 ```
 
 ### Validation Performance
@@ -1200,23 +1200,23 @@ validation:
 
   # Custom validation commands
   customValidation:
-    - name: "integration-tests"
-      command: "mvn verify -Pintegration"
+    - name: 'integration-tests'
+      command: 'mvn verify -Pintegration'
       enabled: false
 
-    - name: "security-scan"
-      command: "mvn dependency-check:check"
+    - name: 'security-scan'
+      command: 'mvn dependency-check:check'
       enabled: false
 
   # Dependency-specific overrides
   overrides:
-    - dependency: "jackson-databind"
-      skipValidation: false  # Always validate Jackson
-      maxRetries: 5  # More attempts for critical deps
+    - dependency: 'jackson-databind'
+      skipValidation: false # Always validate Jackson
+      maxRetries: 5 # More attempts for critical deps
 
-    - dependency: "spring-security-core"
+    - dependency: 'spring-security-core'
       skipValidation: false
-      suggestedSkill: "security-config-migrator"
+      suggestedSkill: 'security-config-migrator'
 ```
 
 **Failure Thresholds**:
@@ -1224,10 +1224,10 @@ validation:
 ```yaml
 validation:
   thresholds:
-    maxRollbacks: 5  # Max total rollbacks before failing
-    maxRetriesPerDependency: 3  # Max attempts per dependency
-    allowPartialSuccess: true  # Allow some updates to succeed
-    minSuccessRate: 50  # Minimum 50% success rate required
+    maxRollbacks: 5 # Max total rollbacks before failing
+    maxRetriesPerDependency: 3 # Max attempts per dependency
+    allowPartialSuccess: true # Allow some updates to succeed
+    minSuccessRate: 50 # Minimum 50% success rate required
 ```
 
 ### Testing and Validation State
@@ -1259,25 +1259,25 @@ appliedTransformations:
         duration: '120s'
 
       rollbacks:
-        - dependency: "tools.jackson:jackson-databind"
-          fromVersion: "3.0.2"
-          toVersion: "2.17.0"
-          reason: "Compilation failed - package imports not migrated"
-          suggestedSkill: "jackson-migrator"
+        - dependency: 'tools.jackson:jackson-databind'
+          fromVersion: '3.0.2'
+          toVersion: '2.17.0'
+          reason: 'Compilation failed - package imports not migrated'
+          suggestedSkill: 'jackson-migrator'
 
-        - dependency: "org.springframework.security:spring-security-core"
-          fromVersion: "7.0.2"
-          toVersion: "6.5.0"
-          reason: "Compilation failed - SecurityFilterChain API change"
-          suggestedSkill: "security-config-migrator"
+        - dependency: 'org.springframework.security:spring-security-core'
+          fromVersion: '7.0.2'
+          toVersion: '6.5.0'
+          reason: 'Compilation failed - SecurityFilterChain API change'
+          suggestedSkill: 'security-config-migrator'
 
       summary:
         totalUpdates: 25
         successful: 15
         rolledBack: 2
         skipped: 8
-        successRate: "60%"
-        finalSuccessRate: "100% (after running suggested skills)"
+        successRate: '60%'
+        finalSuccessRate: '100% (after running suggested skills)'
 ```
 
 ---
@@ -1344,7 +1344,8 @@ If updating Gradle plugin versions:
 
 ## OpenAPI Generator Special Handling (v2.0.0)
 
-The dependency-updater delegates OpenAPI Generator plugin updates to the specialized `openapi-generator-plugin-updater` skill for intelligent compatibility management.
+The dependency-updater delegates OpenAPI Generator plugin updates to the specialized `openapi-generator-plugin-updater` skill for
+intelligent compatibility management.
 
 ### Why Special Handling?
 
@@ -1422,9 +1423,9 @@ migration:
   dependencyUpdates:
     delegation:
       openapiGenerator:
-        enabled: true  # Enable specialized handling
-        skillName: "openapi-generator-plugin-updater"
-        skipGenericUpdate: true  # Don't apply generic plugin update logic
+        enabled: true # Enable specialized handling
+        skillName: 'openapi-generator-plugin-updater'
+        skipGenericUpdate: true # Don't apply generic plugin update logic
 ```
 
 ### Skip Delegation (Not Recommended)
@@ -1436,7 +1437,7 @@ migration:
   dependencyUpdates:
     delegation:
       openapiGenerator:
-        enabled: false  # Use generic plugin update (NOT RECOMMENDED)
+        enabled: false # Use generic plugin update (NOT RECOMMENDED)
 ```
 
 **Warning**: Disabling delegation may result in incompatible plugin versions that break code generation or produce incorrect API patterns.
@@ -1451,30 +1452,30 @@ appliedTransformations:
   - skill: dependency-updater
     version: '2.0.0'
     delegations:
-      - plugin: "openapi-generator-maven-plugin"
-        delegatedTo: "openapi-generator-plugin-updater"
-        reason: "Requires Framework compatibility validation"
+      - plugin: 'openapi-generator-maven-plugin'
+        delegatedTo: 'openapi-generator-plugin-updater'
+        reason: 'Requires Framework compatibility validation'
 
   # openapi-generator-plugin-updater records its work
   - skill: openapi-generator-plugin-updater
     version: '1.0.0'
     pluginUpdate:
-      from: "7.17.0"
-      to: "7.18.0"
-      frameworkVersion: "7.0.0"
+      from: '7.17.0'
+      to: '7.18.0'
+      frameworkVersion: '7.0.0'
 ```
 
 ---
 
 ## Related Skills
 
-| Skill                             | Purpose                                    | Integration                               |
-| --------------------------------- | ------------------------------------------ | ----------------------------------------- |
-| **build-tool-detector**           | Detect Maven vs Gradle                     | Used to determine build commands          |
-| **version-detector**              | Identify current framework versions        | Used to track version changes             |
-| **build-runner**                  | Validate builds and tests                  | Used for post-update validation           |
-| **migration-state**               | Track applied transformations              | Used for idempotency checking             |
-| **build-file-updater**            | Update build files for specific migrations | Complementary for targeted updates        |
-| **dependency-scanner**            | Identify migration dependencies            | Complementary for migration planning      |
-| **openrewrite-executor**          | Run OpenRewrite recipes                    | Alternative for complex migrations        |
-| **openapi-generator-plugin-updater** | OpenAPI Generator plugin compatibility  | Delegated for OpenAPI Generator updates   |
+| Skill                                | Purpose                                    | Integration                             |
+| ------------------------------------ | ------------------------------------------ | --------------------------------------- |
+| **build-tool-detector**              | Detect Maven vs Gradle                     | Used to determine build commands        |
+| **version-detector**                 | Identify current framework versions        | Used to track version changes           |
+| **build-runner**                     | Validate builds and tests                  | Used for post-update validation         |
+| **migration-state**                  | Track applied transformations              | Used for idempotency checking           |
+| **build-file-updater**               | Update build files for specific migrations | Complementary for targeted updates      |
+| **dependency-scanner**               | Identify migration dependencies            | Complementary for migration planning    |
+| **openrewrite-executor**             | Run OpenRewrite recipes                    | Alternative for complex migrations      |
+| **openapi-generator-plugin-updater** | OpenAPI Generator plugin compatibility     | Delegated for OpenAPI Generator updates |

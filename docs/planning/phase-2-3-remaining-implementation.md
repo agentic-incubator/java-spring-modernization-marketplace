@@ -126,22 +126,22 @@ This document captures the remaining implementation work for Phases 2-3 of the S
        - id: openapi-generator-template-injection
          version: 1.0.0
          description: Inject Framework 7 compatible templates
-         detection: "spring-http-interface.*library"
+         detection: 'spring-http-interface.*library'
          automationPotential: 80
          userApprovalRequired: true
 
      apiMigrations:
        - pattern: "HttpServiceProxyFactory\\.builder\\("
-         replacement: "HttpServiceProxyFactory.builderFor("
+         replacement: 'HttpServiceProxyFactory.builderFor('
 
        - pattern: "WebClientAdapter\\.forClient\\("
-         replacement: "WebClientAdapter.create("
+         replacement: 'WebClientAdapter.create('
 
-     templateMergeStrategy: manual  # Show diff, explain, ask user
+     templateMergeStrategy: manual # Show diff, explain, ask user
      bundledTemplates:
        - name: httpInterfacesConfiguration.mustache
          location: templates/spring-http-interface/
-         frameworkVersion: "7.x"
+         frameworkVersion: '7.x'
    ```
 
 3. **Create SKILL.md**
@@ -238,7 +238,7 @@ Provide reusable detection logic for OpenAPI Generator usage, library configurat
 
      detectionPatterns:
        - id: maven-plugin
-         pattern: "openapi-generator-maven-plugin"
+         pattern: 'openapi-generator-maven-plugin'
          location: pom.xml
 
        - id: gradle-plugin
@@ -246,10 +246,10 @@ Provide reusable detection logic for OpenAPI Generator usage, library configurat
          location: build.gradle|build.gradle.kts
 
        - id: library-spring-http-interface
-         pattern: "<library>spring-http-interface</library>|library.*spring-http-interface"
+         pattern: '<library>spring-http-interface</library>|library.*spring-http-interface'
 
        - id: custom-templates
-         pattern: "templateDirectory|templates/libraries"
+         pattern: 'templateDirectory|templates/libraries'
          location: pom.xml|build.gradle|src/main/resources
    ```
 
@@ -285,12 +285,13 @@ Provide reusable detection logic for OpenAPI Generator usage, library configurat
 
    **Content**:
 
-   ```markdown
+   ````markdown
    ### Phase 11: OpenAPI Generator Plugin Update (NEW - Conditional)
 
    **When**: OpenAPI Generator plugin detected + spring-http-interface library
 
    **Skills Used**:
+
    - openapi-generator-detector
    - openapi-generator-plugin-updater
 
@@ -305,37 +306,44 @@ Provide reusable detection logic for OpenAPI Generator usage, library configurat
    7. Validate generated code compilation
 
    **Example Output**:
+
    ```text
    Phase 11: OpenAPI Generator Plugin Update
      Plugin: 7.17.0 → 7.18.0 (Framework 7 compatibility)
      Templates: Updated to Framework 7 API
      Validation: ✅ Code generation successful
    ```
+   ````
 
    **State Update**:
+
    ```yaml
    appliedTransformations:
      - skill: openapi-generator-plugin-updater
        version: '1.0.0'
        pluginUpdate:
-         from: "7.17.0"
-         to: "7.18.0"
+         from: '7.17.0'
+         to: '7.18.0'
      - skill: spring-framework-7-migrator
        version: '1.0.0'
        templatesInjected: true
    ```
+
+   ```
+
    ```
 
 2. **Add Phase 11.5: Spring Framework 7 API Migration**
 
    **Content**:
 
-   ```markdown
+   ````markdown
    ### Phase 11.5: Spring Framework 7 API Migration (NEW - Conditional)
 
    **When**: Spring Framework 7.x detected + HttpServiceProxyFactory usage
 
    **Skills Used**:
+
    - spring-framework-7-migrator
 
    **Steps**:
@@ -346,6 +354,7 @@ Provide reusable detection logic for OpenAPI Generator usage, library configurat
    4. Validate compilation
 
    **State Update**:
+
    ```yaml
    appliedTransformations:
      - skill: spring-framework-7-migrator
@@ -354,6 +363,10 @@ Provide reusable detection logic for OpenAPI Generator usage, library configurat
          - http-service-proxy-factory-api
          - webclient-adapter-api
    ```
+   ````
+
+   ```
+
    ```
 
 3. **Update agents/migration-agent.md description**
@@ -376,7 +389,7 @@ Provide reusable detection logic for OpenAPI Generator usage, library configurat
 
    **Content**:
 
-   ```markdown
+   ````markdown
    ---
    description: Update OpenAPI Generator plugin to compatible version
    argument-hint: [project-path]
@@ -402,6 +415,7 @@ Provide reusable detection logic for OpenAPI Generator usage, library configurat
    # Latest strategy
    update-openapi-generator --strategy latest
    ```
+   ````
 
    ## What This Command Does
 
@@ -422,13 +436,16 @@ Provide reusable detection logic for OpenAPI Generator usage, library configurat
      Updating...
      ✅ Plugin updated successfully
    ```
+
+   ```
+
    ```
 
 2. **Create `/commands/migrate-framework-7.md`**
 
    **Content**:
 
-   ```markdown
+   ````markdown
    ---
    description: Migrate Spring Framework 6 to 7 API changes
    argument-hint: [project-path] [--inject-templates]
@@ -451,6 +468,7 @@ Provide reusable detection logic for OpenAPI Generator usage, library configurat
    # Specific project
    migrate-framework-7 /path/to/project --inject-templates
    ```
+   ````
 
    ## What This Command Does
 
@@ -466,6 +484,9 @@ Provide reusable detection logic for OpenAPI Generator usage, library configurat
    1. Shows diff between custom and Framework 7 template
    2. Explains required changes
    3. Asks user: apply diff, manual edit, or skip
+
+   ```
+
    ```
 
 3. **Create `/docs/migrations/spring-framework-7.md`**
@@ -649,7 +670,7 @@ Provide reusable detection logic for OpenAPI Generator usage, library configurat
 
 ## Success Criteria
 
-### Phase 2 Complete When:
+### Phase 2 Complete When
 
 - [x] openapi-generator-plugin-updater skill created
 - [ ] spring-framework-7-migrator skill created
@@ -660,7 +681,7 @@ Provide reusable detection logic for OpenAPI Generator usage, library configurat
 - [ ] Spring Framework 7 migration guide written
 - [ ] Integration tests pass on spring-ai-resos
 
-### v1.5.0 Release Ready When:
+### v1.5.0 Release Ready When
 
 - [ ] All Phase 2 tasks complete
 - [ ] Version updated to 1.5.0
@@ -696,6 +717,7 @@ Provide reusable detection logic for OpenAPI Generator usage, library configurat
 ### Markdown Linting
 
 Minor markdown linting issues exist in committed files:
+
 - Table formatting (spacing issues)
 - Code block language specification
 - Line length violations

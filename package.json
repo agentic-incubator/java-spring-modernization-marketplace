@@ -1,7 +1,7 @@
 {
   "name": "spring-modernization-marketplace",
-  "version": "1.4.0",
-  "description": "Claude Code plugin marketplace for Spring ecosystem modernization with comprehensive breaking changes detection, OpenFeign migration, and advanced validation capabilities",
+  "version": "1.5.0",
+  "description": "Claude Code plugin marketplace for Spring ecosystem modernization with comprehensive breaking changes detection, OpenFeign migration, OpenAPI Generator intelligence, Spring Framework 7 support, and advanced validation capabilities",
   "private": true,
   "packageManager": "pnpm@9.15.0",
   "scripts": {

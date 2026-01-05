@@ -13,11 +13,11 @@ This marketplace handles it: clone, analyze, migrate, validate, and submit PRsâ€
 
 ## What You Get
 
-| Category | Count | Highlights                                                                                                      |
-| -------- | ----- | --------------------------------------------------------------------------------------------------------------- |
-| Commands | 10    | `/migrate`, `/analyze`, `/migrate-github`, `/check-github-actions`                                              |
-| Agents   | 9     | Orchestrator, parallel-orchestrator, validators                                                                 |
-| Skills   | 29    | Dependency updater, Jackson, Security, Documentation migration, Build tools, GitHub Actions, Property migration |
+| Category | Count | Highlights                                                                                                                                                                            |
+| -------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Commands | 15    | `/migrate`, `/analyze`, `/migrate-github`, `/update-openapi-generator`, `/migrate-framework-7`, `/detect-breaking-changes`                                                            |
+| Agents   | 10    | Orchestrator, parallel-orchestrator, migration, discovery, validation, cleanup, analyzers                                                                                             |
+| Skills   | 42    | Dependency updater, Jackson, Security, OpenAPI Generator, Spring Framework 7, Documentation migration, Build tools, GitHub Actions, Property migration, OpenFeign, Testing frameworks |
 
 ## Quick Start
 
