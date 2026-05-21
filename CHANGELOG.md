@@ -5,6 +5,31 @@ All notable changes to the Spring Modernization Marketplace will be documented i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2026-05-21
+
+### Added
+
+#### Java Maintenance Workflow (v1.0.0)
+
+- **java-maintenance-workflow**: New end-to-end dependency-maintenance skill for
+  Spring Boot 4 / Java 21+ Maven and Gradle projects.
+  - Full 9-step workflow: branch → triage PRs → upgrade → fix breakage → SpotBugs
+    setup → quality gates → commit → push → PR
+  - Dependabot / stale PR consolidation with automated close comments
+  - Stable-only version filtering (skips `-M`, `-RC`, `-SNAPSHOT`, `alpha`, `beta`,
+    `Dev`, `milestone`, `preview`, `nf-` suffixes)
+  - Maven support via `versions:use-latest-releases` / `versions:update-plugins`
+  - Gradle support via `com.github.ben-manes.versions` + `se.patrikerdes.use-latest-versions`
+  - SpotBugs exclusion file bootstrap (`src/main/resources/spotbugs-exclude.xml`)
+    with documented false-positive suppressions for Spring DI beans and ApplicationEvents
+  - Ordered quality gates: Spotless → compile → test → SpotBugs (fast; avoids slow OWASP)
+  - Detailed commit and PR templates with version-change tables and follow-on items
+  - Key lessons encoded: Jackson 3.x annotation namespace preservation, defensive copy
+    in setters as a real bug, separate PRs for dependency vs GitHub Actions upgrades
+  - References: `references/maven.md`, `references/gradle.md`,
+    `references/spotbugs-exclude-template.xml`
+  - Reuses `dependency-updater`, `build-runner`, `jackson-migrator`, `pr-submitter`
+
 ## [1.6.0] - 2026-01-05
 
 ### Added
