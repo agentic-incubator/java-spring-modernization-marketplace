@@ -594,7 +594,7 @@ compatibility:
 - **Spring Cloud Compatibility:** <https://spring.io/projects/spring-cloud#overview>
 - **Spring Boot 4.0 Release Notes:** <https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-4.0-Release-Notes>
 - **Spring Framework HTTP Interface:** <https://docs.spring.io/spring-framework/reference/integration/rest-clients.html#rest-http-interface>
-- **Related Skills:** openfeign-to-httpinterface-migrator, spring-boot-4-breaking-changes-detector
+- **Related Skills:** openfeign-to-httpinterface-migrator, spring-boot-4-breaking-changes-detector, spring-ai-mcp-client-package-migrator, restclient-to-webclient-customizer-migrator
 
 ---
 
