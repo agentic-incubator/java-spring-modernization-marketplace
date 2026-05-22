@@ -108,8 +108,8 @@ mvn versions:commit
 # Use gradle-use-latest-versions plugin to apply updates
 ./gradlew useLatestVersions --no-parallel
 
-# Update Gradle wrapper if needed
-./gradlew wrapper --gradle-version 8.11
+# Update Gradle wrapper if needed (use build-tool-upgrader skill for live version lookup)
+./gradlew wrapper --gradle-version "$GRADLE_LATEST"
 ```
 
 ### Plugin Configuration
@@ -825,15 +825,23 @@ After updates, may encounter:
 
 ## Version Compatibility Matrix
 
-| Component                 | Minimum Version | Recommended Version | Notes                               |
-| ------------------------- | --------------- | ------------------- | ----------------------------------- |
-| **Maven**                 | 3.9.0           | 3.9.9               | For versions-maven-plugin           |
-| **Gradle**                | 8.5             | 8.11                | For dependencyUpdates task          |
-| **versions-maven-plugin** | 2.16.0          | 2.16.2              | Maven dependency/plugin update tool |
-| **gradle-versions**       | 0.50.0          | 0.51.0              | Ben Manes dependency updates plugin |
-| **use-latest-versions**   | 0.2.0           | 0.2.18              | Patrikerdes auto-apply plugin       |
-| **Java**                  | 17              | 21+                 | For Spring Boot 4.x compatibility   |
-| **Spring Boot**           | 3.0             | 4.0+                | Target for migration                |
+Wrapper versions are always resolved via live lookup (see **build-tool-upgrader** skill).
+The floors below are permanent historical facts — use them only to validate that the
+live-resolved target satisfies the project's Java version requirement.
+
+| Component                 | Minimum Version | Recommended Version | Notes                                          |
+| ------------------------- | --------------- | ------------------- | ---------------------------------------------- |
+| **Maven** (Java 17)       | 3.8.1           | _live lookup_       | Use build-tool-upgrader to resolve and upgrade |
+| **Maven** (Java 21)       | 3.9.6           | _live lookup_       |                                                |
+| **Maven** (Java 25)       | 3.9.10          | _live lookup_       |                                                |
+| **Gradle** (Java 17)      | 7.3             | _live lookup_       | Use build-tool-upgrader to resolve and upgrade |
+| **Gradle** (Java 21)      | 8.5             | _live lookup_       |                                                |
+| **Gradle** (Java 25)      | 9.1.0           | _live lookup_       | Gradle 9.x requires JVM 17 to run daemon       |
+| **versions-maven-plugin** | 2.16.0          | _live lookup_       | Maven dependency/plugin update tool            |
+| **gradle-versions**       | 0.50.0          | _live lookup_       | Ben Manes dependency updates plugin            |
+| **use-latest-versions**   | 0.2.0           | _live lookup_       | Patrikerdes auto-apply plugin                  |
+| **Java**                  | 17 (LTS)        | 21+ or 25 (LTS)     | For Spring Boot 4.x compatibility              |
+| **Spring Boot**           | 3.0             | 4.0+                | Target for migration                           |
 
 ### Plugin Dependencies
 

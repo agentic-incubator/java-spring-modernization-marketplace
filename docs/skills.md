@@ -60,30 +60,41 @@ Identifies Maven vs Gradle build systems.
 
 ### build-tool-upgrader
 
-Upgrades Maven/Gradle wrappers to versions compatible with Spring Boot 4.
+Upgrades Maven/Gradle wrappers to the **latest stable version** compatible with the
+project's Java version. Performs a live lookup at runtime — the target version is never
+hardcoded. Results vary over time as new releases appear.
 
-**Requirements for Spring Boot 4:**
+**How it works:**
 
-| Build Tool | Minimum | Recommended |
-| ---------- | ------- | ----------- |
-| Gradle     | 8.5     | 8.11        |
-| Maven      | 3.9.0   | 3.9.9       |
+1. Detects the project's Java version from `pom.xml` / `build.gradle.kts`
+2. Looks up the minimum required tool version from a static compatibility table
+3. Fetches the current latest stable from official endpoints
+4. Upgrades to the live-resolved latest (always ≥ the minimum)
 
-**Commands:**
+**Java LTS compatibility floors (permanent historical facts):**
+
+| Java LTS | Gradle min | Maven min |
+| -------- | ---------- | --------- |
+| 17       | 7.3        | 3.8.1     |
+| 21       | 8.5        | 3.9.6     |
+| 25       | 9.1.0      | 3.9.10    |
+
+> **Gradle 9.x caveat**: Gradle 9.0+ requires JVM 17 to _run_ the Gradle daemon.
+> Ensure your CI runtime JDK ≥ 17 before upgrading the wrapper to Gradle 9.x.
+
+**Live discovery endpoints:**
+
+- Gradle: `https://services.gradle.org/versions/current`
+- Maven: `https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/maven-metadata.xml`
+
+**Commands (variables populated by live lookup):**
 
 ```bash
-# Gradle upgrade
-./gradlew wrapper --gradle-version 8.11
-
-# Maven upgrade
-./mvnw wrapper:wrapper -Dmaven=3.9.9
+./gradlew wrapper --gradle-version "$GRADLE_LATEST"
+./mvnw wrapper:wrapper -Dmaven="$MAVEN_LATEST_3"
 ```
 
-**Updates:**
-
-- `gradle/wrapper/gradle-wrapper.properties`
-- `.mvn/wrapper/maven-wrapper.properties`
-- Wrapper scripts (`gradlew`, `mvnw`)
+**Updates:** `gradle/wrapper/gradle-wrapper.properties`, `.mvn/wrapper/maven-wrapper.properties`, wrapper scripts
 
 ### version-detector
 

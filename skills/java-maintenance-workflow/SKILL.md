@@ -3,13 +3,16 @@ name: java-maintenance-workflow
 description: >
   Full dependency-maintenance workflow for Spring Boot 4 / Java 21+ projects
   using Maven or Gradle.
-  Consolidates Dependabot PRs, upgrades all stable dependencies and plugins, fixes
-  breaking code changes, bootstraps SpotBugs exclusions, runs quality/security gates
-  (Spotless → compile → test → SpotBugs), commits, and opens a PR.
+  Consolidates Dependabot PRs, triages Dependabot security alerts, upgrades all
+  stable dependencies and plugins, upgrades frontend/npm packages (stable-only),
+  fixes breaking code changes, updates stale version strings in documentation,
+  bumps GitHub Actions action versions, bootstraps SpotBugs exclusions, runs
+  quality/security gates (Spotless → compile → test → SpotBugs), commits, and opens a PR.
   Use this skill whenever the user says: "update dependencies", "upgrade all deps",
   "upgrade dependencies compile test lint", "perform security audit", "incorporate
   Dependabot PRs", "do the usual maintenance run", "dependency maintenance",
-  "run the dependency upgrade cycle", or any variation that implies a scheduled or
+  "run the dependency upgrade cycle", "consolidate Dependabot PRs",
+  "security audit and upgrade", or any variation that implies a scheduled or
   ad-hoc dependency/security hygiene pass on a Java/Maven/Gradle project.
   Also invoke automatically when the user is about to manually close Dependabot PRs,
   run versions:display-dependency-updates (Maven), or dependencyUpdates (Gradle) —
@@ -47,19 +50,24 @@ All steps below show `Maven` and `Gradle` variants side-by-side.
 ## Workflow Overview
 
 ```text
-1. Branch          → maintenance/dependency-upgrades-and-security
-2. Triage PRs      → consolidate Dependabot / stale PRs into pom.xml
-3. Upgrade         → versions:display-* → apply STABLE updates
-4. Fix breakage    → deprecated APIs, renamed properties, package moves
-5. SpotBugs setup  → create exclusion file if absent
-6. Quality gates   → spotless:apply → compile → test → spotbugs:spotbugs
-7. Commit          → detailed message with every bump and fix
-8. Push + CI       → wait for green
-9. PR              → version-change table, fix notes, follow-on items
+1.  Branch            → maintenance/dependency-upgrades-and-security-<YYYY-MM-DD>
+2.  Triage PRs        → consolidate Dependabot / stale PRs
+3.  Security alerts   → fetch Dependabot alerts, research fixes
+4.  Upgrade Java/JVM  → versions:display-* → apply STABLE updates
+5.  Upgrade npm       → npm outdated → apply stable-only updates
+6.  Fix breakage      → deprecated APIs, renamed properties, package moves
+7.  Docs              → grep pom.xml property values in markdown; update stale refs
+8.  GH Actions        → bump actions/checkout, setup-java, cache, codeql-action
+9.  SpotBugs setup    → create exclusion file if absent
+10. Quality gates     → spotless:apply → compile → test → spotbugs:spotbugs
+11. Commit            → detailed message with every bump and fix
+12. Push + CI         → wait for green
+13. PR                → version table, security notes, npm summary, GH Actions list
 ```
 
-Dependency upgrades and GitHub Actions upgrades are **separate PRs from main**.
-Never mix them in one branch (different reviewers, different risk surfaces).
+Dependency bumps and GitHub Actions action-version upgrades go in the **same PR**
+(same risk surface, same reviewer sign-off). To update only GitHub Actions versions
+without a full dependency pass, invoke the **github-actions-updater** skill standalone.
 
 ---
 
@@ -67,7 +75,7 @@ Never mix them in one branch (different reviewers, different risk surfaces).
 
 ```bash
 git checkout main && git pull
-git checkout -b maintenance/dependency-upgrades-and-security
+git checkout -b "maintenance/dependency-upgrades-and-security-$(date +%Y-%m-%d)"
 ```
 
 ---
@@ -97,7 +105,30 @@ enabled; otherwise delete manually with `gh api repos/:owner/:repo/git/refs/head
 
 ---
 
-## Step 3 — Discover & Apply Stable Updates
+## Step 3 — Security Alerts
+
+Fetch open Dependabot security alerts and research each fix:
+
+```bash
+# Requires gh CLI authenticated with security_events scope
+REPO=$(gh repo view --json nameWithOwner --jq '.nameWithOwner')
+gh api "repos/$REPO/dependabot/alerts" --jq '[.[] | select(.state == "open")]'
+```
+
+For each alert:
+
+1. Read `fixed_in` version from the alert JSON (`security_vulnerability.first_patched_version.identifier`).
+2. Determine whether the fix requires a major version bump.
+3. Research breaking changes if major bump is needed (check release notes, migration guide).
+4. Record each alert number, package, CVE/GHSA, and target fix version in a local working list
+   to include in the commit message and PR body.
+
+If Dependabot alerts API is unavailable (insufficient token scope), fall back to reading
+open Dependabot PRs triaged in Step 2 for security-labelled items.
+
+---
+
+## Step 4 — Discover & Apply Stable Updates
 
 **Skip any version string that contains** (case-insensitive):
 `-M`, `-RC`, `-SNAPSHOT`, `alpha`, `beta`, `Alpha`, `Dev`, `milestone`, `preview`, `nf-`
@@ -152,7 +183,56 @@ Refer to `references/maven.md` for full flag reference and rollback commands.
 
 ---
 
-## Step 4 — Fix Breaking Code Changes
+## Step 5 — Frontend / npm Packages
+
+Find all `package.json` files that are not inside `node_modules`:
+
+```bash
+find . -name "package.json" -not -path "*/node_modules/*" -not -path "*/.git/*"
+```
+
+For each `package.json`:
+
+```bash
+cd <dir-containing-package.json>
+npm outdated --json 2>/dev/null || true
+```
+
+**Stable-only filter** — skip any package whose latest version string contains (case-insensitive):
+`alpha`, `beta`, `rc`, `next`, `canary`, `experimental`, `-dev`, `nightly`
+
+Apply updates:
+
+```bash
+# Upgrade all stable-updatable packages at once
+npm install $(npm outdated --json | jq -r '
+  to_entries[]
+  | select(
+      (.value.latest | ascii_downcase | test("alpha|beta|rc|next|canary|experimental|-dev|nightly") | not)
+    )
+  | "\(.key)@\(.value.latest)"
+' | tr '\n' ' ')
+```
+
+Known ecosystem-compatible pairs (apply together when either triggers):
+
+| Trigger package | Companion to update                                                                   |
+| --------------- | ------------------------------------------------------------------------------------- |
+| `vite` 5 → 6    | `@vitejs/plugin-react@4.7.0` supports `^4\|\|^5\|\|^6` — safe to bump                 |
+| `vite` 5 → 6    | `@vitejs/plugin-react-swc` — bump to latest that declares `peerDependencies: vite ^6` |
+
+After updating, run:
+
+```bash
+npm run build  # or the project's build script
+npm test       # or the project's test script
+```
+
+Fix any peer-dependency warnings before proceeding.
+
+---
+
+## Step 6 — Fix Breaking Code Changes
 
 After bumping versions, `./mvnw compile` will surface breakage. Common patterns:
 
@@ -194,16 +274,88 @@ see Step 5.
 
 ### Other Common Fixes
 
-| Symptom                                           | Likely Cause              | Fix                                                               |
-| ------------------------------------------------- | ------------------------- | ----------------------------------------------------------------- |
-| `package tools.jackson.annotation does not exist` | Wrong Jackson 3 migration | Revert annotation imports to `com.fasterxml.jackson.annotation.*` |
-| `AntPathRequestMatcher` not found                 | Spring Security 7         | Use `PathPatternRequestMatcher`                                   |
-| `JsonProcessingException` not found               | Jackson 3 core            | Change to `tools.jackson.core.JacksonException`                   |
-| Property key `spring.security.filter.*`           | Boot 4 property rename    | Check Boot 4 migration guide                                      |
+| Symptom                                           | Likely Cause              | Fix                                                                               |
+| ------------------------------------------------- | ------------------------- | --------------------------------------------------------------------------------- |
+| `package tools.jackson.annotation does not exist` | Wrong Jackson 3 migration | Revert annotation imports to `com.fasterxml.jackson.annotation.*`                 |
+| `AntPathRequestMatcher` not found                 | Spring Security 7         | Use `PathPatternRequestMatcher`                                                   |
+| `JsonProcessingException` not found               | Jackson 3 core            | Change to `tools.jackson.core.JacksonException`                                   |
+| Property key `spring.security.filter.*`           | Boot 4 property rename    | Check Boot 4 migration guide                                                      |
+| `McpJsonMapper.getDefault()` not found            | MCP SDK 0.18.x            | Use `McpJsonDefaults.getMapper()` — see **spring-ai-mcp-client-package-migrator** |
 
 ---
 
-## Step 5 — Bootstrap SpotBugs Exclusions
+## Step 7 — Docs — Update Stale Version Strings
+
+Grep project markdown files for version strings that appear as properties in `pom.xml`
+(or as version catalog entries in `gradle/libs.versions.toml`):
+
+```bash
+# Extract version property names and values from pom.xml
+grep -E '<[a-z][a-z0-9.-]+\.version>' pom.xml | \
+  sed 's/.*<\([^>]*\)>\([^<]*\)<.*/\1=\2/'
+# Example output: spring-boot.version=4.0.0
+```
+
+For each `old_value → new_value` pair discovered in Step 4:
+
+```bash
+# Find markdown files that reference the old version string
+grep -rl "<old_value>" --include="*.md" .
+# Apply replacement
+sed -i 's/<old_value>/<new_value>/g' <file>
+```
+
+Focus on version strings that appear literally in prose (prerequisites tables, badge URLs,
+getting-started guides). Delegate cross-cutting docs updates to the **documentation-migrator**
+skill for large-scale version-reference sweeps.
+
+---
+
+## Step 8 — GitHub Actions Action Version Bumps
+
+Scan all workflow files for stale action versions and update to current stable releases.
+Invoke the **github-actions-updater** skill standalone if you only need this step.
+
+Current latest action versions (May 2026):
+
+| Action                   | Latest |
+| ------------------------ | ------ |
+| `actions/checkout`       | `v6`   |
+| `actions/setup-java`     | `v5`   |
+| `actions/cache`          | `v5`   |
+| `github/codeql-action/*` | `v3`   |
+
+```bash
+# Find all workflow files
+find .github/workflows -name "*.yml" -o -name "*.yaml" 2>/dev/null
+
+# Check current action versions
+grep -rh "uses: actions/\|uses: github/" .github/workflows/
+```
+
+For each workflow file, update stale `uses:` pins:
+
+```bash
+# Example: checkout v4 → v6
+sed -i 's|actions/checkout@v[0-9]*|actions/checkout@v6|g' .github/workflows/*.yml
+sed -i 's|actions/setup-java@v[0-9]*|actions/setup-java@v5|g' .github/workflows/*.yml
+sed -i 's|actions/cache@v[0-9]*|actions/cache@v5|g' .github/workflows/*.yml
+sed -i 's|github/codeql-action/[a-z-]*@v[0-9]*|&|g' .github/workflows/*.yml
+# codeql-action: replace the version tag specifically
+grep -rl "codeql-action" .github/workflows/ | \
+  xargs sed -i 's|github/codeql-action/\([a-z-]*\)@v[0-9]*|github/codeql-action/\1@v3|g'
+```
+
+Verify YAML syntax is preserved after edits:
+
+```bash
+python3 -c "import yaml, sys; [yaml.safe_load(open(f)) for f in sys.argv[1:]]" \
+  .github/workflows/*.yml && echo "YAML OK"
+```
+
+---
+
+## Step 9 — Bootstrap SpotBugs Exclusions
 
 Check whether an exclusion file exists:
 
@@ -236,7 +388,7 @@ Verify your `pom.xml` references the exclusion file:
 
 ---
 
-## Step 6 — Quality & Security Gates
+## Step 10 — Quality & Security Gates
 
 Run in order. **Stop and fix if any gate fails before proceeding.**
 
@@ -283,7 +435,7 @@ do not suppress everything blindly. Only suppress confirmed false positives with
 
 ---
 
-## Step 7 — Commit
+## Step 11 — Commit
 
 Write a commit message that enumerates every version bump and every code fix:
 
@@ -297,9 +449,26 @@ chore: dependency maintenance — <YYYY-MM-DD>
 - <plugin> spotbugs-maven-plugin: 4.8.5.0 → 4.9.3.0
 ... (list every change)
 
+## Security alerts resolved
+- GHSA-xxxx-yyyy-zzzz: <package> <old> → <fixed> (CVE-YYYY-NNNNN)
+... (list each alert)
+
+## Frontend / npm upgrades
+- vite: 5.4.0 → 6.3.5
+- @vitejs/plugin-react: 4.3.0 → 4.7.0
+... (list every npm change)
+
+## GitHub Actions upgrades
+- actions/checkout: v4 → v6
+- actions/setup-java: v4 → v5
+... (list only changed actions)
+
 ## Code fixes
 - Fix defensive copy in MyService.setHeaders() (EI_EXPOSE_REP2, real bug)
 - Correct Jackson annotation imports: reverted erroneous tools.jackson.annotation → com.fasterxml.jackson.annotation
+
+## Docs
+- README.md: spring-boot.version 4.0.0 → 4.0.3
 
 ## Bootstrap
 - Added src/main/resources/spotbugs-exclude.xml (Spring DI + ApplicationEvent false positives)
@@ -317,7 +486,7 @@ EOF
 
 ---
 
-## Step 8 — Push & Wait for CI
+## Step 12 — Push & Wait for CI
 
 ```bash
 git push -u origin maintenance/dependency-upgrades-and-security
@@ -334,7 +503,7 @@ Do not open the PR until CI is green. If CI fails, fix locally, push again.
 
 ---
 
-## Step 9 — Open PR
+## Step 13 — Open PR
 
 Use the **pr-submitter** skill for the full template. Minimum content:
 
@@ -345,17 +514,42 @@ gh pr create \
   --body "$(cat <<'EOF'
 ## Dependency Maintenance
 
-### Version Changes
+### Java / JVM Version Changes
 
 | Artifact | From | To |
 |---|---|---|
 | spring-boot-starter-parent | X.Y.Z | X.Y.Z |
 | ... | ... | ... |
 
+### Security Alerts Resolved
+
+| Alert | Package | CVE / GHSA | Fixed In |
+|---|---|---|---|
+| #N | package-name | GHSA-xxxx | X.Y.Z |
+
+### Frontend / npm Version Changes
+
+| Package | From | To |
+|---|---|---|
+| vite | 5.4.0 | 6.3.5 |
+| ... | ... | ... |
+
+### GitHub Actions Upgrades
+
+| Action | From | To |
+|---|---|---|
+| actions/checkout | v4 | v6 |
+| actions/setup-java | v4 | v5 |
+| ... | ... | ... |
+
 ### Code Fixes
 
 - **Defensive copy in `MyService.setHeaders()`** — mutated caller map; fixed by copying before transform.
 - *(list any other fixes)*
+
+### Documentation Updates
+
+- *(list stale version strings updated in markdown files)*
 
 ### Quality Gates
 
@@ -366,44 +560,42 @@ gh pr create \
 | test | PASSED |
 | spotbugs:spotbugs | PASSED |
 
-### Follow-on Work
+### Consolidated Dependabot PRs
 
-- [ ] **GitHub Actions Node.js migration** — open a separate PR from main:
-  `checkout@v6`, `setup-java@v5`, `cache@v5`, `codeql-action@v3` (Node 20 retiring).
+- #N — bump \`package\` from X to Y
+- *(list each closed PR)*
 EOF
 )"
 ```
-
-**GitHub Actions upgrades belong in a separate PR from `main`**, not in this branch.
-Current latest action versions (as of May 2026):
-
-- `actions/checkout@v6`
-- `actions/setup-java@v5`
-- `actions/cache@v5`
-- `github/codeql-action@v3`
 
 ---
 
 ## Key Lessons
 
-| Lesson                                  | Detail                                                                                                                      |
-| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Jackson 3 annotation namespace          | `@JsonProperty` etc. stay at `com.fasterxml.jackson.annotation.*`. The `tools.jackson.annotation.*` package does not exist. |
-| SpotBugs EI_EXPOSE_REP2 on Spring beans | False positive — Spring DI stores collaborators by reference by design. Suppress via exclusion file.                        |
-| Defensive copy in setters               | A setter that calls `replaceAll()` on its argument then stores the reference IS a real bug — fix it.                        |
-| Separate PR concerns                    | Dependency bumps and GitHub Actions upgrades are different risk surfaces; branch both from `main` independently.            |
-| OWASP is slow                           | OWASP dependency-check is a 10+ minute CI job. Use SpotBugs as the fast in-loop gate.                                       |
+| Lesson                                  | Detail                                                                                                                        |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Jackson 3 annotation namespace          | `@JsonProperty` etc. stay at `com.fasterxml.jackson.annotation.*`. The `tools.jackson.annotation.*` package does not exist.   |
+| SpotBugs EI_EXPOSE_REP2 on Spring beans | False positive — Spring DI stores collaborators by reference by design. Suppress via exclusion file.                          |
+| Defensive copy in setters               | A setter that calls `replaceAll()` on its argument then stores the reference IS a real bug — fix it.                          |
+| GH Actions + deps in same PR            | Dependency bumps and GitHub Actions action-version upgrades share the same risk surface and reviewer set; keep in one branch. |
+| GH Actions standalone invocation        | To update only action versions, invoke `github-actions-updater` skill directly without a full maintenance pass.               |
+| OWASP is slow                           | OWASP dependency-check is a 10+ minute CI job. Use SpotBugs as the fast in-loop gate.                                         |
+| npm stable-only filter                  | Skip any npm package version containing: `alpha`, `beta`, `rc`, `next`, `canary`, `experimental`, `-dev`, `nightly`.          |
+| MCP SDK 0.18.x                          | `McpJsonMapper.getDefault()` removed. Use `McpJsonDefaults.getMapper()`. See `spring-ai-mcp-client-package-migrator`.         |
 
 ---
 
 ## Reusable Skills Called by This Workflow
 
-| Step | Skill                | Purpose                                              |
-| ---- | -------------------- | ---------------------------------------------------- |
-| 3    | `dependency-updater` | Maven/Gradle versions plugin, filtering strategies   |
-| 4    | `jackson-migrator`   | Jackson 2→3 import migration (preserves annotations) |
-| 6    | `build-runner`       | Build/test execution and error pattern reference     |
-| 9    | `pr-submitter`       | Standardised PR body template                        |
+| Step | Skill                                   | Purpose                                                     |
+| ---- | --------------------------------------- | ----------------------------------------------------------- |
+| 4    | `dependency-updater`                    | Maven/Gradle versions plugin, filtering strategies          |
+| 6    | `jackson-migrator`                      | Jackson 2→3 import migration (preserves annotations)        |
+| 6    | `spring-ai-mcp-client-package-migrator` | McpJsonMapper → McpJsonDefaults (MCP SDK 0.18.x)            |
+| 7    | `documentation-migrator`                | Large-scale cross-cutting version-ref sweeps in markdown    |
+| 8    | `github-actions-updater`                | Standalone GH Actions action version bump (invocable alone) |
+| 10   | `build-runner`                          | Build/test execution and error pattern reference            |
+| 13   | `pr-submitter`                          | Standardised PR body template                               |
 
 ---
 

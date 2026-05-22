@@ -1,21 +1,80 @@
 ---
 name: github-actions-updater
-description: Update Java versions in GitHub Actions workflow files to align with build file configurations. Use when migrating Java versions and ensuring CI/CD pipelines match project requirements.
-allowed-tools: Read, Write, Edit, Glob, Grep
+description: >
+  Update GitHub Actions workflow files: bump action versions (checkout, setup-java,
+  cache, codeql-action) to current stable releases AND align Java versions with build
+  file configurations. Use standalone when only GH Actions updates are needed, or as
+  Step 8 of the java-maintenance-workflow skill.
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
 # GitHub Actions Updater
 
-Update Java versions and related configurations in GitHub Actions workflow files.
+Update GitHub Actions workflow files: action versions **and** Java version alignment.
 
 ## Instructions
 
-When invoked, update GitHub Actions workflow files to align Java versions with build file configurations:
+When invoked, update GitHub Actions workflow files in two passes:
 
-1. **Update Java versions** - In setup-java action steps
-2. **Update matrix strategies** - Multi-version build matrices
-3. **Update GraalVM versions** - If using GraalVM
-4. **Preserve formatting** - Maintain YAML structure and comments
+**Pass 1 — Action version bumps** (always run first):
+
+1. **Bump `actions/checkout`** to `v6`
+2. **Bump `actions/setup-java`** to `v5`
+3. **Bump `actions/cache`** to `v5`
+4. **Bump `github/codeql-action/*`** to `v3`
+
+**Pass 2 — Java version alignment** (skip if only action bumps are needed):
+
+1. **Update Java versions** — in setup-java action steps
+2. **Update matrix strategies** — multi-version build matrices
+3. **Update GraalVM versions** — if using GraalVM
+4. **Preserve formatting** — maintain YAML structure and comments
+
+---
+
+## Action Version Bump Patterns
+
+Current stable versions (May 2026):
+
+| Action                           | Latest tag |
+| -------------------------------- | ---------- |
+| `actions/checkout`               | `v6`       |
+| `actions/setup-java`             | `v5`       |
+| `actions/cache`                  | `v5`       |
+| `github/codeql-action/init`      | `v3`       |
+| `github/codeql-action/autobuild` | `v3`       |
+| `github/codeql-action/analyze`   | `v3`       |
+
+### Sed patterns for bulk update
+
+```bash
+# Find all workflow files
+WORKFLOWS=$(find .github/workflows -name "*.yml" -o -name "*.yaml" 2>/dev/null | sort)
+
+# Update action versions
+for f in $WORKFLOWS; do
+  sed -i \
+    -e 's|actions/checkout@v[0-9]*|actions/checkout@v6|g' \
+    -e 's|actions/setup-java@v[0-9]*|actions/setup-java@v5|g' \
+    -e 's|actions/cache@v[0-9]*|actions/cache@v5|g' \
+    -e 's|github/codeql-action/\([a-z-]*\)@v[0-9]*|github/codeql-action/\1@v3|g' \
+    "$f"
+done
+
+# Verify YAML is still valid
+python3 -c "
+import yaml, sys
+for f in sys.argv[1:]:
+    yaml.safe_load(open(f))
+    print(f'OK: {f}')
+" $WORKFLOWS
+```
+
+### Report what changed
+
+```bash
+git diff .github/workflows/ | grep '^[+-].*uses:' | grep -v '^---\|^+++'
+```
 
 ## Update Patterns
 
@@ -202,17 +261,9 @@ Supported distributions:
 
 ## Action Version Updates
 
-Optionally update action versions:
-
-```yaml
-# Before
-- uses: actions/setup-java@v3
-
-# After (optional)
-- uses: actions/setup-java@v4
-```
-
-Only update if requested and if newer version supports the target Java version.
+See **Action Version Bump Patterns** above for the full list of current stable versions
+and the bulk-update sed commands. Action version bumps are now a primary capability of
+this skill, not optional.
 
 ## Output Format
 
