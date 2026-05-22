@@ -240,6 +240,52 @@ public class McpClientConfig {
 }
 ```
 
+---
+
+## MCP SDK 0.18.x — McpJsonMapper.getDefault() Removal
+
+From MCP SDK **0.18.x**, `McpJsonMapper.getDefault()` was removed. Use `McpJsonDefaults.getMapper()` instead.
+
+### Detection
+
+```bash
+grep -r "McpJsonMapper\.getDefault()" src/main/java/
+```
+
+### Fix
+
+```java
+// Before (MCP SDK < 0.18)
+import io.modelcontextprotocol.json.McpJsonMapper;
+// ...
+new WebFluxSseClientTransport(webClientBuilder, McpJsonMapper.getDefault());
+
+// After (MCP SDK 0.18+)
+import io.modelcontextprotocol.json.McpJsonDefaults;
+// ...
+new WebFluxSseClientTransport(webClientBuilder, McpJsonDefaults.getMapper());
+```
+
+Sed one-liner:
+
+```bash
+find src/main/java -name "*.java" -exec sed -i \
+  's/McpJsonMapper\.getDefault()/McpJsonDefaults.getMapper()/g' {} +
+
+# Update import
+find src/main/java -name "*.java" -exec sed -i \
+  's/import io\.modelcontextprotocol\.json\.McpJsonMapper;/import io.modelcontextprotocol.json.McpJsonDefaults;/g' {} +
+```
+
+### Verify
+
+```bash
+grep -r "McpJsonMapper.getDefault" src/main/java/  # should return nothing
+./mvnw compile
+```
+
+---
+
 ## Related Skills
 
 - `spring-ai-migrator` — broader Spring AI 1.x → 2.x migration including TTS API,
