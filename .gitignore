@@ -16,4 +16,24 @@ pnpm-lock.yaml
 # OS
 .DS_Store
 Thumbs.db
+
+# Claude Code local settings
+.claude/settings.json
 .claude/settings.local.json
+
+# Claude Code / claude-flow generated tooling (not project source)
+.claude/agents/
+.claude/commands/
+.claude/helpers/
+.claude/memory.db
+.claude-flow/
+
+# Swarm and MCP local state
+.swarm/
+.mcp.json
+
+# Vector database
+ruvector.db
+
+# npm lockfile (project uses pnpm)
+package-lock.json
