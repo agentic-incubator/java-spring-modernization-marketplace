@@ -20,7 +20,7 @@
     "upgrade": "pnpm update --latest"
   },
   "devDependencies": {
-    "markdownlint-cli": "^0.47.0",
+    "markdownlint-cli": "^0.48.0",
     "prettier": "^3.7.4"
   },
   "keywords": [
