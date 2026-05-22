@@ -70,7 +70,7 @@ cat .migration-state.yaml | grep -A 20 appliedTransformations
 {
   "name": "test-minor-upgrade",
   "springBoot": "4.0.1",
-  "springCloud": "2025.1.0",
+  "springCloud": "2025.1.1",
   "java": "21"
 }
 ```
@@ -122,7 +122,7 @@ grep "4.1.0" pom.xml || grep "4.1.0" build.gradle*
 {
   "name": "test-patch-upgrade",
   "springBoot": "4.0.0",
-  "springCloud": "2025.1.0",
+  "springCloud": "2025.1.1",
   "java": "21",
   "dependencies": {
     "guava": "32.1.0",
@@ -149,8 +149,8 @@ grep "4.1.0" pom.xml || grep "4.1.0" build.gradle*
 - Phases skipped: wrapper, imports, properties, configs
 - Version changes:
   - Spring Boot: 4.0.0 → 4.0.1
-  - Dependencies: guava 32.1.0 → 33.2.0, spring-ai 1.0.0 → 2.0.0-M1
-- Spring Milestones repository auto-added (for Spring AI 2.0.0-M1)
+  - Dependencies: guava 32.1.0 → 33.2.0, spring-ai 1.0.0 → 2.0.0-M6
+- Spring Milestones repository auto-added (for Spring AI 2.0.0-M6)
 
 **Validation**:
 
@@ -164,7 +164,7 @@ grep "4.0.1" pom.xml || grep "4.0.1" build.gradle*
 
 # Verify dependency updates
 grep "33.2.0" pom.xml build.gradle* # guava updated
-grep "2.0.0-M1" pom.xml build.gradle* # spring-ai updated
+grep "2.0.0-M6" pom.xml build.gradle* # spring-ai updated
 
 # Verify Spring Milestones repository added
 grep "spring-milestones" pom.xml build.gradle*
@@ -195,7 +195,7 @@ grep "21" .github/workflows/*.yml
 {
   "name": "test-comprehensive-refresh",
   "springBoot": "4.0.1",
-  "springCloud": "2025.1.0",
+  "springCloud": "2025.1.1",
   "java": "21",
   "dependencies": {
     "guava": "31.0.0" // Outdated
@@ -428,7 +428,7 @@ grep -r "4.0.1" */pom.xml
 
 **Expected Behavior**:
 
-- Spring AI updated: 1.0.0 → 2.0.0-M1
+- Spring AI updated: 1.0.0 → 2.0.0-M6
 - Spring Milestones repository auto-added
 - Build succeeds with milestone dependencies
 
@@ -436,14 +436,14 @@ grep -r "4.0.1" */pom.xml
 
 ```bash
 # Verify Spring AI version
-grep "2.0.0-M1" pom.xml build.gradle*
+grep "2.0.0-M6" pom.xml build.gradle*
 
 # Verify milestones repo added
 grep "spring-milestones" pom.xml
 grep "https://repo.spring.io/milestone" pom.xml
 
 # Test dependency resolution
-./mvnw dependency:tree | grep "spring-ai.*2.0.0-M1"
+./mvnw dependency:tree | grep "spring-ai.*2.0.0-M6"
 ```
 
 ---

@@ -1,6 +1,6 @@
 ---
 name: spring-ai-migrator
-description: Migrate Spring AI 1.x to 2.0.x including TTS API changes (SpeechModel to TextToSpeechModel), speed parameter type change (Float to Double), chat memory advisor constant renames, and autoconfigure migration for Spring Boot 4 compatibility. Use when upgrading Spring AI or fixing Spring AI compilation errors.
+description: Migrate Spring AI 1.x to 2.0.x including TTS API changes (SpeechModel to TextToSpeechModel), speed parameter type change (Float to Double), chat memory advisor constant renames, and autoconfigure migration for Spring Boot 4 compatibility. Supports 1.1.6 (Boot 3.5.x) and 2.0.0-M6 (Boot 4.x). Use when upgrading Spring AI or fixing Spring AI compilation errors.
 allowed-tools: Read, Write, Edit, Glob, Grep
 ---
 
@@ -10,7 +10,7 @@ Migrate Spring AI 1.x to Spring AI 2.0.x with TTS API, advisor, and autoconfigur
 
 ## Critical: Spring Boot 4 Compatibility
 
-**Spring AI 2.0.0-M1 is required for Spring Boot 4 compatibility.**
+**Spring AI 2.0.0-M6 is required for Spring Boot 4 compatibility.**
 
 Spring Boot 4.0 splits the monolithic autoconfigure JAR into modules, causing package
 relocations. Spring AI 1.x was built for Spring Boot 3.x and references old class
@@ -20,15 +20,16 @@ locations, resulting in:
 ClassNotFoundException: org.springframework.boot.autoconfigure.web.client.RestClientAutoConfiguration
 ```
 
-**Solution:** Upgrade Spring AI from 1.x to 2.0.0-M1 or later.
+**Solution:** Upgrade Spring AI from 1.x to 2.0.0-M6 or later.
 
 ## Version Compatibility
 
-| Spring Boot | Spring AI     | Notes                           |
-| ----------- | ------------- | ------------------------------- |
-| 3.3.x       | 1.0.x         | Original Spring AI              |
-| 3.5.x       | 1.0.x - 1.1.x | Last Spring Boot 3.x compatible |
-| **4.0.x**   | **2.0.0-M1+** | Required for Boot 4             |
+| Spring Boot | Spring AI     | Notes                                  |
+| ----------- | ------------- | -------------------------------------- |
+| 3.3.x       | 1.0.x         | Original Spring AI                     |
+| 3.5.x       | 1.0.x - 1.1.x | Last Spring Boot 3.x compatible        |
+| 3.5.x       | **1.1.6**     | Latest stable for Boot 3.x             |
+| **4.0.x**   | **2.0.0-M6+** | Required for Boot 4 (latest milestone) |
 
 ## Key Migration Areas
 
@@ -148,6 +149,31 @@ chatClient.prompt()
     .call();
 ```
 
+### PromptChatMemoryAdvisor Deprecation (Spring AI 1.1.6)
+
+**Status:** DEPRECATED in Spring AI 1.1.6
+
+All chat memory advisors now require an **explicit `conversationId`** — implicit or default IDs are removed.
+
+#### Before (Spring AI 1.1.x < 1.1.6)
+
+```java
+// conversationId was optional; a default was used if omitted
+chatClient.prompt()
+    .advisors(new PromptChatMemoryAdvisor(chatMemory))
+    .call();
+```
+
+#### After (Spring AI 1.1.6+)
+
+```java
+// conversationId is now mandatory
+chatClient.prompt()
+    .advisors(new PromptChatMemoryAdvisor(chatMemory))
+    .advisors(advisor -> advisor.param(ChatMemory.CONVERSATION_ID, "session-123"))
+    .call();
+```
+
 ## Speed Parameter Migration
 
 ### Find and Replace Pattern
@@ -242,15 +268,15 @@ Spring AI 2.0 changes some defaults:
 
 ```yaml
 # Before (1.x)
-spring-ai.version: 1.1.2
+spring-ai.version: 1.1.6
 
 # After (2.0)
-spring-ai.version: 2.0.0-M1
+spring-ai.version: 2.0.0-M6
 ```
 
 ## Spring Milestones Repository
 
-Spring AI 2.0.0-M1 is a milestone release requiring the Spring Milestones repository:
+Spring AI 2.0.0-M6 is a milestone release requiring the Spring Milestones repository:
 
 ### Maven
 
@@ -275,6 +301,25 @@ repositories {
 }
 ```
 
+## MCP SDK Version Updates
+
+Spring AI 1.1.6 updates MCP dependencies:
+
+- MCP SDK: `0.17.0` → `0.18.2`
+- MCP annotations: `0.8.0` → `0.9.0`
+
+If you declare MCP SDK versions explicitly, update:
+
+```xml
+<dependency>
+    <groupId>io.modelcontextprotocol.sdk</groupId>
+    <artifactId>mcp</artifactId>
+    <version>0.18.2</version>
+</dependency>
+```
+
+These are managed via the Spring AI BOM when using `spring-ai-bom:1.1.6`.
+
 ## Jackson 2 Compatibility Layer (Spring AI 2.0.0-M\*)
 
 **NEW in v2.2.0**: Spring AI 2.0.0-M\* milestone releases require Jackson 2 while Spring Boot 4 uses Jackson 3.
@@ -282,13 +327,13 @@ This section covers the temporary compatibility layer needed for Spring AI miles
 
 ### Problem
 
-**Spring AI 2.0.0-M1** requires Jackson 2 (`com.fasterxml.jackson.*` packages)
+**Spring AI 2.0.0-M6** requires Jackson 2 (`com.fasterxml.jackson.*` packages)
 **Spring Boot 4** uses Jackson 3 (`tools.jackson.*` packages)
 
 **Root Cause**: Spring AI's ChromaVectorStoreAutoConfiguration still imports Jackson 2's ObjectMapper:
 
 ```java
-// From Spring AI 2.0.0-M1 source
+// From Spring AI 2.0.0-M6 source
 import com.fasterxml.jackson.databind.ObjectMapper;  // Jackson 2!
 ```
 
@@ -302,7 +347,7 @@ No qualifying bean of type 'com.fasterxml.jackson.databind.ObjectMapper' availab
 
 This transformation **ONLY** applies when:
 
-- ✅ Spring AI version matches `2.0.0-M*` (milestone releases)
+- ✅ Spring AI version matches `2.0.0-M6` or any `2.0.0-M*` (milestone releases)
 - ✅ Spring Boot version is `4.0.0+`
 - ❌ Spring AI version is GA (`2.0.0`, `2.0.1`, etc.) - **SKIP** (GA likely supports Jackson 3)
 
@@ -313,7 +358,7 @@ Run both Jackson 2 and Jackson 3 simultaneously:
 - **Jackson 3**: Used by Spring Boot 4 (tools.jackson.\*)
 - **Jackson 2**: Provided explicitly for Spring AI (com.fasterxml.jackson.\*)
 
-### Before (Fails with Spring AI 2.0.0-M1 + Boot 4)
+### Before (Fails with Spring AI 2.0.0-M6 + Boot 4)
 
 **pom.xml**:
 
@@ -325,7 +370,7 @@ Run both Jackson 2 and Jackson 3 simultaneously:
 </parent>
 
 <properties>
-    <spring-ai.version>2.0.0-M1</spring-ai.version>
+    <spring-ai.version>2.0.0-M6</spring-ai.version>
 </properties>
 
 <dependencies>
@@ -354,7 +399,7 @@ required a bean of type 'com.fasterxml.jackson.databind.ObjectMapper' that could
 **pom.xml** (additions):
 
 ```xml
-<!-- Jackson 2 dependencies for Spring AI compatibility (Spring AI 2.0.0-M1 requires Jackson 2) -->
+<!-- Jackson 2 dependencies for Spring AI compatibility (Spring AI 2.0.0-M6 requires Jackson 2) -->
 <dependency>
     <groupId>com.fasterxml.jackson.core</groupId>
     <artifactId>jackson-databind</artifactId>
@@ -381,13 +426,12 @@ import org.springframework.context.annotation.Configuration;
 /**
  * Jackson 2 configuration for Spring AI compatibility.
  *
- * <p>Spring AI 2.0.0-M1 requires Jackson 2's {@link ObjectMapper} but Spring Boot 4
+ * <p>Spring AI 2.0.0-M6 requires Jackson 2's {@link ObjectMapper} but Spring Boot 4
  * only auto-configures Jackson 3's {@code tools.jackson.databind.json.JsonMapper}.
  * This configuration provides a Jackson 2 ObjectMapper bean to satisfy Spring AI's
  * requirements.
  *
- * <p>This is a temporary workaround until Spring AI 2.0 GA adds full Jackson 3 support
- * (expected H1 2026).
+ * <p>This is a temporary workaround until Spring AI 2.0 GA adds full Jackson 3 support.
  *
  * @see <a href="https://spring.io/blog/2025/10/07/introducing-jackson-3-support-in-spring/">Spring Jackson 3 Support</a>
  * @see <a href="https://github.com/FasterXML/jackson/blob/main/jackson3/MIGRATING_TO_JACKSON_3.md">Jackson 3 Migration Guide</a>
@@ -409,7 +453,7 @@ public class JacksonConfiguration {
 ```text
 Dependency tree:
   com.fasterxml.jackson.core:jackson-databind:2.18.2  (Jackson 2 - for Spring AI)
-  tools.jackson.core:jackson-databind:3.0.3          (Jackson 3 - for Spring Boot 4)
+  tools.jackson.core:jackson-databind:3.1.3          (Jackson 3 - for Spring Boot 4)
 ```
 
 ### Gradle Example
@@ -418,7 +462,7 @@ Dependency tree:
 
 ```kotlin
 dependencies {
-    // Jackson 2 for Spring AI 2.0.0-M1 compatibility
+    // Jackson 2 for Spring AI 2.0.0-M6 compatibility
     implementation("com.fasterxml.jackson.core:jackson-databind:2.18.2")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.2")
 }
@@ -499,10 +543,10 @@ appliedTransformations:
     jacksonCompatibility:
       applied: true
       jackson2Version: '2.18.2'
-      jackson3Version: '3.0.2' # From Spring Boot 4 BOM
+      jackson3Version: '3.1.3' # From Spring Boot 4 BOM
       coexistenceMode: true
       configurationClass: 'src/main/java/com/example/config/JacksonConfiguration.java'
-      reason: 'Spring AI 2.0.0-M1 requires Jackson 2'
+      reason: 'Spring AI 2.0.0-M6 requires Jackson 2'
       temporaryWorkaround: true
       expectedRemovalVersion: '2.0.0' # Remove when Spring AI GA
       removalGuidance: |
@@ -533,7 +577,7 @@ appliedTransformations:
 
 ## Migration Steps (Complete)
 
-1. **Update version** - Change Spring AI to 2.0.0-M1 in build files
+1. **Update version** - Change Spring AI to 2.0.0-M6 in build files
 2. **Add repository** - Add Spring Milestones repo for milestone releases
 3. **Update imports** - Replace SpeechModel classes with TextToSpeechModel classes
 4. **Update types** - Change `SpeechModel` to `TextToSpeechModel` in declarations
@@ -543,17 +587,14 @@ appliedTransformations:
 8. **Configure defaults** - Explicitly set temperature and model if needed
 9. **Run tests** - Verify TTS and chat memory functionality
 
-## Idempotent Transformation Logic
+## Transformation Protocol
 
-This skill implements idempotent transformations that can be safely run multiple times. Each transformation:
+Follows the standard migration protocol — see `migration-protocol` skill for the full
+transformation loop, skip logic, state file format, and build verification commands.
 
-1. **Reads migration state** - Loads `.migration-state.yaml` to check applied transformations
-2. **Checks if already applied** - Skips transformations with version >= applied version
-3. **Detects if still needed** - Uses regex patterns to verify transformation is required
-4. **Applies transformation** - Only executes if detection pattern matches
-5. **Updates state** - Records transformation in state file with version and commit SHA
+**Dependencies:** `migration-state` >= 1.0.0, `build-runner` >= 1.0.0
 
-### Transformation Flow
+### Skill State Entry
 
 ```yaml
 # Example state file entry after spring-ai-migrator runs
@@ -582,76 +623,21 @@ Each transformation has a detection pattern in `metadata.yaml`:
 | `advisor-constants`                | `CHAT_MEMORY_RETRIEVE_SIZE_KEY\|DEFAULT_CHAT_MEMORY_RESPONSE_SIZE\|CHAT_MEMORY_CONVERSATION_ID_KEY` | Find old advisor constants           |
 | `autoconfigure-provider-selection` | `spring:\s*\n\s*autoconfigure:\s*\n\s*exclude:.*OpenAiAutoConfiguration`                            | Find autoconfigure excludes          |
 | `autoconfigure-class-split`        | `org\.springframework\.ai\.autoconfigure\.openai\.OpenAiAutoConfiguration`                          | Find monolithic autoconfigure class  |
-| `milestones-repository`            | `spring-ai\.version.*2\.0\.0-M1`                                                                    | Detect Spring AI 2.0 milestone usage |
-
-### Skip Logic
-
-Before applying any transformation:
-
-1. Load state from `.migration-state.yaml`
-2. For each transformation in `metadata.yaml`:
-   - Check if `skill: spring-ai-migrator` exists in `appliedTransformations`
-   - If yes, check if transformation ID is in the list
-   - If yes, compare versions: skip if `appliedVersion >= currentVersion`
-   - If no or version is older, run detection pattern
-3. If detection pattern matches, apply transformation
-4. If detection pattern doesn't match, skip (already transformed or not applicable)
-
-### Version Comparison
-
-Transformations are only reapplied if:
-
-- Transformation ID not found in state file, OR
-- Applied version < current version (e.g., 1.0.0 < 2.0.0), OR
-- Detection pattern still matches (manual revert detected)
-
-**Example upgrade scenario:**
-
-```yaml
-# User ran spring-ai-migrator v1.0.0 previously
-appliedTransformations:
-  - skill: spring-ai-migrator
-    version: 1.0.0
-    transformations: [tts-model-rename, speed-parameter, advisor-constants]
-
-# Marketplace upgraded to v2.0.0 with new transformations
-# On resume, these transformations are applied:
-# - autoconfigure-provider-selection (new in 2.0.0)
-# - autoconfigure-class-split (new in 2.0.0)
-# - milestones-repository (new in 2.0.0)
-# Existing transformations are skipped (already at v1.0.0)
-```
+| `milestones-repository`            | `spring-ai\.version.*2\.0\.0-M6`                                                                    | Detect Spring AI 2.0 milestone usage |
 
 ### State Updates
 
-After successful transformation:
-
 ```yaml
-# Updated .migration-state.yaml
 skill: spring-ai-migrator
-version: 2.0.0
+version: 2.3.0
 transformations:
-  [
-    tts-model-rename,
-    speed-parameter,
-    advisor-constants,
-    autoconfigure-provider-selection,
-    autoconfigure-class-split,
-    milestones-repository,
-  ]
-completedAt: 2026-01-03T11:30:00Z
+  - tts-model-rename
+  - speed-parameter
+  - advisor-constants
+  - autoconfigure-provider-selection
+  - autoconfigure-class-split
+  - milestones-repository
+  - jackson-2-compatibility-layer
+completedAt: <ISO-8601-timestamp>
 commitSha: <git-commit-sha>
 ```
-
-The state file is committed with the migration changes for audit trail.
-
-## Integration with Migration State Skill
-
-This skill depends on the `migration-state` skill (v1.0.0+) for:
-
-- Reading `.migration-state.yaml`
-- Checking applied transformations
-- Updating state after successful transformation
-- Version comparison logic
-
-See `skills/migration-state/SKILL.md` for state management details.

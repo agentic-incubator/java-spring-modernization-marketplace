@@ -8,9 +8,9 @@ Detailed migration patterns for each supported upgrade path.
 | ----------- | ------------ | --------------- | ----- | ------- | ------------- |
 | 3.3.x       | 2024.0.x     | 6.3.x           | 17-23 | 2.x     | 1.0.x         |
 | 3.5.x       | 2025.0.x     | 6.4.x           | 17-24 | 2.x     | 1.0.x - 1.1.x |
-| **4.0.x**   | **2025.1.x** | **7.0.x**       | 17-25 | **3.x** | **2.0.0-M1+** |
+| **4.0.x**   | **2025.1.x** | **7.0.x**       | 17-25 | **3.x** | **2.0.0-M6+** |
 
-**Important:** Spring AI 2.0.0-M1 is required for Spring Boot 4 compatibility due to autoconfigure module split.
+**Important:** Spring AI 2.0.0-M6 is required for Spring Boot 4 compatibility due to autoconfigure module split.
 
 ## Spring Boot 3.x to 4.x
 
@@ -94,7 +94,7 @@ Undertow is not compatible with Servlet 6.1 and was removed in Spring Boot 4.
 
 ### Spring Milestones Repository
 
-Required when using milestone releases like Spring AI 2.0.0-M1:
+Required when using milestone releases like Spring AI 2.0.0-M6:
 
 ```xml
 <repositories>
@@ -318,7 +318,7 @@ See Spring Security section above - `VaadinWebSecurity` is replaced with `Vaadin
 
 ## Spring AI 1.x to 2.0
 
-**Spring AI 2.0.0-M1 is required for Spring Boot 4 compatibility.**
+**Spring AI 2.0.0-M6 is required for Spring Boot 4 compatibility.**
 
 Spring Boot 4.0 splits the monolithic autoconfigure JAR into modules. Spring AI 1.x references old class locations, causing:
 

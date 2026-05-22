@@ -11,7 +11,7 @@
 ## Purpose
 
 Validate Spring AI version format to prevent Maven dependency resolution failures. Spring AI uses semantic versioning with milestone/RC format
-`X.Y.Z-M#` (e.g., `2.0.0-M1`) NOT `X.Y-M#` (e.g., `2.0-M1`). Invalid formats cause silent Maven cache failures.
+`X.Y.Z-M#` (e.g., `2.0.0-M6`) NOT `X.Y-M#` (e.g., `2.0-M1`). Invalid formats cause silent Maven cache failures.
 
 ---
 
@@ -38,6 +38,19 @@ in spring-milestones (https://repo.spring.io/milestone)
 
 ---
 
+## Version Compatibility Reference
+
+| Spring Boot | Spring AI     | Notes                                  |
+| ----------- | ------------- | -------------------------------------- |
+| 3.3.x       | 1.0.x         | Original Spring AI                     |
+| 3.5.x       | 1.0.x – 1.1.x | Last Spring Boot 3.x generation        |
+| 3.5.x       | **1.1.6**     | Latest stable for Boot 3.x             |
+| **4.0.x**   | **2.0.0-M6+** | Required for Boot 4 (latest milestone) |
+
+When correcting a malformed milestone version, use the current latest milestone (`2.0.0-M6`) for Boot 4 targets, or `1.1.6` for Boot 3.5.x targets.
+
+---
+
 ## Validation Rules
 
 ### Valid Version Formats
@@ -47,10 +60,11 @@ in spring-milestones (https://repo.spring.io/milestone)
 **Valid Examples:**
 
 ```text
-2.0.0-M1      ✅ Milestone with full version
+2.0.0-M6      ✅ Latest Boot 4 milestone (current)
 2.0.0-RC1     ✅ Release candidate with full version
 2.0.0-SNAPSHOT ✅ Snapshot with full version
 2.0.0         ✅ Stable release
+1.1.6         ✅ Latest stable for Boot 3.5.x
 1.0.0-M5      ✅ Milestone 5
 ```
 
@@ -126,18 +140,18 @@ grep -E "spring-ai.*version.*2\.\d+-RC\d+" build.gradle build.gradle.kts
    - IF doesn't match: INVALID
 
 3. IDENTIFY issue type
-   - Missing patch version: "2.0-M1" → needs "2.0.0-M1"
-   - Missing minor version: "2-M1" → needs "2.0.0-M1"
-   - Wrong separator: "2.0.M1" → needs "2.0.0-M1"
+   - Missing patch version: "2.0-M1" → needs "2.0.0-M6"
+   - Missing minor version: "2-M1" → needs "2.0.0-M6"
+   - Wrong separator: "2.0.M1" → needs "2.0.0-M6"
    - Missing milestone number: "2.0.0-M" → malformed
 
 4. AUTO-CORRECT (if possible)
    - Missing patch: Add ".0" before milestone
-     2.0-M1 → 2.0.0-M1
+     2.0-M1 → 2.0.0-M6
      2.0-RC1 → 2.0.0-RC1
 
    - Missing minor and patch: Add ".0.0" before milestone
-     2-M1 → 2.0.0-M1
+     2-M1 → 2.0.0-M6
 
 5. GENERATE validation report
    - Original version
@@ -165,7 +179,7 @@ grep -E "spring-ai.*version.*2\.\d+-RC\d+" build.gradle build.gradle.kts
 
 ```xml
 <properties>
-    <spring-ai.version>2.0.0-M1</spring-ai.version>
+    <spring-ai.version>2.0.0-M6</spring-ai.version>
 </properties>
 ```
 
@@ -173,7 +187,7 @@ grep -E "spring-ai.*version.*2\.\d+-RC\d+" build.gradle build.gradle.kts
 
 ```text
 REPLACE: <spring-ai.version>2.0-M1</spring-ai.version>
-WITH:    <spring-ai.version>2.0.0-M1</spring-ai.version>
+WITH:    <spring-ai.version>2.0.0-M6</spring-ai.version>
 ```
 
 ### Gradle (Groovy DSL)
@@ -190,7 +204,7 @@ ext {
 
 ```gradle
 ext {
-    set('springAiVersion', "2.0.0-M1")
+    set('springAiVersion', "2.0.0-M6")
 }
 ```
 
@@ -198,7 +212,7 @@ ext {
 
 ```text
 REPLACE: set('springAiVersion', "2.0-M1")
-WITH:    set('springAiVersion', "2.0.0-M1")
+WITH:    set('springAiVersion', "2.0.0-M6")
 ```
 
 ### Gradle (Kotlin DSL)
@@ -212,14 +226,14 @@ extra["springAiVersion"] = "2.0-M1"
 **After:**
 
 ```kotlin
-extra["springAiVersion"] = "2.0.0-M1"
+extra["springAiVersion"] = "2.0.0-M6"
 ```
 
 **Transformation:**
 
 ```text
 REPLACE: extra["springAiVersion"] = "2.0-M1"
-WITH:    extra["springAiVersion"] = "2.0.0-M1"
+WITH:    extra["springAiVersion"] = "2.0.0-M6"
 ```
 
 ---
@@ -238,12 +252,12 @@ springAiVersionValidation:
       valid: false
       issue: 'MISSING_PATCH_VERSION'
       issueDescription: 'Version format must be X.Y.Z-M# not X.Y-M#'
-      correctedVersion: '2.0.0-M1'
+      correctedVersion: '2.0.0-M6'
       automationPotential: '100%'
       fix:
         type: 'REPLACE_TEXT'
         searchPattern: '<spring-ai.version>2.0-M1</spring-ai.version>'
-        replacement: '<spring-ai.version>2.0.0-M1</spring-ai.version>'
+        replacement: '<spring-ai.version>2.0.0-M6</spring-ai.version>'
 
     - location: 'dependencies/spring-ai-bom/version'
       line: 120
@@ -357,7 +371,7 @@ def validate_spring_ai_version(version):
 ```python
 # Maven correction
 old_string = "<spring-ai.version>2.0-M1</spring-ai.version>"
-new_string = "<spring-ai.version>2.0.0-M1</spring-ai.version>"
+new_string = "<spring-ai.version>2.0.0-M6</spring-ai.version>"
 
 # Apply edit
 edit_file("pom.xml", old_string, new_string)
@@ -413,10 +427,10 @@ mvn clean compile -U
 
 | Issue Type          | Pattern   | Correction      | Example                 |
 | ------------------- | --------- | --------------- | ----------------------- |
-| Missing patch       | `X.Y-M#`  | Add `.0`        | `2.0-M1` → `2.0.0-M1`   |
+| Missing patch       | `X.Y-M#`  | Add `.0`        | `2.0-M1` → `2.0.0-M6`   |
 | Missing patch (RC)  | `X.Y-RC#` | Add `.0`        | `2.0-RC1` → `2.0.0-RC1` |
-| Missing minor+patch | `X-M#`    | Add `.0.0`      | `2-M1` → `2.0.0-M1`     |
-| Wrong separator     | `X.Y.M#`  | Change to `-M#` | `2.0.M1` → `2.0.0-M1`   |
+| Missing minor+patch | `X-M#`    | Add `.0.0`      | `2-M1` → `2.0.0-M6`     |
+| Wrong separator     | `X.Y.M#`  | Change to `-M#` | `2.0.M1` → `2.0.0-M6`   |
 | Missing milestone # | `X.Y.Z-M` | Manual review   | Cannot auto-fix         |
 
 ---
@@ -471,14 +485,14 @@ The skill completes successfully when:
 originalVersion: '2.0-M1'
 valid: false
 issue: 'MISSING_PATCH_VERSION'
-correctedVersion: '2.0.0-M1'
+correctedVersion: '2.0.0-M6'
 ```
 
 **Output:**
 
 ```xml
 <properties>
-    <spring-ai.version>2.0.0-M1</spring-ai.version>
+    <spring-ai.version>2.0.0-M6</spring-ai.version>
 </properties>
 ```
 
@@ -505,7 +519,7 @@ correctedVersion: '2.0.0-M1'
 ```yaml
 validations:
   - originalVersion: '2.0-M1'
-    correctedVersion: '2.0.0-M1'
+    correctedVersion: '2.0.0-M6'
   - originalVersion: '2.0-RC1'
     correctedVersion: '2.0.0-RC1'
 ```
@@ -514,7 +528,7 @@ validations:
 
 ```xml
 <properties>
-    <spring-ai.version>2.0.0-M1</spring-ai.version>
+    <spring-ai.version>2.0.0-M6</spring-ai.version>
 </properties>
 
 <dependency>
@@ -531,13 +545,13 @@ validations:
 **Input:**
 
 ```xml
-<spring-ai.version>2.0.0-M1</spring-ai.version>
+<spring-ai.version>2.0.0-M6</spring-ai.version>
 ```
 
 **Validation:**
 
 ```yaml
-originalVersion: '2.0.0-M1'
+originalVersion: '2.0.0-M6'
 valid: true
 issue: null
 ```

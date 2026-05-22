@@ -1,9 +1,13 @@
 {
   "name": "spring-modernization-marketplace",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "description": "Claude Code plugin marketplace for Spring ecosystem modernization with comprehensive breaking changes detection, OpenFeign migration, OpenAPI Generator intelligence, Spring Framework 7 support, advanced validation capabilities, and Java dependency maintenance workflow",
   "private": true,
-  "packageManager": "pnpm@9.15.0",
+  "packageManager": "pnpm@11.0.0",
+  "engines": {
+    "node": ">=26",
+    "pnpm": ">=11"
+  },
   "scripts": {
     "prepare": "git config core.hooksPath .githooks",
     "format": "prettier --write \"**/*.md\"",
@@ -16,7 +20,7 @@
     "upgrade": "pnpm update --latest"
   },
   "devDependencies": {
-    "markdownlint-cli": "^0.47.0",
+    "markdownlint-cli": "^0.48.0",
     "prettier": "^3.7.4"
   },
   "keywords": [
@@ -26,8 +30,5 @@
     "spring-boot",
     "migration"
   ],
-  "license": "MIT",
-  "dependencies": {
-    "agentic-flow": "^2.0.13"
-  }
+  "license": "MIT"
 }

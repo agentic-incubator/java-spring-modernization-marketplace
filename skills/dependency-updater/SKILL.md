@@ -310,7 +310,7 @@ Updates properties in `<properties>` section:
 
 ### Milestone Repository Auto-Addition
 
-If milestone versions detected (e.g., `Spring AI 2.0.0-M1`), automatically adds Spring Milestones repository:
+If milestone versions detected (e.g., `Spring AI 2.0.0-M6`), automatically adds Spring Milestones repository:
 
 **Maven** (pom.xml):
 
@@ -563,41 +563,14 @@ Suggested Actions:
 Migration state recorded partial success.
 ```
 
-## Idempotent Transformation Logic
+## Transformation Protocol
 
-This skill implements idempotent transformations that can be safely run multiple times.
+Follows the standard migration protocol — see `migration-protocol` skill for the full
+transformation loop, skip logic, and state file format.
 
-### Transformation Flow
+**Dependencies:** `migration-state` >= 1.0.0, `build-runner` >= 1.0.0
 
-1. **Read Migration State**
-   - Load `.migration-state.yaml`
-   - Check for existing `dependency-updater` entry
-
-2. **Check if Already Applied**
-   - Compare applied version vs current skill version
-   - Skip if `appliedVersion >= skillVersion`
-
-3. **Detect if Still Needed**
-   - Use detection patterns from `metadata.yaml`
-   - Examples:
-     - `dependency-updates`: Match `<dependency>|implementation\(|api\(`
-     - `plugin-updates`: Match `<plugin>|id\(.*\) version`
-     - `property-updates`: Match `<properties>|\[versions\]`
-     - `milestone-repo-addition`: Match `-M\d+|-RC\d+`
-
-4. **Apply Transformation**
-   - Only execute if detection pattern matches
-   - Skip if pattern doesn't match (already transformed or not applicable)
-
-5. **Update State**
-   - Record in `.migration-state.yaml`:
-     - skill: `dependency-updater`
-     - version: `1.0.0`
-     - transformations: `[dependency-updates, plugin-updates, ...]`
-     - completedAt: timestamp
-     - commitSha: git commit SHA
-
-### Example State File Entry
+### Skill State Entry
 
 ```yaml
 appliedTransformations:
@@ -627,30 +600,9 @@ appliedTransformations:
         duration: '120s'
 ```
 
-### Skip Logic
-
-Before applying any transformation:
-
-1. Load state from `.migration-state.yaml`
-2. For each transformation in `metadata.yaml`:
-   - Check if `skill: dependency-updater` exists in `appliedTransformations`
-   - If yes, check if transformation ID is in the list
-   - If yes, compare versions: skip if `appliedVersion >= currentVersion`
-   - If no or version is older, run detection pattern
-3. If detection pattern matches, apply transformation
-4. If detection pattern doesn't match, skip (already transformed or not applicable)
-
-### Version Comparison
-
-Transformations are only reapplied if:
-
-- Transformation ID not found in state file, OR
-- Applied version < current version (e.g., 0.9.0 < 1.0.0), OR
-- Detection pattern still matches (manual revert detected)
-
 ## Integration with Migration State Skill
 
-This skill depends on the `migration-state` skill (v1.0.0+) for:
+This skill uses the `migration-state` skill (v1.0.0+) for:
 
 - Reading `.migration-state.yaml`
 - Checking applied transformations via `is_transformation_applied()`
@@ -1169,7 +1121,7 @@ migrationSkillMapping:
 
   - pattern: 'com.vaadin'
     suggestedSkill: vaadin-migrator
-    reason: 'Vaadin 24 → 25 theme/security changes'
+    reason: 'Vaadin 24 → 25.1.x theme/security changes (Boot 4.x recommended: 25.1.x)'
 ```
 
 ### Validation Performance

@@ -9,6 +9,9 @@
 
 Migrate OpenAPI Generator library configuration from `spring-cloud` (Feign) to `spring-http-interface` for Spring Boot 4 compatibility.
 
+> For Spring Framework 7+ projects, the recommended generator library is `spring-http-interface`,
+> which is compatible with OpenAPI Generator **7.22.0** (current stable as of May 2026).
+
 This skill handles **OpenAPI-generated** Feign clients (not hand-written `@FeignClient` interfaces). It modifies the
 OpenAPI Generator plugin configuration to regenerate clients using Spring Framework's native HTTP Interface pattern instead of
 Spring Cloud OpenFeign.
@@ -311,7 +314,7 @@ fi
 <plugin>
     <groupId>org.openapitools</groupId>
     <artifactId>openapi-generator-maven-plugin</artifactId>
-    <version>7.18.0</version>
+    <version>7.22.0</version>
     <executions>
         <execution>
             <goals>
@@ -346,7 +349,7 @@ fi
 <plugin>
     <groupId>org.openapitools</groupId>
     <artifactId>openapi-generator-maven-plugin</artifactId>
-    <version>7.18.0</version>
+    <version>7.22.0</version>
     <executions>
         <execution>
             <goals>

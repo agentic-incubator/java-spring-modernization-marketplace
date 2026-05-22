@@ -18,10 +18,12 @@ Intelligently updates OpenAPI Generator maven/gradle plugin versions based on Sp
 
 ## Spring Framework Compatibility Matrix
 
+> As of May 2026, the latest stable OpenAPI Generator is **7.22.0** (released 2026-04-28). Version 7.23.0 is scheduled for 2026-05-28.
+
 | Spring Framework | Minimum Plugin | Recommended | Template API    | Reason                  |
 | ---------------- | -------------- | ----------- | --------------- | ----------------------- |
-| **7.x**          | 7.18.0         | 7.18.0      | `.builderFor()` | Framework 7 API changes |
-| **6.x**          | 7.0.0          | 7.17.0      | `.builder()`    | Framework 6 API         |
+| **7.x**          | 7.18.0         | 7.22.0      | `.builderFor()` | Framework 7 API changes |
+| **6.x**          | 7.0.0          | 7.22.0      | `.builder()`    | Framework 6 API         |
 | **5.x**          | 6.0.0          | 6.6.0       | `.builder()`    | Legacy support          |
 
 ## When This Skill Applies
@@ -115,7 +117,7 @@ FRAMEWORK_VERSION=$(version-detector --framework spring-framework)
 
 # Determine compatibility
 if [[ "$FRAMEWORK_VERSION" =~ ^7\. ]]; then
-  REQUIRED_PLUGIN="7.18.0"
+  REQUIRED_PLUGIN="7.22.0"
   TEMPLATE_API="builderFor"
 elif [[ "$FRAMEWORK_VERSION" =~ ^6\. ]]; then
   REQUIRED_PLUGIN="7.0.0"
@@ -276,8 +278,8 @@ fi
 
 # Current: 6.6.0
 # Framework: 7.0.0
-# Required: 7.18.0
-# Action: Update to 7.18.0 (incompatible)
+# Required: 7.22.0
+# Action: Update to 7.22.0 (incompatible)
 ```
 
 ### Latest
@@ -295,8 +297,8 @@ fi
 ```bash
 # Current: 7.10.0
 # Framework: 7.0.0
-# Recommended: 7.18.0
-# Action: Update to 7.18.0 (recommended)
+# Recommended: 7.22.0
+# Action: Update to 7.22.0 (recommended)
 ```
 
 ## Integration with Migration State
@@ -318,13 +320,13 @@ appliedTransformations:
     pluginUpdate:
       buildTool: maven
       from: '7.17.0'
-      to: '7.18.0'
+      to: '7.22.0'
       reason: 'Spring Framework 7.0.0 compatibility'
       library: 'spring-http-interface'
 
     frameworkCompatibility:
       springFramework: '7.0.0'
-      requiredPlugin: '7.18.0'
+      requiredPlugin: '7.22.0'
       compatible: true
 
     templateUpdate:
@@ -422,7 +424,7 @@ Error: Cannot update plugin version in pom.xml
 
 Manual action required:
   1. Locate openapi-generator-maven-plugin in pom.xml
-  2. Update <version> to 7.18.0 or higher
+  2. Update <version> to 7.22.0 or higher
   3. Retry migration
 ```
 
@@ -431,7 +433,7 @@ Manual action required:
 ```text
 ❌ Generated code compilation failed after plugin update
 
-Plugin updated: 7.17.0 → 7.18.0
+Plugin updated: 7.17.0 → 7.22.0
 Error: HttpServiceProxyFactory.builder() not found
 
 Root cause: Templates still use Framework 6 API
@@ -457,12 +459,12 @@ Detection:
 
 Compatibility Check:
   Current Plugin: 7.17.0
-  Required Plugin: 7.18.0+
+  Required Plugin: 7.22.0+
   Status: ❌ INCOMPATIBLE
 
 Update:
   From: 7.17.0
-  To: 7.18.0
+  To: 7.22.0
   Reason: Spring Framework 7 API compatibility
 
 Template Check:

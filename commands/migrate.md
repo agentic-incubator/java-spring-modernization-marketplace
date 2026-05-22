@@ -20,9 +20,9 @@ If `--dry-run` is specified, only show what would be changed without making modi
 
 ### Phase 1: Build File Updates
 
-1. Update Spring Boot version to 4.0.0
+1. Update Spring Boot version to 4.0.6
 2. Add Jackson BOM 3.0.2
-3. Update Spring Cloud BOM to 2025.1.0
+3. Update Spring Cloud BOM to 2025.1.1
 4. Change Jackson groupIds (`com.fasterxml.jackson` → `tools.jackson`)
 5. Add `spring-boot-starter-webclient` if using WebFlux
 
@@ -54,7 +54,7 @@ migrate --project /path/to/project --skip-tests
 **Filter Strategy**:
 
 - Automatically selects based on target versions
-- `include-milestones` for Spring AI 2.0.0-M\* projects
+- `include-milestones` for Spring AI 2.0.0-M6 (latest milestone) projects
 - `stable-only` for production projects
 
 **Example Output**:
@@ -81,6 +81,8 @@ Phase 1.5: Dependency Updates
 2. Replace `AntPathRequestMatcher` with `PathPatternRequestMatcher`
 3. Update Vaadin Material theme to Lumo
 4. Update Spring AI speed params (Float → Double)
+5. Migrate Vaadin 23→24 (if on 23.x): run `vaadin-migrator` targeting 24.x
+6. Migrate Vaadin 24→25 (if on 24.x): run `vaadin-migrator` targeting 25.1.x (Boot 4.x recommended)
 
 ### Phase 4: Validation
 
