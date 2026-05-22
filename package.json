@@ -30,8 +30,5 @@
     "spring-boot",
     "migration"
   ],
-  "license": "MIT",
-  "dependencies": {
-    "agentic-flow": "^2.0.13"
-  }
+  "license": "MIT"
 }
