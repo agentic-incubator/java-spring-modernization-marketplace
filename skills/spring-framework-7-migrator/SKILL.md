@@ -27,6 +27,8 @@ code must use the new Framework 7 APIs.
 
 ## Spring Framework 7 API Changes
 
+> Current stable: Spring Framework **7.0.7** GA.
+
 ### Breaking Changes Table
 
 | Component                 | Framework 6.x API       | Framework 7.x API          | Breaking? | Automation |
@@ -110,6 +112,78 @@ public class HttpInterfacesConfiguration {
     }
 }
 ```
+
+### 4. HttpHeaders No Longer Extends MultiValueMap
+
+**Framework 6.x**: `HttpHeaders` extended `MultiValueMap<String, String>`, allowing direct assignment.
+
+**Framework 7.0.7+**: `HttpHeaders` no longer extends `MultiValueMap`. Code like the following will fail to compile:
+
+```java
+// FAILS in Framework 7 — HttpHeaders is not a MultiValueMap
+MultiValueMap<String, String> headers = new HttpHeaders();
+```
+
+**Fix steps:**
+
+1. Change the declared variable type from `MultiValueMap<String, String>` to `HttpHeaders`:
+
+   ```java
+   HttpHeaders headers = new HttpHeaders();
+   ```
+
+2. If you genuinely need a `MultiValueMap`, use the conversion methods:
+
+   ```java
+   // Convert HttpHeaders → MultiValueMap (read-only copy)
+   MultiValueMap<String, String> map = new HttpHeaders(existingHeaders);
+   // Or for a plain mutable map:
+   MultiValueMap<String, String> map = new LinkedMultiValueMap<>(existingHeaders);
+   ```
+
+**Detection pattern:**
+
+```bash
+grep -r "MultiValueMap.*HttpHeaders\|HttpHeaders.*MultiValueMap" --include="*.java"
+```
+
+**Automation**: 90% (variable declaration change; complex generics require manual review)
+
+---
+
+### 5. RestTemplate Deprecated → RestClient Migration
+
+`RestTemplate` is deprecated in Spring Framework 7.0 and will be removed in 7.1.
+
+#### Before (RestTemplate)
+
+```java
+RestTemplate restTemplate = new RestTemplate();
+String result = restTemplate.getForObject("https://api.example.com/data", String.class);
+```
+
+#### After (RestClient)
+
+```java
+RestClient restClient = RestClient.builder()
+    .baseUrl("https://api.example.com")
+    .build();
+
+String result = restClient.get()
+    .uri("/data")
+    .retrieve()
+    .body(String.class);
+```
+
+**Detection Pattern:**
+
+```bash
+grep -r "new RestTemplate\(\)\|RestTemplate restTemplate\|import.*RestTemplate" --include="*.java"
+```
+
+**Automation**: 70% (simple usages automated; exchange/execute with callback require manual review)
+
+---
 
 ## Detection Logic
 

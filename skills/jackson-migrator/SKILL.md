@@ -46,7 +46,7 @@ Migrate Jackson 2.x to Jackson 3.x with proper import and dependency updates.
         <dependency>
             <groupId>tools.jackson</groupId>
             <artifactId>jackson-bom</artifactId>
-            <version>3.0.2</version>
+            <version>3.1.3</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
@@ -73,7 +73,7 @@ dependencies {
 
 ```groovy
 dependencies {
-    implementation platform('tools.jackson:jackson-bom:3.0.2')
+    implementation platform('tools.jackson:jackson-bom:3.1.3')
     implementation 'tools.jackson.core:jackson-databind'
 }
 ```
@@ -90,7 +90,7 @@ dependencies {
 
 ```kotlin
 dependencies {
-    implementation(platform("tools.jackson:jackson-bom:3.0.2"))
+    implementation(platform("tools.jackson:jackson-bom:3.1.3"))
     implementation("tools.jackson.core:jackson-databind")
 }
 ```
@@ -138,17 +138,14 @@ public class MyService {
 5. **Run build** - Verify compilation
 6. **Run tests** - Verify functionality
 
-## Idempotent Transformation Logic
+## Transformation Protocol
 
-This skill implements idempotent transformations that can be safely run multiple times. Each transformation:
+Follows the standard migration protocol — see `migration-protocol` skill for the full
+transformation loop, skip logic, state file format, and build verification commands.
 
-1. **Reads migration state** - Loads `.migration-state.yaml` to check applied transformations
-2. **Checks if already applied** - Skips transformations with version >= applied version
-3. **Detects if still needed** - Uses regex patterns to verify transformation is required
-4. **Applies transformation** - Only executes if detection pattern matches
-5. **Updates state** - Records transformation in state file with version and commit SHA
+**Dependencies:** `migration-state` >= 1.0.0, `build-runner` >= 1.0.0
 
-### Transformation Flow
+### Skill State Entry
 
 ```yaml
 # Example state file entry after jackson-migrator runs
@@ -175,41 +172,16 @@ Each transformation has a detection pattern in `metadata.yaml`:
 | `jackson-exception-handling` | `JsonProcessingException\|JsonMappingException\|JsonParseException`  | Find old exception classes |
 | `jackson-bom`                | `tools\.jackson:jackson-bom` (inverse)                               | Detect missing BOM         |
 
-### Skip Logic
-
-Before applying any transformation:
-
-1. Load state from `.migration-state.yaml`
-2. For each transformation in `metadata.yaml`:
-   - Check if `skill: jackson-migrator` exists in `appliedTransformations`
-   - If yes, check if transformation ID is in the list
-   - If yes, compare versions: skip if `appliedVersion >= currentVersion`
-   - If no or version is older, run detection pattern
-3. If detection pattern matches, apply transformation
-4. If detection pattern doesn't match, skip (already transformed or not applicable)
-
-### Version Comparison
-
-Transformations are only reapplied if:
-
-- Transformation ID not found in state file, OR
-- Applied version < current version (e.g., 0.9.0 < 1.0.0), OR
-- Detection pattern still matches (manual revert detected)
-
 ### State Updates
 
-After successful transformation:
-
 ```yaml
-# Updated .migration-state.yaml
 skill: jackson-migrator
-version: 1.0.0
-transformations: [jackson-imports, jackson-groupid, jackson-exception-handling, jackson-bom]
-completedAt: 2026-01-03T10:35:00Z
+version: 1.2.0
+transformations:
+  [jackson-imports, jackson-groupid, jackson-exception-handling, jackson-bom, jackson-docs]
+completedAt: <ISO-8601-timestamp>
 commitSha: <git-commit-sha>
 ```
-
-The state file is committed with the migration changes for audit trail.
 
 ## Documentation Migration (v1.2.0+)
 
@@ -325,14 +297,3 @@ The jackson-docs transformation:
 - Updates **domain-specific** Jackson examples in documentation
 - Works alongside `documentation-migrator` which handles cross-cutting version references
 - Prevents duplication through section-based boundaries (e.g., "## Jackson 2.x to 3.x" section in docs/migrations.md)
-
-## Integration with Migration State Skill
-
-This skill depends on the `migration-state` skill (v1.0.0+) for:
-
-- Reading `.migration-state.yaml`
-- Checking applied transformations
-- Updating state after successful transformation
-- Version comparison logic
-
-See `skills/migration-state/SKILL.md` for state management details.

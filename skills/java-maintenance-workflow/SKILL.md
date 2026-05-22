@@ -293,7 +293,7 @@ chore: dependency maintenance — <YYYY-MM-DD>
 ## Dependency upgrades
 - spring-boot-starter-parent: 4.0.0 → 4.0.3
 - jackson-bom: 3.0.1 → 3.0.2
-- spring-cloud-dependencies: 2025.0.0 → 2025.1.0
+- spring-cloud-dependencies: 2025.0.0 → 2025.1.1
 - <plugin> spotbugs-maven-plugin: 4.8.5.0 → 4.9.3.0
 ... (list every change)
 

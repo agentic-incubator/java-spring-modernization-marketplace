@@ -171,14 +171,14 @@ extra["springCloudVersion"] = "2025.1.0"
 
 ## Version Reference
 
-| Component    | Old Version | New Version  |
-| ------------ | ----------- | ------------ |
-| Spring Boot  | 3.5.x       | 4.0.0        |
-| Spring Cloud | 2025.0.x    | 2025.1.0     |
-| Java         | 21          | 25           |
-| Jackson BOM  | -           | 3.0.2        |
-| Vaadin       | 24.x        | 25.0.0       |
-| Spring AI    | 1.0.x       | **2.0.0-M1** |
+| Component    | Old Version | New Version       |
+| ------------ | ----------- | ----------------- |
+| Spring Boot  | 3.5.x       | 4.0.6             |
+| Spring Cloud | 2025.0.x    | 2025.1.1          |
+| Java         | 21          | 21 (25 available) |
+| Jackson BOM  | -           | 3.1.3             |
+| Vaadin       | 24.x        | 25.1.0            |
+| Spring AI    | 1.0.x       | **2.0.0-M6**      |
 
 ## Starter Artifact Renames
 
@@ -241,7 +241,7 @@ Replace with Tomcat (default) or Jetty:
 
 ## Spring Milestones Repository
 
-When using milestone releases (e.g., Spring AI 2.0.0-M1), add the Spring Milestones repository:
+When using milestone releases (e.g., Spring AI 2.0.0-M6), add the Spring Milestones repository:
 
 ### Maven
 
@@ -278,7 +278,7 @@ repositories {
 
 Add Spring Milestones repository when:
 
-- Using Spring AI 2.0.0-M1 (or any milestone release)
+- Using Spring AI 2.0.0-M6 (or any milestone release)
 - Using any `-M1`, `-M2`, `-RC1`, etc. version
 - Repository not already present in build file
 
@@ -286,13 +286,13 @@ Add Spring Milestones repository when:
 
 ```xml
 <!-- Before -->
-<spring-ai.version>1.1.2</spring-ai.version>
+<spring-ai.version>1.1.6</spring-ai.version>  <!-- Boot 3.5.x -->
 
 <!-- After -->
-<spring-ai.version>2.0.0-M1</spring-ai.version>
+<spring-ai.version>2.0.0-M6</spring-ai.version>
 ```
 
-**Important:** Spring AI 2.0.0-M1 is required for Spring Boot 4 compatibility due to autoconfigure module split.
+**Important:** Spring AI 2.0.0-M6 is required for Spring Boot 4 compatibility due to autoconfigure module split.
 
 ## Migration Steps
 
@@ -303,7 +303,7 @@ Add Spring Milestones repository when:
 5. **Update dependencies** - Change groupIds (Jackson, etc.)
 6. **Rename starters** - spring-boot-starter-web → spring-boot-starter-webmvc
 7. **Remove Undertow** - Replace with Tomcat (default) or Jetty
-8. **Update Spring AI** - Upgrade to 2.0.0-M1 for Boot 4 compatibility
+8. **Update Spring AI** - Upgrade to 2.0.0-M6 for Boot 4 compatibility
 9. **Add missing deps** - WebClient if using WebFlux
 10. **Update Java version** - If upgrading Java
 11. **Run build** - Verify configuration works

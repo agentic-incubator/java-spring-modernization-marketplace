@@ -33,7 +33,7 @@ conflicts:
   - library: 'jackson-databind'
     versions: ['2.18.2', '3.0.3']
     source:
-      - 'spring-ai-openai-spring-boot-starter:2.0.0-M1 → jackson-databind:2.18.2'
+      - 'spring-ai-openai-spring-boot-starter:2.0.0-M6 → jackson-databind:2.18.2'
       - 'spring-boot-starter-json:4.0.0 → jackson-databind:3.0.3'
     recommendation: 'Use Jackson 2/3 coexistence for Spring AI 2.0.0-M*'
     specialCase: 'spring-ai-milestone-boot-4'

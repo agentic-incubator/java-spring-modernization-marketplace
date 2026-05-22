@@ -24,7 +24,7 @@ Scan the project to identify dependencies in these categories:
 | `jackson-*`                    | groupId change             | `com.fasterxml.jackson` → `tools.jackson`           |
 | `spring-security-*`            | API changes                | Spring Security 6 → 7 patterns                      |
 | `vaadin-*`                     | Theme and security changes | Material → Lumo, VaadinWebSecurity                  |
-| `spring-ai-*`                  | TTS API + Boot 4 compat    | Upgrade to 2.0.0-M1 for Boot 4, add milestones repo |
+| `spring-ai-*`                  | TTS API + Boot 4 compat    | Upgrade to 2.0.0-M6 for Boot 4, add milestones repo |
 | `spring-boot-starter-undertow` | **REMOVED in Boot 4**      | Replace with Tomcat (default) or Jetty              |
 | `spring-boot-starter-web`      | Renamed in Boot 4          | Rename to `spring-boot-starter-webmvc`              |
 | `jakarta.*`                    | Already migrated           | Verify javax.\* complete                            |
@@ -59,7 +59,7 @@ partially-compatible embedded server.
 
 ## Milestone Version Detection
 
-Spring AI 2.0.0-M1 (and other milestone releases) require the Spring Milestones repository.
+Spring AI 2.0.0-M6 (and other milestone releases) require the Spring Milestones repository.
 
 ### Detection Pattern
 
@@ -144,7 +144,7 @@ mvn dependency:tree -Dincludes=org.springframework.security*
         "artifactId": "spring-ai-openai-spring-boot-starter",
         "currentVersion": "1.0.0",
         "migrationRequired": true,
-        "action": "Upgrade to 2.0.0-M1 for Boot 4 compatibility, add Spring Milestones repo"
+        "action": "Upgrade to 2.0.0-M6 for Boot 4 compatibility, add Spring Milestones repo"
       }
     ],
     "undertow": [
@@ -167,10 +167,10 @@ mvn dependency:tree -Dincludes=org.springframework.security*
       }
     ]
   },
-  "milestoneVersionsDetected": ["spring-ai:2.0.0-M1"],
+  "milestoneVersionsDetected": ["spring-ai:2.0.0-M6"],
   "repositoryRequired": {
     "spring-milestones": true,
-    "reason": "Spring AI 2.0.0-M1 is a milestone release"
+    "reason": "Spring AI 2.0.0-M6 is a milestone release"
   },
   "totalMigrationActions": 6
 }

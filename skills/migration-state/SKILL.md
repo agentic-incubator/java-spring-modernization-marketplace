@@ -43,7 +43,7 @@ targetVersions:
   jackson: '3.0.2'
   spring-security: '7.0.0'
   spring-cloud: '2025.1.0'
-  spring-ai: '2.0.0-M1'
+  spring-ai: '2.0.0-M6'
   java: '21'
 
 config:

@@ -1,12 +1,16 @@
 ---
 name: vaadin-migrator
-description: Migrate Vaadin Flow 23.x to 24.x including theme updates, component API changes, and Spring Security integration. Use when upgrading Vaadin or fixing Vaadin-related compilation errors after Spring Boot 4 upgrade.
+description: Migrate Vaadin Flow 23.x to 24.x and 24.x to 25.x including theme updates, component API changes, and Spring Security integration. Use when upgrading Vaadin or fixing Vaadin-related compilation errors after Spring Boot 4 upgrade.
 allowed-tools: Read, Write, Edit, Glob, Grep
 ---
 
 # Vaadin Migrator
 
-Migrate Vaadin Flow 23.x to Vaadin Flow 24.x with theme and API updates.
+Migrate Vaadin Flow 23.x to Vaadin Flow 24.x with theme and API updates. This skill also covers migration to **Vaadin Flow 25.x (current recommended)**.
+
+> **IMPORTANT:** Vaadin Flow 24.x free maintenance ends **June 16, 2026**.
+> New projects and migrations should target **Vaadin Flow 25.1.x** directly.
+> Existing 24.x projects should plan immediate migration to 25.x.
 
 ## Critical: Spring Boot 4 Compatibility
 
@@ -16,10 +20,11 @@ Vaadin Flow 23.x was built for Spring Boot 3.x and has compatibility issues with
 
 ## Version Compatibility
 
-| Spring Boot | Vaadin Flow | Notes                |
-| ----------- | ----------- | -------------------- |
-| 3.3.x       | 23.x        | Original Vaadin Flow |
-| **4.0.x**   | **24.x**    | Required for Boot 4  |
+| Spring Boot | Vaadin Flow | Notes                             |
+| ----------- | ----------- | --------------------------------- |
+| 3.3.x       | 23.x        | Legacy — upgrade required         |
+| **4.0.x**   | **24.x**    | Boot 4 minimum (EOL Jun 16, 2026) |
+| **4.0.x**   | **25.1.x**  | Current recommended               |
 
 ## Key Migration Areas
 
@@ -113,20 +118,110 @@ Vaadin 24 requires updated Spring Security configuration. See `security-config-m
 6. **Run build** - Verify compilation
 7. **Test UI** - Verify all views and components work
 
-## Idempotent Transformation Logic
+## Vaadin 24 → 25 Migration
 
-This skill implements idempotent transformations that can be safely run multiple times. Each transformation:
+### BOM Update
 
-1. **Reads migration state** - Loads `.migration-state.yaml` to check applied transformations
-2. **Checks if already applied** - Skips transformations with version >= applied version
-3. **Detects if still needed** - Uses regex patterns to verify transformation is required
-4. **Applies transformation** - Only executes if detection pattern matches
-5. **Updates state** - Records transformation in state file with version and commit SHA
+Maven:
 
-### Transformation Flow
+```xml
+<properties>
+    <vaadin.version>25.1.0</vaadin.version>
+</properties>
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-bom</artifactId>
+            <version>${vaadin.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+```
+
+Gradle Kotlin DSL:
+
+```kotlin
+extra["vaadinVersion"] = "25.1.0"
+dependencyManagement {
+    imports {
+        mavenBom("com.vaadin:vaadin-bom:${property("vaadinVersion")}")
+    }
+}
+```
+
+### Frontend Build — Vite replaces Webpack
+
+Vaadin 25 uses Vite instead of webpack. Remove any `webpack.config.js` customizations and replace
+with Vite config if needed. The default Vite config works for most projects.
+
+Before (Vaadin 24 — webpack):
+
+```bash
+# Custom webpack.config.js was supported
+frontend/webpack.config.js
+```
+
+After (Vaadin 25 — Vite):
+
+```bash
+# Delete webpack.config.js if present
+# Vaadin 25 uses Vite by default — no config file needed for standard setups
+# For custom config: frontend/vite.config.ts
+```
+
+### Theme / Styling Changes
+
+Vaadin 25 simplifies the theming system. The `@Theme` variant attribute on `AppShellConfigurator` is removed.
+
+Before (Vaadin 24):
+
+```java
+@Theme(value = "my-theme", variant = Lumo.DARK)
+public class MyApp extends AppShellConfigurator {}
+```
+
+After (Vaadin 25):
+
+```java
+@Theme("my-theme")
+public class MyApp extends AppShellConfigurator {}
+// Dark mode is now set via CSS:
+// document.documentElement.setAttribute('theme', 'dark');
+// Or via Lumo utility class on the server:
+// UI.getCurrent().getElement().setAttribute("theme", "dark");
+```
+
+### Java 21+ Requirement
+
+Vaadin 25 requires Java 21 minimum. Add a gate check:
+
+```bash
+JAVA_VERSION=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}' | cut -d. -f1)
+if [ "$JAVA_VERSION" -lt 21 ]; then
+  echo "ERROR: Vaadin 25 requires Java 21+. Current: $JAVA_VERSION"
+  exit 1
+fi
+```
+
+### Migration Steps (24 → 25)
+
+1. Update BOM to `25.1.0` (or latest 25.x)
+2. Run `mvn vaadin:clean-frontend` or `gradle vaadinClean` to clear cached frontend assets
+3. Remove `webpack.config.js` if present (Vite is the new bundler)
+4. Update `@Theme` usages — remove `variant =` attribute; handle dark/light mode via CSS
+5. Run `mvn compile` or `gradle compileJava` to catch compilation errors
+6. Run full build including frontend: `mvn vaadin:build-frontend` or `gradle vaadinBuildFrontend`
+7. Test all views and confirm theme is applied correctly
+
+## Transformation State
+
+### Skill State Entries
 
 ```yaml
-# Example state file entry after vaadin-migrator runs
+# Example state file entry after vaadin-migrator runs (23 → 24)
 appliedTransformations:
   - skill: vaadin-migrator
     version: 1.0.0
@@ -137,76 +232,44 @@ appliedTransformations:
       - vaadin-imports
     completedAt: 2026-01-03T11:15:00Z
     commitSha: mno345pqr
+
+  # Example state file entry after vaadin-migrator runs (24 → 25)
+  - skill: vaadin-migrator
+    version: 2.0.0
+    transformations:
+      - vaadin-24-to-25-bom
+      - vaadin-25-theme-variant
+      - vaadin-25-webpack
+    completedAt: 2026-05-21T00:00:00Z
+    commitSha: <git-commit-sha>
 ```
 
 ### Detection Patterns
 
 Each transformation has a detection pattern in `metadata.yaml`:
 
-| Transformation ID   | Detection Pattern                                  | Purpose                        |
-| ------------------- | -------------------------------------------------- | ------------------------------ |
-| `vaadin-theme`      | `@Theme.*variant\s*=\s*Lumo\.(DARK\|LIGHT)`        | Find old theme variant syntax  |
-| `vaadin-grid-api`   | `\.setDataProvider\s*\(`                           | Find deprecated Grid methods   |
-| `vaadin-dialog-api` | `\.setCloseOnOutsideClick\s*\(`                    | Find deprecated Dialog methods |
-| `vaadin-imports`    | `import.*com\.vaadin\.flow\.theme\.lumo\.Lumo[^U]` | Find old Lumo imports          |
-
-### Skip Logic
-
-Before applying any transformation:
-
-1. Load state from `.migration-state.yaml`
-2. For each transformation in `metadata.yaml`:
-   - Check if `skill: vaadin-migrator` exists in `appliedTransformations`
-   - If yes, check if transformation ID is in the list
-   - If yes, compare versions: skip if `appliedVersion >= currentVersion`
-   - If no or version is older, run detection pattern
-3. If detection pattern matches, apply transformation
-4. If detection pattern doesn't match, skip (already transformed or not applicable)
-
-### Version Comparison
-
-Transformations are only reapplied if:
-
-- Transformation ID not found in state file, OR
-- Applied version < current version (e.g., 0.9.0 < 1.0.0), OR
-- Detection pattern still matches (manual revert detected)
+| Transformation ID         | Detection Pattern                                  | Purpose                                             |
+| ------------------------- | -------------------------------------------------- | --------------------------------------------------- |
+| `vaadin-theme`            | `@Theme.*variant\s*=\s*Lumo\.(DARK\|LIGHT)`        | Find old theme variant syntax                       |
+| `vaadin-grid-api`         | `\.setDataProvider\s*\(`                           | Find deprecated Grid methods                        |
+| `vaadin-dialog-api`       | `\.setCloseOnOutsideClick\s*\(`                    | Find deprecated Dialog methods                      |
+| `vaadin-imports`          | `import.*com\.vaadin\.flow\.theme\.lumo\.Lumo[^U]` | Find old Lumo imports                               |
+| `vaadin-24-to-25-bom`     | `vaadin-bom.*24\.\|vaadin\.version.*24\.`          | Find Vaadin 24 BOM references                       |
+| `vaadin-25-theme-variant` | `@Theme.*variant\s*=\s*Lumo\.(DARK\|LIGHT)`        | Find old theme variant (still applicable for 24→25) |
+| `vaadin-25-webpack`       | `webpack\.config\.js`                              | Find webpack config to remove                       |
 
 ### Verification
 
-After each transformation, verify:
+After each transformation:
 
-1. **Compilation** - Run `mvn compile` or `gradle compileJava`
-2. **Frontend build** - Ensure Vaadin frontend compilation succeeds
-3. **UI rendering** - Verify views render correctly
-4. **Pattern absence** - Re-run detection pattern to confirm it no longer matches
+1. `mvn compile` or `gradle compileJava` succeeds
+2. Vaadin frontend build succeeds (`mvn vaadin:build-frontend` or `gradle vaadinBuildFrontend`)
+3. UI views render correctly in the browser
+4. Re-run detection pattern to confirm it no longer matches
 
-### State Updates
+## Transformation Protocol
 
-After successful transformation:
+Follows the standard migration protocol — see `migration-protocol` skill for the full
+transformation loop, skip logic, state file format, and build verification commands.
 
-```yaml
-# Updated .migration-state.yaml
-skill: vaadin-migrator
-version: 1.0.0
-transformations: [vaadin-theme, vaadin-grid-api, vaadin-dialog-api, vaadin-imports]
-completedAt: 2026-01-03T11:15:00Z
-commitSha: <git-commit-sha>
-```
-
-The state file is committed with the migration changes for audit trail.
-
-## Integration with Migration State Skill
-
-This skill depends on the `migration-state` skill (v1.0.0+) for:
-
-- Reading `.migration-state.yaml`
-- Checking applied transformations
-- Updating state after successful transformation
-- Version comparison logic
-
-See `skills/migration-state/SKILL.md` for state management details.
-
-## Related Skills
-
-- **security-config-migrator** - Required for Spring Security 7 integration with Vaadin
-- **build-runner** - Used for verification after transformation
+**Dependencies:** `migration-state` >= 1.0.0, `build-runner` >= 1.0.0, `security-config-migrator` >= 1.0.0

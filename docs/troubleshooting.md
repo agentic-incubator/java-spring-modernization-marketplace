@@ -361,7 +361,7 @@ rm pom.xml.versionsBackup
 **Error:**
 
 ```text
-[ERROR] Failed to resolve org.springframework.ai:spring-ai-openai:2.0.0-M1
+[ERROR] Failed to resolve org.springframework.ai:spring-ai-openai:2.0.0-M6
 ```
 
 **Cause:** Milestone version requires Spring Milestones repository.

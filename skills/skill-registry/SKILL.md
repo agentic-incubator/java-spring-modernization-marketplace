@@ -36,6 +36,23 @@ skill:
       minVersion: <semver>
 ```
 
+## Shared Infrastructure Skills
+
+### migration-protocol
+
+**Version:** 1.0.0
+**Location:** `skills/migration-protocol/SKILL.md`
+
+Canonical reference for the idempotent transformation protocol. Defines the read-check-detect-apply-update
+loop, skip logic, state file format, build verification commands, and Spring Milestones repository
+configuration. All migration skills delegate their boilerplate here instead of duplicating it.
+
+**No transformations** — this is a reference/protocol skill only.
+
+**Used by:** jackson-migrator, security-config-migrator, spring-ai-migrator, vaadin-migrator, dependency-updater, and all other migration skills.
+
+---
+
 ## Core Migration Skills
 
 ### jackson-migrator
@@ -83,7 +100,7 @@ Migrate Spring Security configurations for Spring Boot 4.x compatibility.
 
 ### spring-ai-migrator
 
-**Version:** 2.0.0
+**Version:** 2.3.0
 **Location:** `skills/spring-ai-migrator/metadata.yaml`
 
 Migrate Spring AI 1.x to 2.0.x including TTS API changes, speed parameter type change, chat memory
@@ -107,7 +124,7 @@ advisor constant renames, and autoconfigure migration for Spring Boot 4 compatib
 
 ### vaadin-migrator
 
-**Version:** 1.0.0
+**Version:** 2.0.0
 **Location:** `skills/vaadin-migrator/metadata.yaml`
 
 Migrate Vaadin 24 to Vaadin 25 for Spring Boot 4 compatibility including theme changes and security configuration.
@@ -549,8 +566,15 @@ The skill registry integrates with the migration state file (`.migration-state.j
 | jackson-migrator v1.1.0   | ✓               | ✓               | ✓               |
 | security-config v1.0.0    | ✗               | ✓               | ✓               |
 | spring-ai-migrator v1.0.0 | ✓               | ✓               | ✗               |
-| spring-ai-migrator v2.0.0 | ✗               | ✗               | ✓               |
-| vaadin-migrator v1.0.0    | ✗               | ✗               | ✓               |
+| spring-ai-migrator v2.3.0 | ✗               | ✗               | ✓               |
+| vaadin-migrator v2.0.0    | ✗               | ✗               | ✓               |
+
+**Spring AI Latest Milestones (May 2026):**
+
+| Spring AI Version | Target Spring Boot | Notes                         |
+| ----------------- | ------------------ | ----------------------------- |
+| 1.1.6             | 3.5.x              | Latest stable for Boot 3.x    |
+| 2.0.0-M6          | 4.0.x              | Latest milestone for Boot 4.x |
 
 ## Testing
 

@@ -12,6 +12,8 @@
 Identify all Spring Boot 4.x breaking changes in a project to prevent compilation and runtime failures during migration. This skill maintains a
 comprehensive catalog of API removals, deprecations, and incompatibilities introduced in Spring Boot 4.0.x.
 
+> **Current stable: Spring Boot 4.0.6.** Spring Boot **4.1.0-RC1** is in release candidate phase.
+
 ---
 
 ## Problem Statement
@@ -140,7 +142,7 @@ import org\.springframework\.retry\.annotation\.Backoff
 
 **Trigger Conditions:**
 
-- Project uses Spring AI 2.0.0-M1+ (requires retry)
+- Project uses Spring AI 2.0.0-M6+ (requires retry)
 - Any code using @Retryable annotation
 - Any code using RetryTemplate class
 
@@ -209,29 +211,60 @@ implementation 'org.springframework.boot:spring-boot-starter-undertow'
 
 ---
 
-### 6. RestTemplate Deprecation (Soft)
+### 6. HttpHeaders No Longer Extends MultiValueMap (Spring Framework 7.0)
 
-**Status:** DEPRECATED (not removed)
-**Since:** 4.0.0
-**Severity:** LOW
+**Status:** BREAKING CHANGE
+**Since:** Spring Framework 7.0 (shipped with Spring Boot 4.0.x)
+**Severity:** MEDIUM
 
-**Deprecated API:**
+**Change:** `HttpHeaders` no longer extends `MultiValueMap<String, String>`.
+Code that assigns `HttpHeaders` to a `MultiValueMap` variable will fail to compile.
 
-```java
-RestTemplate restTemplate = new RestTemplate();
-```
-
-**Recommended API:**
+**Old code (fails in Framework 7):**
 
 ```java
-RestClient restClient = RestClient.builder().build();
+MultiValueMap<String, String> headers = new HttpHeaders();
 ```
 
-**Note:** RestTemplate still works but Spring recommends RestClient for new code.
+**New code:**
+
+```java
+HttpHeaders headers = new HttpHeaders();
+// Or use toSingleValueMap() / toMultiValueMap() for conversion
+```
+
+**Detection Pattern:**
+
+```regex
+MultiValueMap.*HttpHeaders|HttpHeaders.*MultiValueMap
+```
 
 ---
 
-### 7. Spring Security Configuration Changes
+### 7. RestTemplate Deprecated (Spring Framework 7.0)
+
+**Status:** DEPRECATED (removal planned for 7.1)
+**Since:** Spring Framework 7.0
+**Severity:** LOW (warning now, breaking in 7.1)
+
+**Change:** `RestTemplate` is deprecated. Migrate to `RestClient` (synchronous) or `WebClient` (reactive).
+
+**Migration:**
+
+- Synchronous HTTP: use `RestClient.builder().baseUrl(url).build()`
+- Reactive HTTP: use `WebClient.builder().baseUrl(url).build()`
+
+**Detection Pattern:**
+
+```regex
+import org\.springframework\.web\.client\.RestTemplate
+new RestTemplate\(\)
+@Autowired.*RestTemplate
+```
+
+---
+
+### 8. Spring Security Configuration Changes
 
 **Status:** API_CHANGED
 **Since:** Spring Security 7.0 (included in Boot 4.x)
@@ -247,7 +280,7 @@ Covered patterns:
 
 ---
 
-### 8. Jackson 3.x Migration
+### 9. Jackson 3.x Migration
 
 **Status:** MAJOR_VERSION_CHANGE
 **Since:** Spring Boot 4.0 uses Jackson 3.x
@@ -259,6 +292,11 @@ Covered patterns:
 
 - com.fasterxml.jackson → tools.jackson (groupId change)
 - JsonProcessingException → JacksonException
+
+---
+
+> **Note:** Spring JCL module removed in Framework 7. If your code imports `org.springframework.jcl.*`,
+> add `commons-logging:commons-logging:1.3.0` as a direct dependency.
 
 ---
 
@@ -295,10 +333,18 @@ Covered patterns:
      - Severity: CRITICAL
      - Remediation: Remove Undertow, use Tomcat or Jetty
 
-5. SCAN for deprecated APIs
+5. SCAN for HttpHeaders / MultiValueMap misuse
+   - Pattern: MultiValueMap.*HttpHeaders|HttpHeaders.*MultiValueMap
+   - IF found AND Spring Boot 4.x (Framework 7):
+     - REPORT: "HttpHeaders no longer extends MultiValueMap in Framework 7"
+     - Severity: MEDIUM
+     - Remediation: Declare variable as HttpHeaders; use toMultiValueMap() for conversion
+
+6. SCAN for deprecated APIs
    - RestTemplate usage (informational warning)
    - Old Security configurations (delegate to security-config-migrator)
    - Old Jackson imports (delegate to jackson-migrator)
+   - Spring JCL imports (org.springframework.jcl.*) — add commons-logging dependency
 
 6. GENERATE comprehensive report with:
    - All detected breaking changes
@@ -458,6 +504,8 @@ breakingChanges:
 4. Undertow starter declarations
 5. Web starter declarations
 6. RestTemplate usage (informational)
+7. HttpHeaders assigned to MultiValueMap variables
+8. Spring JCL imports (org.springframework.jcl.\*)
 
 **Grep Patterns:**
 
@@ -479,6 +527,12 @@ grep -r "spring-boot-starter-undertow" --include="*.xml" --include="*.gradle"
 
 # Web starter
 grep -r "spring-boot-starter-web" --include="*.xml" --include="*.gradle"
+
+# HttpHeaders / MultiValueMap misuse
+grep -r "MultiValueMap.*HttpHeaders\|HttpHeaders.*MultiValueMap" --include="*.java"
+
+# Spring JCL imports
+grep -r "import org\.springframework\.jcl\." --include="*.java"
 ```
 
 ### Phase 2: Dependency Analysis
@@ -562,6 +616,7 @@ grep -r "spring-boot-starter-web" --include="*.xml" --include="*.gradle"
 
 - ⚠️ Spring Retry usage without explicit dependency
 - ⚠️ Web starter using old name (transitional)
+- ⚠️ HttpHeaders assigned to MultiValueMap (Framework 7 compilation failure)
 
 ### LOW Severity (Informational)
 
