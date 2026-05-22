@@ -404,3 +404,59 @@ Current latest action versions (as of May 2026):
 | 4    | `jackson-migrator`   | Jackson 2→3 import migration (preserves annotations) |
 | 6    | `build-runner`       | Build/test execution and error pattern reference     |
 | 9    | `pr-submitter`       | Standardised PR body template                        |
+
+---
+
+## Known Pitfalls
+
+### Spring Cloud BOM artifact rename (2025.1.x+)
+
+`spring-cloud-starter-parent` was discontinued as a standalone artifact starting with
+release train 2025.1.0. The `spring-cloud-starter-parent:2025.1.x` POM does **NOT**
+exist on Maven Central. Use `spring-cloud-dependencies` instead:
+
+```xml
+<!-- Before -->
+<artifactId>spring-cloud-starter-parent</artifactId>
+<version>2025.0.x</version>
+
+<!-- After -->
+<artifactId>spring-cloud-dependencies</artifactId>
+<version>2025.1.1</version>
+```
+
+Detection: resolution failure `"was not found in central"` for
+`spring-cloud-starter-parent` versions >= 2025.1.0.
+
+---
+
+### Spring Boot 4 module disaggregation
+
+Spring Boot 4 split several autoconfigure classes into separate Maven modules.
+`spring-boot-restclient` and `spring-boot-webclient` are **NOT** transitively included
+by `spring-boot-starter-webflux`. Add them explicitly when compilation fails with
+`"package ... does not exist"`:
+
+| Package                                                                       | Add this dependency                                                      |
+| ----------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `org.springframework.boot.restclient`                                         | `spring-boot-starter-restclient`                                         |
+| `org.springframework.boot.webclient`                                          | `spring-boot-starter-webclient`                                          |
+| `org.springframework.boot.http.converter.autoconfigure.HttpMessageConverters` | `spring-boot-http-converter` (transitive from `spring-boot-starter-web`) |
+
+See `restclient-to-webclient-customizer-migrator` for the full migration when the
+module is a pure WebFlux / reactive stack.
+
+---
+
+### JDK 25 + google-java-format incompatibility
+
+Both `google-java-format` and `palantir-java-format` use:
+
+```text
+com.sun.tools.javac.util.Log$DeferredDiagnosticHandler.getDiagnostics()
+```
+
+This internal JDK API was **removed in JDK 25**. The error appears as a Spotless lint
+failure with `LINE_UNDEFINED`, not a compile error. Switch to Eclipse JDT formatter.
+
+See `spotless-formatter-migrator` for the full migration steps.

@@ -320,6 +320,18 @@ If you declare MCP SDK versions explicitly, update:
 
 These are managed via the Spring AI BOM when using `spring-ai-bom:1.1.6`.
 
+## MCP Client Package Migration (1.1.0 → 1.1.2+)
+
+When upgrading from Spring AI 1.1.0 to 1.1.2+, MCP client autoconfigure classes moved
+from `org.springframework.ai.mcp.client.autoconfigure.*` to
+`org.springframework.ai.mcp.client.common.autoconfigure.*`, and the
+`WebFluxSseClientTransport` constructor changed from `ObjectMapper` to `McpJsonMapper`.
+
+See the `spring-ai-mcp-client-package-migrator` skill for the full migration steps,
+including affected classes (`NamedClientMcpTransport`, `McpAsyncClientConfigurer`,
+`McpSyncClientConfigurer`, `McpClientCommonProperties`, `McpSseClientProperties`) and
+the `WebFluxSseClientTransport` constructor migration.
+
 ## Jackson 2 Compatibility Layer (Spring AI 2.0.0-M\*)
 
 **NEW in v2.2.0**: Spring AI 2.0.0-M\* milestone releases require Jackson 2 while Spring Boot 4 uses Jackson 3.
