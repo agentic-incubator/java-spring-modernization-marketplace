@@ -34,3 +34,6 @@ ruvector.db
 
 # npm lockfile (project uses pnpm)
 package-lock.json
+
+# Lychee link-checker local cache
+.lycheecache

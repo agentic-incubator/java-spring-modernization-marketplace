@@ -90,7 +90,14 @@ After compilation succeeds, re-run the detection pattern to confirm it no longer
 
 ## Spring Milestones Repository
 
-Required when a project uses milestone or snapshot releases (e.g., Spring AI `2.0.0-M6`).
+Required when a project uses milestone or RC/snapshot releases (e.g., Spring AI `2.0.0-M7`,
+Spring Boot `4.1.0-RC1`).
+
+> **Critical:** Maven needs **both** `<repositories>` and `<pluginRepositories>` blocks.
+> Spring Boot RC/milestone releases publish the `spring-boot-maven-plugin` to
+> `repo.spring.io/milestone`, not Maven Central. Omitting `<pluginRepositories>` causes
+> `Plugin org.springframework.boot:spring-boot-maven-plugin:<RC-version> not found`
+> failures at build time even when `<repositories>` is present.
 
 ### Maven
 
@@ -105,9 +112,22 @@ Required when a project uses milestone or snapshot releases (e.g., Spring AI `2.
         </snapshots>
     </repository>
 </repositories>
+
+<pluginRepositories>
+    <pluginRepository>
+        <id>spring-milestones</id>
+        <name>Spring Milestones</name>
+        <url>https://repo.spring.io/milestone</url>
+        <snapshots>
+            <enabled>false</enabled>
+        </snapshots>
+    </pluginRepository>
+</pluginRepositories>
 ```
 
 ### Gradle Kotlin DSL
+
+`build.gradle.kts` — for dependency resolution:
 
 ```kotlin
 repositories {
@@ -116,7 +136,22 @@ repositories {
 }
 ```
 
+`settings.gradle.kts` — for **plugin** resolution (required when the Spring Boot plugin
+itself is a milestone/RC version):
+
+```kotlin
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+        maven { url = uri("https://repo.spring.io/milestone") }
+    }
+}
+```
+
 ### Gradle Groovy DSL
+
+`build.gradle`:
 
 ```groovy
 repositories {
@@ -124,6 +159,37 @@ repositories {
     maven { url 'https://repo.spring.io/milestone' }
 }
 ```
+
+`settings.gradle`:
+
+```groovy
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+        maven { url 'https://repo.spring.io/milestone' }
+    }
+}
+```
+
+---
+
+## RC / Milestone Opt-in Upgrades
+
+By default, migration skills filter out RC and milestone versions to protect production
+projects from unstable upgrades. When a project deliberately targets an RC (e.g., onboarding
+to Spring Boot `4.1.0-RC1` before GA), invoke the relevant skill with an explicit override:
+
+- **`dependency-updater --target-rc=<artifactId>:<version>`** — narrow override that allows
+  RC/milestone resolution for one artifact while keeping `stable-only` filtering elsewhere
+- **`dependency-updater --filter-strategy=include-milestones`** — global widening (use
+  sparingly; pulls every milestone, not just the targeted one)
+- **`java-maintenance-workflow --target-rc=<artifactId>:<version>`** — same override
+  semantics for the full maintenance cycle
+
+When `--target-rc` is set, skills automatically ensure the Spring Milestones repository is
+present in **both** `<repositories>` and `<pluginRepositories>` (Maven) or
+`build.gradle*` + `settings.gradle*` `pluginManagement` (Gradle).
 
 ---
 

@@ -46,6 +46,21 @@ Update Java import statements across a project for Spring ecosystem migrations.
 | `org.springframework.ai.openai.audio.speech.SpeechMessage`                                     | `org.springframework.ai.audio.tts.TextToSpeechMessage`          |
 | `org.springframework.ai.chat.memory.AbstractChatMemoryAdvisor.CHAT_MEMORY_CONVERSATION_ID_KEY` | `org.springframework.ai.chat.memory.ChatMemory.CONVERSATION_ID` |
 
+### Spring AI 2.0.x (M1-M7) Imports
+
+| Old Import                                                                 | New Import                                                                                               |
+| -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `org.springframework.ai.openai.OpenAiConnectionProperties`                 | `org.springframework.ai.openai.OpenAiCommonProperties` _(M6)_                                            |
+| `org.springframework.ai.mcp.client.autoconfigure.McpAsyncClientCustomizer` | `org.springframework.ai.mcp.client.common.autoconfigure.McpClientCustomizer` _(M3 + 1.1.2 package move)_ |
+| `org.springframework.ai.mcp.client.autoconfigure.McpSyncClientCustomizer`  | `org.springframework.ai.mcp.client.common.autoconfigure.McpClientCustomizer` _(M3 + 1.1.2 package move)_ |
+| `org.springframework.ai.mcp.client.autoconfigure.McpSseClientProperties`   | `org.springframework.ai.mcp.client.common.autoconfigure.McpStreamableHttpClientProperties` _(M7)_        |
+| `org.springframework.ai.chat.memory.PromptChatMemoryAdvisor`               | _REMOVED in M6_ — use `ChatMemory.CONVERSATION_ID` parameter pattern                                     |
+| `org.springframework.ai.model.ModelOptionsUtils`                           | _REMOVED in M5_ — use builder-based options                                                              |
+| `org.springframework.ai.mcp.client.WebFluxSseClientTransport`              | `org.springframework.ai.mcp.client.WebFluxStreamableHttpClientTransport` _(M7 deprecation)_              |
+| `org.springframework.ai.mcp.client.WebMvcSseClientTransport`               | `org.springframework.ai.mcp.client.WebMvcStreamableHttpClientTransport` _(M7)_                           |
+| `org.springframework.ai.mcp.client.HttpClientSseClientTransport`           | `org.springframework.ai.mcp.client.HttpClientStreamableHttpClientTransport` _(M7)_                       |
+| `com.fasterxml.jackson.databind.ObjectMapper` in MCP transport ctor        | `io.modelcontextprotocol.json.McpJsonMapper` (1.1.2+) or `McpJsonDefaults` (SDK 0.18+)                   |
+
 ## Migration Strategy
 
 ### 1. AST-Based (Preferred)

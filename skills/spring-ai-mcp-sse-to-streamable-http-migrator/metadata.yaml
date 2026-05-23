@@ -1,0 +1,41 @@
+skill:
+  name: spring-ai-mcp-sse-to-streamable-http-migrator
+  version: 1.0.0
+  description: >
+    Migrate Spring AI MCP clients from the deprecated SSE transport (deprecated
+    in 2.0.0-M7) to the Streamable HTTP transport.
+
+  transformations:
+    - id: sse-to-streamable-http
+      version: 1.0.0
+      description: >
+        Rewrite WebFluxSseClientTransport, WebMvcSseClientTransport, and
+        HttpClientSseClientTransport to their Streamable HTTP equivalents, and
+        translate spring.ai.mcp.client.sse.* property tree to
+        spring.ai.mcp.client.streamable-http.*.
+      detection: "WebFluxSseClientTransport|WebMvcSseClientTransport|HttpClientSseClientTransport|McpSseClientProperties|spring\\.ai\\.mcp\\.client\\.sse\\."
+      versionGate:
+        springAi:
+          minVersion: "2.0.0-M7"
+      automationPotential: 75
+      userApprovalRequired: false
+
+  inputs:
+    - name: mode
+      type: string
+      default: "migrate"
+      values: ["detect", "migrate"]
+    - name: preserve-sse-fallback
+      type: boolean
+      default: false
+    - name: dry-run
+      type: boolean
+      default: false
+
+  dependencies:
+    - skill: build-runner
+      minVersion: 1.0.0
+    - skill: migration-state
+      minVersion: 1.0.0
+    - skill: spring-ai-mcp-client-package-migrator
+      minVersion: 1.1.0

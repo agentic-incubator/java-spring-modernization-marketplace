@@ -400,6 +400,53 @@ Handles SNAPSHOT, milestone, and RC version suffixes by comparing base versions.
 
 ## Migration Skills
 
+### spring-ai-model-selector-enforcer
+
+**Version:** 1.0.0 — added in marketplace v1.11.0.
+
+Detect Spring AI 2.0 multi-provider classpath collisions and inject the six
+`spring.ai.model.*` selector properties per Spring profile with `none` as the safe
+default. Prevents `"At least one credential source must be specified"` startup
+failures caused by OpenAI autoconfigure binding by default when other providers are on
+the classpath.
+
+**Inputs:** `--strategy=infer|explicit-none`, `--profiles=<csv>`, `--primary-provider=...`,
+`--mode=detect|migrate`, `--dry-run`
+
+**Composes with:** `application-property-migrator` (run before), `spring-ai-migrator`
+(run after its `autoconfigure-provider-selection`), `dependency-scanner` (classpath inventory),
+`build-runner` (post-validation).
+
+### spring-boot-bom-override-reconciler
+
+**Version:** 1.0.0 — added in marketplace v1.11.0.
+
+Detect and reconcile stale Maven `<properties>` / Gradle `ext`-`extra` overrides of
+dependencies whose versions are managed by the Spring Boot BOM. Run before or after a
+Spring Boot major/minor bump (e.g., 4.0 → 4.1).
+
+**Inputs:** `--target-boot-version=<x.y.z>`, `--strategy=drop|update|report`,
+`--ignore=<csv>`, `--allow-uplift`, `--dry-run`
+
+### spring-ai-options-setter-migrator
+
+**Version:** 1.0.0 — added in marketplace v1.11.0.
+
+Rewrite removed setter methods on Spring AI `*Options` classes (all setters removed in
+Spring AI 2.0.0-M6) to builder construction or YAML properties.
+
+**Inputs:** `--target=builder|yaml`, `--mode=detect|migrate`, `--dry-run`
+
+### spring-ai-mcp-sse-to-streamable-http-migrator
+
+**Version:** 1.0.0 — added in marketplace v1.11.0.
+
+Migrate Spring AI MCP clients from the deprecated SSE transport (deprecated in M7) to
+the Streamable HTTP transport. Rewrites transport classes, translates the
+`spring.ai.mcp.client.sse.*` property tree, and adjusts connection URLs.
+
+**Inputs:** `--mode=detect|migrate`, `--preserve-sse-fallback`, `--dry-run`
+
 ### jackson-migrator
 
 Handles Jackson 2.x to 3.x migration.
@@ -446,9 +493,10 @@ public class Config {
 
 ### spring-ai-migrator
 
-Migrates Spring AI 1.x to 2.0.x (required for Spring Boot 4 compatibility).
+Migrates Spring AI 1.x to 2.0.x. **Version 2.4.0** (marketplace v1.11.0) extends coverage
+through Spring AI 2.0.0-M7.
 
-**Changes:**
+**Changes (1.x → 2.0 baseline):**
 
 | Before                            | After                        |
 | --------------------------------- | ---------------------------- |
@@ -458,7 +506,24 @@ Migrates Spring AI 1.x to 2.0.x (required for Spring Boot 4 compatibility).
 | `CHAT_MEMORY_CONVERSATION_ID_KEY` | `ChatMemory.CONVERSATION_ID` |
 | Autoconfigure excludes            | `spring.ai.model.*` config   |
 
-**Spring Boot 4 Requirement:** Spring AI 2.0.0-M6 is required due to autoconfigure module split.
+**Additional transformations (v2.4.0, marketplace v1.11.0):**
+
+| Transformation                            | Description                                                                                                              |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `spring-ai-starter-rename`                | `spring-ai-*-spring-boot-starter` → `spring-ai-starter-model-*`                                                          |
+| `spring-ai-cloud-bindings-removal`        | Remove `spring-ai-spring-cloud-bindings` (M7); preserve `org.springframework.cloud:spring-cloud-bindings`                |
+| `spring-ai-removed-modules`               | Azure OpenAI merged into `spring-ai-openai`; Vertex AI / ZhipuAI / OCI GenAI removed (M4-M5)                             |
+| `spring-ai-api-removals-m1-m6`            | `PromptChatMemoryAdvisor`, `ModelOptionsUtils`, `OpenAiConnectionProperties`, MCP customizer interfaces, `disableMemory` |
+| `spring-ai-claude-3-enum-removal`         | Claude 3 enum constants → Claude 4.x (with verify TODO)                                                                  |
+| `spring-ai-default-temperature-constants` | Inline removed `DEFAULT_TEMPERATURE` constants                                                                           |
+| `jackson-2-compatibility-layer-removal`   | Remove M6-only Jackson 2 compat layer when upgrading to M7+                                                              |
+
+**Spring Boot compatibility:**
+
+| Spring Boot | Spring AI | Notes                                                   |
+| ----------- | --------- | ------------------------------------------------------- |
+| 4.0.x       | 2.0.0-M6  | Requires Jackson 2 compat layer (handled automatically) |
+| 4.1.0-RC1+  | 2.0.0-M7  | No Jackson 2 layer needed; SSE MCP transport deprecated |
 
 ### application-property-migrator
 

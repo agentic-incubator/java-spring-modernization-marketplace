@@ -4,13 +4,20 @@ Detailed migration patterns for each supported upgrade path.
 
 ## Version Compatibility Matrix
 
-| Spring Boot | Spring Cloud | Spring Security | Java  | Jackson | Spring AI     |
-| ----------- | ------------ | --------------- | ----- | ------- | ------------- |
-| 3.3.x       | 2024.0.x     | 6.3.x           | 17-23 | 2.x     | 1.0.x         |
-| 3.5.x       | 2025.0.x     | 6.4.x           | 17-24 | 2.x     | 1.0.x - 1.1.x |
-| **4.0.x**   | **2025.1.x** | **7.0.x**       | 17-25 | **3.x** | **2.0.0-M6+** |
+| Spring Boot    | Spring Cloud     | Spring Security | Java  | Jackson | Spring AI     |
+| -------------- | ---------------- | --------------- | ----- | ------- | ------------- |
+| 3.3.x          | 2024.0.x         | 6.3.x           | 17-23 | 2.x     | 1.0.x         |
+| 3.5.x          | 2025.0.x         | 6.4.x           | 17-24 | 2.x     | 1.0.x – 1.1.6 |
+| **4.0.x**      | **2025.1.x**     | **7.0.x**       | 17-25 | **3.x** | **2.0.0-M6**  |
+| **4.1.0-RC1+** | **2026.0.0-M\*** | **7.1.0-RC1**   | 17-25 | **3.x** | **2.0.0-M7**  |
 
-**Important:** Spring AI 2.0.0-M6 is required for Spring Boot 4 compatibility due to autoconfigure module split.
+**Important:**
+
+- Spring AI 2.0.0-M6 is required for Spring Boot 4.0.x compatibility due to autoconfigure
+  module split. The marketplace handles the Jackson 2 compatibility layer automatically.
+- Spring AI 2.0.0-M7 pairs with Spring Boot 4.1.0-RC1. M7 removes
+  `spring-ai-spring-cloud-bindings`, deprecates SSE MCP transport in favor of Streamable
+  HTTP, and no longer needs the Jackson 2 compatibility layer.
 
 ## Spring Boot 3.x to 4.x
 
@@ -94,7 +101,10 @@ Undertow is not compatible with Servlet 6.1 and was removed in Spring Boot 4.
 
 ### Spring Milestones Repository
 
-Required when using milestone releases like Spring AI 2.0.0-M6:
+Required when using RC or milestone releases like Spring Boot 4.1.0-RC1 or
+Spring AI 2.0.0-M7. **Both** `<repositories>` and `<pluginRepositories>` (Maven) must be
+present — the `spring-boot-maven-plugin` for an RC parent lives in the Milestones repo
+and won't resolve from Maven Central:
 
 ```xml
 <repositories>
@@ -107,7 +117,70 @@ Required when using milestone releases like Spring AI 2.0.0-M6:
         </snapshots>
     </repository>
 </repositories>
+
+<pluginRepositories>
+    <pluginRepository>
+        <id>spring-milestones</id>
+        <name>Spring Milestones</name>
+        <url>https://repo.spring.io/milestone</url>
+        <snapshots>
+            <enabled>false</enabled>
+        </snapshots>
+    </pluginRepository>
+</pluginRepositories>
 ```
+
+For Gradle, the equivalent is the `pluginManagement` block in `settings.gradle*`:
+
+```kotlin
+// settings.gradle.kts
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+        maven { url = uri("https://repo.spring.io/milestone") }
+    }
+}
+```
+
+## Spring Boot 4.0.x to 4.1.0-RC1
+
+The Boot 4.0 → 4.1 hop is a focused upgrade addressing a small set of new BOM-managed
+versions and one behavior change. The marketplace ships a dedicated path:
+
+```bash
+/migrate-spring-boot-41 /path/to/project
+```
+
+### Key Changes
+
+| Item                                                   | Boot 4.0           | Boot 4.1.0-RC1                                                                                                              |
+| ------------------------------------------------------ | ------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| `spring-boot-maven-plugin` resolution                  | Maven Central      | **Spring Milestones** (`<pluginRepositories>` required)                                                                     |
+| Micrometer BOM                                         | 1.16.x             | **1.17.0-RC1**                                                                                                              |
+| Spring Framework                                       | 7.0.x              | **7.0.7**                                                                                                                   |
+| Spring Security                                        | 7.0.x              | **7.1.0-RC1**                                                                                                               |
+| OpenTelemetry                                          | unmanaged          | **1.60.1**                                                                                                                  |
+| Flyway                                                 | unmanaged          | **12.4.0**                                                                                                                  |
+| `ReactorClientHttpRequestFactoryBuilder` proxy default | applied implicitly | **explicit `.withHttpClientDefaults()` required**                                                                           |
+| New opt-in properties                                  | —                  | `spring.datasource.connection-fetch`, `spring.webflux.default-html-escape`, `spring.data.redis.listener.*`, `spring.grpc.*` |
+
+### Workflow
+
+The `spring-boot-41-rc-upgrade-agent` orchestrates:
+
+1. `version-detector` confirms current Boot is 4.0.x.
+2. `build-file-updater` (v1.2.0+) bumps parent and adds both `<repositories>` and
+   `<pluginRepositories>` Spring Milestones blocks.
+3. `spring-boot-bom-override-reconciler` (new) drops stale `<micrometer.version>`,
+   `<spring-framework.version>`, etc. that would shadow the new BOM-managed versions.
+4. `dependency-updater` (v2.1.0+) with `--target-rc=spring-boot:4.1.0-RC1` bumps
+   non-Boot dependencies under the stable-only filter while permitting the targeted RC.
+5. `restclient-to-webclient-customizer-migrator` (v1.1.0+) injects
+   `.withHttpClientDefaults()` on any `ReactorClientHttpRequestFactoryBuilder` usage.
+6. `application-property-migrator` (v1.2.0+) reports new Boot 4.1 opt-ins (no automatic
+   transformation).
+7. `build-runner` validates compile + tests.
 
 ## Jackson 2.x to 3.x
 
@@ -411,6 +484,87 @@ base_url: http://localhost:11434
 
 # After (standard)
 base-url: http://localhost:11434
+```
+
+## Spring AI 2.0.0-M1..M6 to 2.0.0-M7
+
+The Spring AI 2.0 milestone series has accumulated significant API churn through M1-M7.
+The marketplace ships a dedicated path that covers every milestone delta in one pass:
+
+```bash
+/migrate-spring-ai-20 /path/to/project
+```
+
+### Critical: Multi-Provider Classpath Collision
+
+All six OpenAI autoconfiguration classes use
+`@ConditionalOnProperty(havingValue="openai", matchIfMissing=true)`. When the classpath
+has `spring-ai-starter-model-openai` plus any other provider starter (e.g., Ollama),
+**every unset `spring.ai.model.<type>` selector silently defaults to OpenAI** and the
+app crashes at startup with:
+
+```text
+At least one credential source must be specified
+```
+
+The fix is to set **all six selectors explicitly** in every Spring profile:
+
+```yaml
+spring:
+  ai:
+    model:
+      chat: ollama
+      embedding: openai
+      image: none
+      moderation: none
+      audio:
+        speech: none
+        transcription: none
+```
+
+The `spring-ai-model-selector-enforcer` skill handles this automatically by inferring
+the correct provider per type from existing config and code references, falling back to
+`none` for unused model types.
+
+To diagnose only (no changes), run `/detect-multi-provider-collision`.
+
+### Key Changes Across M1-M7
+
+| Item                                                                                      | Since | Action                                                                                    |
+| ----------------------------------------------------------------------------------------- | ----- | ----------------------------------------------------------------------------------------- |
+| Starter artifact rename — `spring-ai-*-spring-boot-starter` → `spring-ai-starter-model-*` | M1    | `build-file-updater` v1.2.0 + `spring-ai-migrator` v2.4.0 (`spring-ai-starter-rename`)    |
+| Default temperature constants removed                                                     | M1    | `spring-ai-migrator` v2.4.0 (`spring-ai-default-temperature-constants`)                   |
+| `McpAsyncClientCustomizer` / `McpSyncClientCustomizer` → `McpClientCustomizer<B>`         | M3    | `spring-ai-mcp-client-package-migrator` v1.1.0 (`mcp-client-customizer-unification`)      |
+| `disableMemory()` → `disableInternalConversationHistory()`                                | M3    | `spring-ai-migrator` v2.4.0 (`spring-ai-api-removals-m1-m6`)                              |
+| Claude 3 enum constants removed (`CLAUDE_3_OPUS`, etc.)                                   | M3    | `spring-ai-migrator` v2.4.0 (`spring-ai-claude-3-enum-removal`)                           |
+| Spring AI uses `tools.jackson` natively (Jackson 3 namespace)                             | M3+   | `application-property-migrator` v1.2.0 (logging package update)                           |
+| `spring-ai-azure-openai` merged into `spring-ai-openai`                                   | M4    | `spring-ai-migrator` v2.4.0 (`spring-ai-removed-modules`)                                 |
+| `spring-ai-vertex-ai-gemini` / ZhipuAI / OCI GenAI removed                                | M5    | `spring-ai-migrator` v2.4.0 (`spring-ai-removed-modules`)                                 |
+| `ModelOptionsUtils[.merge]` removed                                                       | M5    | `spring-ai-migrator` v2.4.0 (`spring-ai-api-removals-m1-m6`)                              |
+| All `*Options` setters removed                                                            | M6    | `spring-ai-options-setter-migrator` (rewrite to builder)                                  |
+| `PromptChatMemoryAdvisor` removed                                                         | M6    | `spring-ai-migrator` v2.4.0 — use explicit `ChatMemory.CONVERSATION_ID` pattern           |
+| `OpenAiConnectionProperties` → `OpenAiCommonProperties`                                   | M6    | `spring-ai-migrator` v2.4.0                                                               |
+| Jackson 2 compat layer required for ChromaVectorStore                                     | M6    | `spring-ai-migrator` v2.4.0 (`jackson-2-compatibility-layer`, gated to M6 ONLY)           |
+| `spring-ai-spring-cloud-bindings` removed                                                 | M7    | `spring-ai-migrator` v2.4.0 (`spring-ai-cloud-bindings-removal`)                          |
+| SSE MCP transport deprecated                                                              | M7    | `spring-ai-mcp-sse-to-streamable-http-migrator` (transport class + property tree rewrite) |
+| Jackson 2 compat layer no longer needed                                                   | M7+   | `spring-ai-migrator` v2.4.0 (`jackson-2-compatibility-layer-removal`)                     |
+
+### Six Mandatory Selectors
+
+The `spring-ai-20-m7-upgrade-agent` mandates that `spring-ai-model-selector-enforcer`
+runs as the final step. The six selectors per Spring profile:
+
+```yaml
+spring:
+  ai:
+    model:
+      chat: <provider|none> # ChatClient / ChatModel
+      embedding: <provider|none> # EmbeddingModel
+      image: <provider|none> # ImageModel
+      moderation: <provider|none> # ModerationModel
+      audio:
+        speech: <provider|none> # TextToSpeechModel
+        transcription: <provider|none> # AudioTranscriptionModel
 ```
 
 ## GitHub Actions Workflows

@@ -1,7 +1,7 @@
 {
   "name": "spring-modernization-marketplace",
-  "version": "1.10.0",
-  "description": "Claude Code plugin marketplace for Spring ecosystem modernization with comprehensive breaking changes detection, OpenFeign migration, OpenAPI Generator intelligence, Spring Framework 7 support, advanced validation capabilities, and Java dependency maintenance workflow",
+  "version": "1.11.0",
+  "description": "Claude Code plugin marketplace for Spring ecosystem modernization. v1.11.0 adds Spring Boot 4.1.0-RC1 and Spring AI 2.0.0-M7 coverage: pluginRepositories support, multi-provider classpath collision enforcement, BOM override reconciliation, options-setter migration, MCP SSE → Streamable HTTP, and per-artifact --target-rc opt-in.",
   "private": true,
   "packageManager": "pnpm@11.0.0",
   "engines": {
@@ -14,7 +14,10 @@
     "format:check": "prettier --check \"**/*.md\"",
     "lint": "markdownlint \"**/*.md\" --ignore node_modules",
     "lint:fix": "markdownlint \"**/*.md\" --ignore node_modules --fix",
+    "link-check": "lychee --config lychee.toml --no-progress './**/*.md'",
+    "link-check:offline": "lychee --config lychee.toml --no-progress --offline './**/*.md'",
     "check": "pnpm run format:check && pnpm run lint",
+    "check:all": "pnpm run check && pnpm run link-check",
     "fix": "pnpm run format && pnpm run lint:fix",
     "audit": "pnpm audit",
     "upgrade": "pnpm update --latest"

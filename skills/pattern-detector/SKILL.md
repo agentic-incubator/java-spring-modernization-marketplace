@@ -56,6 +56,28 @@ Search the codebase for patterns that need migration attention. Group findings b
 | `CHAT_MEMORY_RETRIEVE_SIZE_KEY`                                          | Rename to `TOP_K`                                                          |
 | `CHAT_MEMORY_CONVERSATION_ID_KEY`                                        | Replace with `ChatMemory.CONVERSATION_ID`                                  |
 
+### Spring AI 2.0.x API Removals / Renames (M1-M7)
+
+| Pattern                                                                                   | Since           | Action                                                                                                 |
+| ----------------------------------------------------------------------------------------- | --------------- | ------------------------------------------------------------------------------------------------------ |
+| `PromptChatMemoryAdvisor`                                                                 | M6              | Replace with explicit `ChatMemory.CONVERSATION_ID` parameter pattern. See `spring-ai-migrator` v2.4.0+ |
+| `ModelOptionsUtils` (and `.merge()`)                                                      | M5              | Replace with builder-based options construction                                                        |
+| `OpenAiConnectionProperties`                                                              | M6              | Rename to `OpenAiCommonProperties`                                                                     |
+| `McpAsyncClientCustomizer` / `McpSyncClientCustomizer`                                    | M3              | Unify to `McpClientCustomizer<McpAsyncClient>` / `McpClientCustomizer<McpSyncClient>`                  |
+| `.disableMemory(`                                                                         | M3              | Rename to `.disableInternalConversationHistory(`                                                       |
+| `*ChatOptions.DEFAULT_TEMPERATURE`                                                        | M1              | Inline explicit literal (e.g., `0.7`)                                                                  |
+| `AnthropicApi.ChatModel.CLAUDE_3_OPUS`                                                    | M3              | Replace with `CLAUDE_4_OPUS` (verify model identity)                                                   |
+| `AnthropicApi.ChatModel.CLAUDE_3_SONNET`                                                  | M3              | Replace with `CLAUDE_4_5_SONNET` (verify)                                                              |
+| `AnthropicApi.ChatModel.CLAUDE_3_HAIKU`                                                   | M3              | Replace with `CLAUDE_4_5_HAIKU` (verify)                                                               |
+| `*Options.set<Property>(`                                                                 | M6              | Convert to builder method `.property(`. See `spring-ai-options-setter-migrator`                        |
+| `WebFluxSseClientTransport` / `WebMvcSseClientTransport` / `HttpClientSseClientTransport` | M7 (deprecated) | Replace with Streamable HTTP variants. See `spring-ai-mcp-sse-to-streamable-http-migrator`             |
+| `McpSseClientProperties`                                                                  | M7              | Replace with `McpStreamableHttpClientProperties`                                                       |
+| `spring.ai.mcp.client.sse.` (YAML)                                                        | M7              | Translate to `spring.ai.mcp.client.streamable-http.`                                                   |
+| `spring-ai-spring-cloud-bindings` (artifact)                                              | M7              | REMOVE — preserve unrelated `org.springframework.cloud:spring-cloud-bindings`                          |
+| `spring-ai-azure-openai`                                                                  | M4              | Merged into `spring-ai-openai` — switch to `spring-ai-starter-model-openai` w/ Azure endpoint config   |
+| `spring-ai-vertex-ai-gemini` / `spring-ai-zhipuai` / `spring-ai-oci-genai`                | M5              | Removed — switch providers or pin Spring AI to 1.x                                                     |
+| Multi-provider classpath + missing `spring.ai.model.<type>` selectors                     | any 2.0         | Run `spring-ai-model-selector-enforcer` to inject all six selectors per profile                        |
+
 ## Search Commands
 
 ### Jackson Patterns

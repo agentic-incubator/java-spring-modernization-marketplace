@@ -286,10 +286,110 @@ grep -r "McpJsonMapper.getDefault" src/main/java/  # should return nothing
 
 ---
 
+## McpClientCustomizer Unification (Spring AI 2.0.0-M3+)
+
+**Version:** 1.1.0+
+
+Spring AI 2.0.0-M3 unified the separate sync/async customizer interfaces into a single
+parameterized type. Projects that use either of the old interfaces must migrate.
+
+### Detection
+
+```bash
+grep -rn "McpAsyncClientCustomizer\|McpSyncClientCustomizer" src/main/java/
+```
+
+### Class Mapping
+
+| Old (≤ 2.0.0-M2)           | New (≥ 2.0.0-M3)                                      |
+| -------------------------- | ----------------------------------------------------- |
+| `McpAsyncClientCustomizer` | `McpClientCustomizer<McpAsyncClient>` (parameterized) |
+| `McpSyncClientCustomizer`  | `McpClientCustomizer<McpSyncClient>` (parameterized)  |
+
+Both old interfaces lived in `org.springframework.ai.mcp.client.autoconfigure`. The new
+unified `McpClientCustomizer` lives in the post-1.1.2 package
+`org.springframework.ai.mcp.client.common.autoconfigure`.
+
+### Migration
+
+**Before:**
+
+```java
+import org.springframework.ai.mcp.client.autoconfigure.McpAsyncClientCustomizer;
+import org.springframework.ai.mcp.client.autoconfigure.McpSyncClientCustomizer;
+
+@Bean
+McpAsyncClientCustomizer asyncCustomizer() {
+    return (name, client) -> client.requestTimeout(Duration.ofSeconds(30));
+}
+
+@Bean
+McpSyncClientCustomizer syncCustomizer() {
+    return (name, client) -> client.loggingHandler(/* ... */);
+}
+```
+
+**After:**
+
+```java
+import io.modelcontextprotocol.client.McpAsyncClient;
+import io.modelcontextprotocol.client.McpSyncClient;
+import org.springframework.ai.mcp.client.common.autoconfigure.McpClientCustomizer;
+
+@Bean
+McpClientCustomizer<McpAsyncClient> asyncCustomizer() {
+    return (name, client) -> client.requestTimeout(Duration.ofSeconds(30));
+}
+
+@Bean
+McpClientCustomizer<McpSyncClient> syncCustomizer() {
+    return (name, client) -> client.loggingHandler(/* ... */);
+}
+```
+
+### Bulk Replacement
+
+```bash
+# 1. Import rewrite (handles both old → unified)
+find src/main/java -name "*.java" -exec sed -i \
+    -e 's|org\.springframework\.ai\.mcp\.client\.autoconfigure\.McpAsyncClientCustomizer|org.springframework.ai.mcp.client.common.autoconfigure.McpClientCustomizer|g' \
+    -e 's|org\.springframework\.ai\.mcp\.client\.autoconfigure\.McpSyncClientCustomizer|org.springframework.ai.mcp.client.common.autoconfigure.McpClientCustomizer|g' \
+    {} +
+
+# 2. Type rewrite (parameterize)
+find src/main/java -name "*.java" -exec sed -i \
+    -e 's|\bMcpAsyncClientCustomizer\b|McpClientCustomizer<McpAsyncClient>|g' \
+    -e 's|\bMcpSyncClientCustomizer\b|McpClientCustomizer<McpSyncClient>|g' \
+    {} +
+```
+
+Then manually verify each `@Bean` definition — duplicate imports may need cleanup, and
+the `McpAsyncClient` / `McpSyncClient` imports from `io.modelcontextprotocol.client` may
+need to be added if they weren't already imported.
+
+### State Entry
+
+```yaml
+appliedTransformations:
+  - skill: spring-ai-mcp-client-package-migrator
+    version: 1.1.0
+    transformations:
+      - mcp-package-move
+      - webfluxsse-constructor
+      - mcp-client-customizer-unification
+    completedAt: 2026-05-23T12:00:00Z
+    commitSha: abc123
+```
+
+---
+
 ## Related Skills
 
 - `spring-ai-migrator` — broader Spring AI 1.x → 2.x migration including TTS API,
   advisor constants, and autoconfigure provider selection
+- `spring-ai-mcp-sse-to-streamable-http-migrator` — for Spring AI 2.0.0-M7+ projects,
+  migrate SSE transport to Streamable HTTP; this skill must run first to handle the
+  package move
 - `restclient-to-webclient-customizer-migrator` — WebClient timeout configuration
   for SSE/MCP transport; the WebClientCustomizer is the correct hook for connect
   and response timeouts affecting SSE keepalive

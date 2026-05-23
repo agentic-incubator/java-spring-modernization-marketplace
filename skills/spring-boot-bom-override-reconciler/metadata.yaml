@@ -1,0 +1,42 @@
+skill:
+  name: spring-boot-bom-override-reconciler
+  version: 1.0.0
+  description: >
+    Detect and reconcile stale Maven property / Gradle ext-extra overrides of
+    dependencies whose versions are managed by the Spring Boot BOM, before/after
+    a parent version bump.
+
+  transformations:
+    - id: bom-override-reconciliation
+      version: 1.0.0
+      description: >
+        Drop or update explicit version overrides that conflict with the new
+        Spring Boot BOM-managed version.
+      detection: "<(micrometer|spring-framework|spring-security|opentelemetry|flyway|hikaricp|liquibase|reactor)[a-z-]*\\.version>|extra\\[\"(micrometerVersion|springFrameworkVersion|springSecurityVersion|openTelemetryVersion|flywayVersion)\"\\]"
+      automationPotential: 90
+
+  inputs:
+    - name: target-boot-version
+      type: string
+      required: true
+    - name: strategy
+      type: string
+      default: "drop"
+      values: ["drop", "update", "report"]
+    - name: ignore
+      type: csv
+      default: ""
+    - name: allow-uplift
+      type: boolean
+      default: true
+    - name: dry-run
+      type: boolean
+      default: false
+
+  dependencies:
+    - skill: build-runner
+      minVersion: 1.0.0
+    - skill: migration-state
+      minVersion: 1.0.0
+    - skill: version-detector
+      minVersion: 1.0.0

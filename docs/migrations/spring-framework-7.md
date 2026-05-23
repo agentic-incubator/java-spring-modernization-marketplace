@@ -467,6 +467,7 @@ class ApiClientIntegrationTest {
 
 ## Related Guides
 
-- [Spring Boot 4 Migration Guide](../spring-boot-4-migration.md)
-- [Jackson 3 Migration Guide](../jackson-3-migration.md)
-- [Spring Security 7 Migration Guide](../spring-security-7-migration.md)
+- [Migrations overview](../migrations.md) — consolidated guide covering Spring Boot 4,
+  Jackson 3, Spring Security 7, Spring AI 2.0, and more
+- [Use Cases & Sample Prompts](../use-cases/README.md) — task-oriented entry point
+- [Skills catalog](../skills.md) — every skill that supports these migrations
