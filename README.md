@@ -26,6 +26,9 @@ This marketplace handles it: clone, analyze, migrate, validate, and submit PRsâ€
 claude plugin marketplace add agentic-incubator/java-spring-modernization-marketplace
 claude plugin install spring-m11n
 
+# Uninstall
+claude plugin uninstall spring-m11n && claude plugin marketplace remove spring-m11n-marketplace
+
 # Analyze your project
 /analyze /path/to/your/spring-app
 
