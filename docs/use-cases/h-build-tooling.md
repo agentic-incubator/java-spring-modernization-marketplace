@@ -54,7 +54,8 @@ supported in this JDK`."_ Your wrapper is now newer than your local Java install
   Either downgrade the wrapper or install a newer JDK.
 - _"Gradle wrapper download fails behind corporate proxy."_ The wrapper download
   needs internet access to `services.gradle.org`. If your environment requires a
-  proxy, set `gradle.org.gradle.daemon=true` and proxy env vars before running.
+  proxy, configure it in `gradle.properties` with `systemProp.https.proxyHost=…`
+  and `systemProp.https.proxyPort=…` (and the matching `http.*` keys) before running.
 
 </details>
 

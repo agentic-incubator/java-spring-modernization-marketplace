@@ -14,3 +14,7 @@ github\.com/.+#L\d+
 # Placeholder URLs that appear in example code blocks
 your-resource
 your-org
+github\.com/myorg/
+
+# Link rot — discussion was deleted/renumbered upstream but topic is still valid
+spring-cloud-openfeign/discussions/867

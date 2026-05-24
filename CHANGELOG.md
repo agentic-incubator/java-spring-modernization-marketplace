@@ -604,7 +604,7 @@ All new skills follow consistent pattern:
 - Spring Cloud 2025.1.0 Release: <https://spring.io/blog/2025/11/25/spring-cloud-2025-1-0-aka-oakwood-has-been-released/>
 - Spring Framework HTTP Interface: <https://docs.spring.io/spring-framework/reference/integration/rest-clients.html#rest-http-interface>
 - JUnit 5 User Guide: <https://junit.org/junit5/docs/current/user-guide/>
-- Gradle 9.0 Release Notes: <https://docs.gradle.org/9.0/release-notes.html>
+- Gradle 9.0 Release Notes: <https://docs.gradle.org/9.0.0/release-notes.html>
 - Testcontainers Documentation: <https://testcontainers.com/>
 - Spring Data R2DBC: <https://spring.io/projects/spring-data-r2dbc>
 

@@ -21,7 +21,8 @@ accept = [200, 201, 202, 204, 206, 301, 302, 303, 307, 308, 403, 429]
 # Don't follow redirects forever
 max_redirects = 5
 
-# Skip URLs that don't have a scheme — these are usually false positives
+# Allow plain HTTP URLs (don't require HTTPS). Some upstream docs still serve
+# http:// links that are valid; we don't want lychee to flag them.
 require_https = false
 
 # Cache successful link results between runs

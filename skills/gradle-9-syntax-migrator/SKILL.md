@@ -217,7 +217,7 @@ Valid Gradle 9.x versions:
 
 ## References
 
-- **Gradle 9.0 Release Notes:** <https://docs.gradle.org/9.0/release-notes.html>
+- **Gradle 9.0 Release Notes:** <https://docs.gradle.org/9.0.0/release-notes.html>
 
 ---
 

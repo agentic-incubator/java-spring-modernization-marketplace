@@ -1,12 +1,13 @@
 ---
 name: spring-ai-mcp-sse-to-streamable-http-migrator
 description: >
-  Migrate Spring AI MCP clients from the deprecated SSE (Server-Sent Events)
-  transport to Streamable HTTP transport, deprecated in Spring AI 2.0.0-M7.
-  Rewrites transport classes, constructor calls, and property namespaces. Use
-  when the project depends on Spring AI 2.0.0-M7+ and still references
-  WebFluxSseClientTransport, WebMvcSseClientTransport, HttpClientSseClientTransport,
-  or the `spring.ai.mcp.client.sse.*` property tree.
+  Migrate Spring AI MCP clients from the SSE (Server-Sent Events) transport,
+  which was deprecated in Spring AI 2.0.0-M7, to the new Streamable HTTP
+  transport introduced in M7 as its replacement. Rewrites transport classes,
+  constructor calls, and property namespaces. Use when the project depends on
+  Spring AI 2.0.0-M7+ and still references WebFluxSseClientTransport,
+  WebMvcSseClientTransport, HttpClientSseClientTransport, or the
+  `spring.ai.mcp.client.sse.*` property tree.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
