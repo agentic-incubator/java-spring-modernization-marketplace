@@ -1,0 +1,65 @@
+# lychee link-checker configuration
+# https://lychee.cli.rs/usage/config/
+
+# Maximum number of concurrent network requests
+max_concurrency = 8
+
+# How many times we retry a request before giving up
+max_retries = 3
+
+# Wait this many seconds between retries
+retry_wait_time = 2
+
+# Network request timeout in seconds
+timeout = 20
+
+# Treat these HTTP codes as success (in addition to 200-299)
+# 403 — many sites (GitHub raw, etc.) rate-limit unauthenticated link checks
+# 429 — explicit rate limit, we trust these URLs are valid
+accept = [200, 201, 202, 204, 206, 301, 302, 303, 307, 308, 403, 429]
+
+# Don't follow redirects forever
+max_redirects = 5
+
+# Allow plain HTTP URLs (don't require HTTPS). Some upstream docs still serve
+# http:// links that are valid; we don't want lychee to flag them.
+require_https = false
+
+# Cache successful link results between runs
+cache = true
+
+# Cache TTL: 1 day (86400 s)
+max_cache_age = "1d"
+
+# Files / dirs to skip
+exclude_path = [
+    "node_modules",
+    ".git",
+    ".swarm",
+    ".claude-flow",
+    "ruvector.db",
+    "pnpm-lock.yaml",
+    "package-lock.json"
+]
+
+# URL patterns to skip — these are well-known false positives or unreachable from CI
+exclude = [
+    # localhost / private endpoints
+    "^http://localhost",
+    "^http://127\\.0\\.0\\.1",
+    "^https://localhost",
+    "^https://your-resource\\.openai\\.azure\\.com",
+    "^https://mcp\\.example\\.com",
+    "^https://api\\.openai\\.com",
+    # example placeholders in docs
+    "^https?://example\\.com",
+    "^https?://my-resource\\.openai\\.azure\\.com",
+    # mailto links
+    "^mailto:"
+]
+
+# Pass through GH token automatically if available
+github_token = ""
+
+# Verbose level: "error" / "warn" / "info" / "debug"
+verbose = "warn"

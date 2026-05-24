@@ -100,11 +100,13 @@ Migrate Spring Security configurations for Spring Boot 4.x compatibility.
 
 ### spring-ai-migrator
 
-**Version:** 2.3.0
+**Version:** 2.4.0
 **Location:** `skills/spring-ai-migrator/metadata.yaml`
 
-Migrate Spring AI 1.x to 2.0.x including TTS API changes, speed parameter type change, chat memory
-advisor constant renames, and autoconfigure migration for Spring Boot 4 compatibility.
+Migrate Spring AI 1.x to 2.0.x (M7-aware) including TTS API changes, speed parameter
+type change, chat memory advisor constant renames, autoconfigure migration for Spring
+Boot 4 compatibility, starter artifact renames, removed-module handling, M7
+spring-cloud-bindings removal, and M1-M6 API removals.
 
 **Transformations:**
 
@@ -114,11 +116,23 @@ advisor constant renames, and autoconfigure migration for Spring Boot 4 compatib
 - `autoconfigure-provider-selection` (v2.0.0) - Migrate to spring.ai.model.\* provider selection
 - `autoconfigure-class-split` (v2.0.0) - Update monolithic OpenAiAutoConfiguration to split classes
 - `milestones-repository` (v2.0.0) - Add Spring Milestones repository
+- `jackson-2-compatibility-layer` (v2.4.0) - M6-only: install Jackson 2 compat layer
+- `jackson-2-compatibility-layer-removal` (v2.4.0) - M7+: remove the Jackson 2 layer
+- `spring-ai-starter-rename` (v2.3.0) - Rename `spring-ai-*-spring-boot-starter` → `spring-ai-starter-model-*`
+- `spring-ai-cloud-bindings-removal` (v2.3.0) - Remove `spring-ai-spring-cloud-bindings` (M7)
+- `spring-ai-removed-modules` (v2.3.0) - Handle removed Azure OpenAI / Vertex AI / ZhipuAI / OCI GenAI modules
+- `spring-ai-api-removals-m1-m6` (v2.3.0) - Rewrite PromptChatMemoryAdvisor,
+  ModelOptionsUtils, OpenAiConnectionProperties, McpClientCustomizer interfaces, disableMemory
+- `spring-ai-claude-3-enum-removal` (v2.3.0) - Replace removed Claude 3 enum constants
+- `spring-ai-default-temperature-constants` (v2.3.0) - Inline removed DEFAULT_TEMPERATURE constants
 
 **Dependencies:**
 
 - build-runner >= 1.0.0
 - migration-state >= 1.0.0
+- build-file-updater >= 1.2.0
+- import-migrator >= 1.0.0
+- application-property-migrator >= 1.2.0
 
 ---
 
@@ -165,12 +179,13 @@ Detect Spring Cloud OpenFeign usage and compatibility issues with Spring Boot 4.
 
 ### spring-boot-4-breaking-changes-detector
 
-**Version:** 1.0.0
+**Version:** 1.1.0
 **Location:** `skills/spring-boot-4-breaking-changes-detector/SKILL.md`
 
-Comprehensive detector for all Spring Boot 4.x breaking changes including API removals, dependency incompatibilities, and starter changes.
+Comprehensive detector for all Spring Boot 4.x breaking changes including 4.0 API
+removals AND 4.1.0-RC1 catalog entries.
 
-**Detections:**
+**Detections (4.0):**
 
 - RestClientCustomizer removal
 - HttpMessageConverters removal
@@ -178,9 +193,185 @@ Comprehensive detector for all Spring Boot 4.x breaking changes including API re
 - Undertow starter incompatibility
 - Web starter rename
 
+**Detections (4.1.0-RC1, v1.1.0+):**
+
+- ReactorClientHttpRequestFactoryBuilder proxy default change
+- Micrometer BOM 1.16 → 1.17.0-RC1 drift
+- Spring Framework 7.0.x → 7.0.7 BOM bump
+- Spring Security 7.0 → 7.1.0-RC1 BOM bump
+- OpenTelemetry 1.60.1 inclusion
+- Flyway 12.4.0 inclusion
+
 **Dependencies:**
 
 - version-detector >= 1.0.0
+
+---
+
+### spring-ai-model-selector-enforcer
+
+**Version:** 1.0.0
+**Location:** `skills/spring-ai-model-selector-enforcer/metadata.yaml`
+
+Detect Spring AI 2.0 multi-provider classpath collisions and inject the six
+`spring.ai.model.*` selector properties per Spring profile with `none` as the safe
+default. Prevents `"At least one credential source must be specified"` startup failures.
+
+**Transformations:**
+
+- `model-selector-enforcement` (v1.0.0) - Inject all six selectors per profile
+
+**Dependencies:**
+
+- build-runner >= 1.0.0
+- migration-state >= 1.0.0
+- dependency-scanner >= 1.0.0
+- application-property-migrator >= 1.2.0
+
+---
+
+### spring-boot-bom-override-reconciler
+
+**Version:** 1.0.0
+**Location:** `skills/spring-boot-bom-override-reconciler/metadata.yaml`
+
+Detect and reconcile stale Maven `<properties>` / Gradle `ext`-`extra` overrides of
+dependencies whose versions are managed by the Spring Boot BOM, before/after a parent
+version bump.
+
+**Transformations:**
+
+- `bom-override-reconciliation` (v1.0.0) - Drop or update stale overrides
+
+**Dependencies:**
+
+- build-runner >= 1.0.0
+- migration-state >= 1.0.0
+- version-detector >= 1.0.0
+
+---
+
+### spring-ai-options-setter-migrator
+
+**Version:** 1.0.0
+**Location:** `skills/spring-ai-options-setter-migrator/metadata.yaml`
+
+Rewrite removed setter calls on Spring AI options classes (M6+) to builder construction
+or YAML property equivalents.
+
+**Transformations:**
+
+- `options-setter-to-builder` (v1.0.0) - Convert `.set<Property>()` to builder chain
+
+**Dependencies:**
+
+- build-runner >= 1.0.0
+- migration-state >= 1.0.0
+
+---
+
+### spring-ai-mcp-sse-to-streamable-http-migrator
+
+**Version:** 1.0.0
+**Location:** `skills/spring-ai-mcp-sse-to-streamable-http-migrator/metadata.yaml`
+
+Migrate Spring AI MCP clients from the deprecated SSE transport (deprecated in M7) to
+the Streamable HTTP transport.
+
+**Transformations:**
+
+- `sse-to-streamable-http` (v1.0.0) - Rewrite transports + translate `sse.*` property tree
+
+**Dependencies:**
+
+- build-runner >= 1.0.0
+- migration-state >= 1.0.0
+- spring-ai-mcp-client-package-migrator >= 1.1.0
+
+---
+
+### spring-ai-version-validator
+
+**Version:** 1.1.0
+**Location:** `skills/spring-ai-version-validator/SKILL.md`
+
+Validate Spring AI version format (`X.Y.Z-M#`, `X.Y.Z-RC#`) and auto-correct malformed
+strings. v1.1.0 recommends `2.0.0-M7` as the latest milestone target.
+
+---
+
+### spring-ai-mcp-client-package-migrator
+
+**Version:** 1.1.0
+**Location:** `skills/spring-ai-mcp-client-package-migrator/SKILL.md`
+
+Migrate MCP client autoconfigure imports + `WebFluxSseClientTransport` constructor +
+(v1.1.0) `McpAsyncClientCustomizer`/`McpSyncClientCustomizer` → `McpClientCustomizer<B>`.
+
+---
+
+### restclient-to-webclient-customizer-migrator
+
+**Version:** 1.1.0
+**Location:** `skills/restclient-to-webclient-customizer-migrator/SKILL.md`
+
+`RestClientCustomizer` → `WebClientCustomizer` on reactive stacks + (v1.1.0)
+`ReactorClientHttpRequestFactoryBuilder.withHttpClientDefaults()` for Spring Boot 4.1.
+
+---
+
+### build-file-updater
+
+**Version:** 1.2.0
+**Location:** `skills/build-file-updater/SKILL.md`
+
+Update Maven/Gradle build files. v1.2.0 adds the `<pluginRepositories>` (Maven) /
+`settings.gradle*` `pluginManagement` (Gradle) Spring Milestones block, Boot 4.1.0-RC1
+
+- Spring AI 2.0.0-M7 in the version reference table, and the Spring AI starter rename map.
+
+---
+
+### application-property-migrator
+
+**Version:** 1.2.0
+**Location:** `skills/application-property-migrator/SKILL.md`
+
+Migrate `application.yml` / `.properties` files. v1.2.0 expands `spring.ai.model.*`
+selector coverage to all six selectors and adds a Spring Boot 4.1 opt-in property
+reference section.
+
+---
+
+### dependency-updater
+
+**Version:** 2.1.0
+**Location:** `skills/dependency-updater/metadata.yaml`
+
+Upgrade dependencies/plugins. v2.1.0 adds the `--target-rc=<artifactId>:<version>`
+per-artifact override (allows one RC opt-in while keeping global stable-only filtering)
+and additional error-classification entries for Spring AI 2.0 M1-M7 patterns.
+
+---
+
+### java-maintenance-workflow
+
+**Version:** 1.1.0
+**Location:** `skills/java-maintenance-workflow/SKILL.md`
+
+End-to-end dependency maintenance. v1.1.0 adds `--target-rc=<artifactId>:<version>`
+opt-in for deliberate RC/milestone bumps without weakening the default stable-only filter.
+
+---
+
+### migration-protocol
+
+**Version:** 1.1.0
+**Location:** `skills/migration-protocol/SKILL.md`
+
+Canonical reference for the idempotent transformation protocol. v1.1.0 documents the
+`<pluginRepositories>` requirement (Maven) and `settings.gradle*` `pluginManagement`
+equivalent (Gradle) for Spring Boot RC/milestone parents.
 
 ---
 
@@ -241,25 +432,6 @@ Detect transitive dependency conflicts, particularly Jackson 2.x vs 3.x version 
 **Dependencies:**
 
 - version-detector >= 1.0.0
-
----
-
-### spring-ai-version-validator
-
-**Version:** 1.0.0
-**Location:** `skills/spring-ai-version-validator/SKILL.md`
-
-Validate and auto-correct Spring AI version formats (X.Y.Z-M# not X.Y-M#).
-
-**Transformations:**
-
-- `spring-ai-version-format-fix` (v1.0.0) - Correct milestone version format
-- `maven-cache-cleanup` (v1.0.0) - Clear failed artifact cache
-
-**Dependencies:**
-
-- version-detector >= 1.0.0
-- migration-state >= 1.0.0
 
 ---
 

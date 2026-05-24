@@ -150,10 +150,80 @@ grep -r "RestClientCustomizer" src/main/java/
 ./mvnw dependency:tree | grep webclient
 ```
 
+## Spring Boot 4.1 — `ReactorClientHttpRequestFactoryBuilder` Behavior Change
+
+**Version:** 1.1.0+
+
+Spring Boot 4.1.0-RC1 changed the default behavior of `ReactorClientHttpRequestFactoryBuilder`:
+it **no longer** applies `proxyWithSystemProperties()` automatically. Projects relying on
+HTTP/HTTPS proxy auto-detection via system properties (`-Dhttp.proxyHost`,
+`-Dhttps.proxyHost`) must now opt in explicitly using `.withHttpClientDefaults()`.
+
+### Detection
+
+```bash
+# Find ReactorClientHttpRequestFactoryBuilder usages WITHOUT .withHttpClientDefaults()
+grep -rn "ReactorClientHttpRequestFactoryBuilder" src/main/java/ | \
+    grep -v "withHttpClientDefaults"
+```
+
+**Applies when:**
+
+1. Code references `ReactorClientHttpRequestFactoryBuilder` directly (constructor or
+   `.builder()`), AND
+2. The chain does not include `.withHttpClientDefaults()`, AND
+3. Target Spring Boot version is `4.1.0-RC1` or later
+
+### Migration
+
+**Before (Boot 4.0.x — implicit proxy support):**
+
+```java
+import org.springframework.boot.http.client.ReactorClientHttpRequestFactoryBuilder;
+
+ReactorClientHttpRequestFactoryBuilder builder =
+    ReactorClientHttpRequestFactoryBuilder.builder();
+ClientHttpRequestFactory factory = builder.build();
+```
+
+**After (Boot 4.1.0-RC1+ — explicit defaults):**
+
+```java
+import org.springframework.boot.http.client.ReactorClientHttpRequestFactoryBuilder;
+
+ReactorClientHttpRequestFactoryBuilder builder =
+    ReactorClientHttpRequestFactoryBuilder.builder()
+        .withHttpClientDefaults();   // re-enables proxyWithSystemProperties()
+ClientHttpRequestFactory factory = builder.build();
+```
+
+### Behavior Reference
+
+| Before Boot 4.1 (implicit)                          | After Boot 4.1 (explicit)                         |
+| --------------------------------------------------- | ------------------------------------------------- |
+| `proxyWithSystemProperties()` applied automatically | Must call `.withHttpClientDefaults()` to opt in   |
+| `HttpClient.create()` default settings              | Bare `HttpClient.create()` — no auto-defaults     |
+| System proxy properties honored                     | System proxy properties **ignored** unless opt-in |
+
+### State Entry
+
+```yaml
+appliedTransformations:
+  - skill: restclient-to-webclient-customizer-migrator
+    version: 1.1.0
+    transformations:
+      - restclient-to-webclient
+      - reactor-http-builder-defaults
+    completedAt: 2026-05-23T12:00:00Z
+    commitSha: abc123
+```
+
 ## Related Skills
 
 - `spring-ai-mcp-client-package-migrator` — MCP client package moves in Spring AI 1.1.2;
   also uses WebClient for SSE transport
+- `spring-ai-mcp-sse-to-streamable-http-migrator` — SSE → Streamable HTTP transition
+  (M7+); coordinates WebClient timeout setup with this skill
 - `java-maintenance-workflow` — full dependency maintenance workflow; Spring Boot 4
   module disaggregation is documented in its Known Pitfalls section
 - `spring-boot-4-breaking-changes-detector` — detects module splits and missing transitive dependencies

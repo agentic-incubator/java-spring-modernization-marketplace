@@ -13,11 +13,11 @@ This marketplace handles it: clone, analyze, migrate, validate, and submit PRs�
 
 ## What You Get
 
-| Category | Count | Highlights                                                                                                                                                                            |
-| -------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Commands | 16    | `/migrate`, `/analyze`, `/migrate-github`, `/update-openapi-generator`, `/migrate-openapi-library`, `/migrate-framework-7`, `/detect-breaking-changes`                                |
-| Agents   | 10    | Orchestrator, parallel-orchestrator, migration, discovery, validation, cleanup, analyzers                                                                                             |
-| Skills   | 43    | Dependency updater, Jackson, Security, OpenAPI Generator, Spring Framework 7, Documentation migration, Build tools, GitHub Actions, Property migration, OpenFeign, Testing frameworks |
+| Category | Count | Highlights                                                                                                                                                                                                                                                                                                                                           |
+| -------- | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Commands | 20    | `/migrate`, `/analyze`, `/migrate-github`, `/update-openapi-generator`, `/migrate-openapi-library`, `/migrate-framework-7`, `/detect-breaking-changes`, `/migrate-spring-boot-41`, `/migrate-spring-ai-20`, `/detect-multi-provider-collision`, `/migrate-mcp-streamable-http`                                                                       |
+| Agents   | 12    | Orchestrator, parallel-orchestrator, migration, discovery, validation, cleanup, analyzers, `spring-boot-41-rc-upgrade-agent`, `spring-ai-20-m7-upgrade-agent`                                                                                                                                                                                        |
+| Skills   | 51    | Dependency updater, Jackson, Security, OpenAPI Generator, Spring Framework 7, Documentation migration, Build tools, GitHub Actions, Property migration, OpenFeign, Testing frameworks, **Spring AI model-selector enforcer**, **Spring Boot BOM override reconciler**, **Spring AI options-setter migrator**, **MCP SSE → Streamable HTTP migrator** |
 
 ## Quick Start
 
@@ -51,17 +51,19 @@ claude plugin install spring-m11n
 
 ## Supported Migrations
 
-| From               | To             | Key Changes                                                                          |
-| ------------------ | -------------- | ------------------------------------------------------------------------------------ |
-| Spring Boot 3.x    | 4.x            | Starter renames, Undertow removal, Spring Milestones repo                            |
-| Jackson 2.x        | 3.x            | GroupId `tools.jackson`, JacksonException, property namespace                        |
-| Spring Security 6  | 7              | Bean-based config, PathPatternMatcher                                                |
-| Vaadin 24          | 25             | Lumo theme, security configurer                                                      |
-| Spring AI 1.x      | 2.0.0-M1       | TextToSpeechModel, provider selection, autoconfigure split, Jackson 2/3 coexistence  |
-| OpenFeign          | HTTP Interface | Library migration (spring-cloud → spring-http-interface), configPackage, URL cleanup |
-| Spring Framework 6 | 7              | HttpServiceProxyFactory API, WebClientAdapter API, template path flexibility         |
-| Properties         | Boot 4         | Kebab-case, logging packages, Jackson namespace                                      |
-| **Documentation**  | **Aligned**    | **README, prerequisites, code examples, version references**                         |
+| From                  | To             | Key Changes                                                                                                                                     |
+| --------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Spring Boot 3.x       | 4.x            | Starter renames, Undertow removal, Spring Milestones repo                                                                                       |
+| **Spring Boot 4.0.x** | **4.1.0-RC1**  | **pluginRepositories block, BOM override reconciliation, ReactorClientHttpRequestFactoryBuilder.withHttpClientDefaults(), Boot 4.1 opt-ins**    |
+| Jackson 2.x           | 3.x            | GroupId `tools.jackson`, JacksonException, property namespace                                                                                   |
+| Spring Security 6     | 7              | Bean-based config, PathPatternMatcher                                                                                                           |
+| Vaadin 24             | 25             | Lumo theme, security configurer                                                                                                                 |
+| Spring AI 1.x         | 2.0.0-M6       | TextToSpeechModel, provider selection, autoconfigure split, Jackson 2/3 coexistence                                                             |
+| **Spring AI 2.0-M\*** | **2.0.0-M7**   | **Starter renames, spring-cloud-bindings removal, options-setter rewrite, SSE → Streamable HTTP, six-selector enforcement, M1-M6 API removals** |
+| OpenFeign             | HTTP Interface | Library migration (spring-cloud → spring-http-interface), configPackage, URL cleanup                                                            |
+| Spring Framework 6    | 7              | HttpServiceProxyFactory API, WebClientAdapter API, template path flexibility                                                                    |
+| Properties            | Boot 4         | Kebab-case, logging packages, Jackson namespace                                                                                                 |
+| **Documentation**     | **Aligned**    | **README, prerequisites, code examples, version references**                                                                                    |
 
 ## How It Works
 
@@ -81,19 +83,20 @@ For portfolios, the orchestrator:
 
 ## Documentation
 
-| Guide                                                  | Description                          |
-| ------------------------------------------------------ | ------------------------------------ |
-| [Getting Started](docs/getting-started.md)             | Installation and basic usage         |
-| [Claude Code Workflows](docs/claude-code-workflows.md) | Interactive usage patterns           |
-| [Commands](docs/commands.md)                           | All slash commands reference         |
-| [Agents](docs/agents.md)                               | Specialized agents and orchestration |
-| [Skills](docs/skills.md)                               | Migration skills catalog             |
-| [Migrations](docs/migrations.md)                       | Detailed migration patterns          |
-| [GitHub Workflows](docs/github-workflows.md)           | Parallel migrations with PRs         |
-| [Troubleshooting](docs/troubleshooting.md)             | Common errors and solutions          |
-| [Sample Workflows](docs/samples/)                      | Real migration workflow examples     |
-| [Project Historical](docs/project-historical.md)       | How this repo was built with AI      |
-| [Contributing](docs/contributing.md)                   | How to contribute                    |
+| Guide                                                      | Description                                           |
+| ---------------------------------------------------------- | ----------------------------------------------------- |
+| [**Use Cases & Sample Prompts**](docs/use-cases/README.md) | **Start here — 32 use cases with copy-paste prompts** |
+| [Getting Started](docs/getting-started.md)                 | Installation and basic usage                          |
+| [Claude Code Workflows](docs/claude-code-workflows.md)     | Interactive usage patterns                            |
+| [Commands](docs/commands.md)                               | All slash commands reference                          |
+| [Agents](docs/agents.md)                                   | Specialized agents and orchestration                  |
+| [Skills](docs/skills.md)                                   | Migration skills catalog                              |
+| [Migrations](docs/migrations.md)                           | Detailed migration patterns                           |
+| [GitHub Workflows](docs/github-workflows.md)               | Parallel migrations with PRs                          |
+| [Troubleshooting](docs/troubleshooting.md)                 | Common errors and solutions                           |
+| [Sample Workflows](docs/samples/)                          | Real migration workflow examples                      |
+| [Project Historical](docs/project-historical.md)           | How this repo was built with AI                       |
+| [Contributing](docs/contributing.md)                       | How to contribute                                     |
 
 ## Build Tool Support
 

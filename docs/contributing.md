@@ -161,12 +161,38 @@ Important constraints and rules.
 This project uses Prettier and markdownlint:
 
 ```bash
-# Check formatting
+# Check formatting + lint
 pnpm run check
 
 # Auto-fix issues
 pnpm run fix
 ```
+
+### Link checking
+
+The repo uses [lychee](https://lychee.cli.rs/) to verify that every link in every
+markdown file actually resolves. CI runs link-checking on every PR (see
+`.github/workflows/link-check.yml`) and a weekly cron catches external rot.
+
+To run link-check locally:
+
+```bash
+# Install lychee (one-time)
+brew install lychee            # macOS
+# OR
+cargo install lychee           # any platform
+
+# Check all markdown links
+pnpm run link-check
+
+# Skip network requests (only validate internal/file-path links)
+pnpm run link-check:offline
+
+# Check everything (format + lint + links)
+pnpm run check:all
+```
+
+Config lives in `lychee.toml`; URL/path patterns to skip live in `.lycheeignore`.
 
 ### Conventions
 

@@ -22,7 +22,12 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 
 # Java Maintenance Workflow
 
+**Version:** 1.1.0
+
 End-to-end dependency maintenance for Spring Boot 4 / Java 21+ Maven **and** Gradle projects.
+v1.1.0 adds a `--target-rc=<artifactId>:<version>` opt-in for deliberate RC/milestone bumps
+(e.g., Spring Boot 4.1.0-RC1, Spring AI 2.0.0-M7) without weakening the default stable-only
+filter for the rest of the project.
 
 > This skill reuses the **dependency-updater**, **build-runner**, and **pr-submitter**
 > skills for their specialised steps. Read them if you need fine-grained detail on
@@ -130,8 +135,38 @@ open Dependabot PRs triaged in Step 2 for security-labelled items.
 
 ## Step 4 — Discover & Apply Stable Updates
 
-**Skip any version string that contains** (case-insensitive):
+**Default behavior — skip any version string that contains** (case-insensitive):
 `-M`, `-RC`, `-SNAPSHOT`, `alpha`, `beta`, `Alpha`, `Dev`, `milestone`, `preview`, `nf-`
+
+### RC / Milestone Opt-in (v1.1.0+)
+
+When the user wants to deliberately onboard a specific RC or milestone (e.g., Spring
+Boot 4.1.0-RC1 or Spring AI 2.0.0-M7) without weakening the stable-only filter for
+every other dependency, pass `--target-rc=<artifactId>:<version>` (repeatable):
+
+```bash
+# Allow ONLY Spring Boot to bump to 4.1.0-RC1; everything else stable-only
+java-maintenance-workflow --target-rc=spring-boot:4.1.0-RC1
+
+# Multiple opt-ins
+java-maintenance-workflow \
+    --target-rc=spring-boot:4.1.0-RC1 \
+    --target-rc=spring-ai-bom:2.0.0-M7
+```
+
+When `--target-rc` is set, the workflow:
+
+1. Inserts the named artifact + version into a per-artifact override list.
+2. Modifies the skip regex so that the **specific** RC version listed is not filtered
+   out (other RC/milestones for the same or other artifacts remain skipped).
+3. Auto-adds Spring Milestones repository to BOTH `<repositories>` and
+   `<pluginRepositories>` (Maven) / `settings.gradle*` `pluginManagement` (Gradle) if
+   not present.
+4. Delegates the actual bump to `dependency-updater` v2.1.0+ with the equivalent
+   `--target-rc` flag.
+5. Records the RC opt-in in the PR body so reviewers can see the deliberate choice.
+
+Without `--target-rc`, behavior is unchanged from v1.0.0.
 
 ### Maven
 

@@ -1,7 +1,15 @@
 skill:
   name: spring-ai-migrator
-  version: 2.2.0
-  description: Migrate Spring AI 1.x to 2.0.x including TTS API changes, speed parameter type change, chat memory advisor constant renames, autoconfigure migration for Spring Boot 4 compatibility, Jackson 2/3 coexistence layer for milestone releases, and documentation updates
+  version: 2.4.0
+  description: >
+    Migrate Spring AI 1.x to 2.0.x including TTS API changes, speed parameter type
+    change, chat memory advisor constant renames, autoconfigure migration for Spring
+    Boot 4 compatibility, Jackson 2/3 coexistence layer for M6 milestone releases,
+    starter artifact renames, removed-module handling (Azure OpenAI / Vertex AI /
+    ZhipuAI / OCI GenAI), spring-cloud-bindings removal (M7), API removals (M1-M6:
+    PromptChatMemoryAdvisor, ModelOptionsUtils, OpenAiConnectionProperties,
+    McpClientCustomizer interfaces, disableMemory, Claude 3 enums, default
+    temperature constants), and documentation updates.
 
   transformations:
     - id: tts-model-rename
@@ -31,21 +39,104 @@ skill:
 
     - id: milestones-repository
       version: 2.0.0
-      description: Add Spring Milestones repository for Spring AI 2.0.0-M1
-      detection: "spring-ai\.version.*2\.0\.0-M1"
+      description: Add Spring Milestones repository for Spring AI 2.0.0-M*
+      detection: "spring-ai\.version.*2\.0\.0-(M[1-9]|RC)"
 
     - id: jackson-2-compatibility-layer
-      version: 2.2.0
-      description: Add Jackson 2 dependencies and configuration for Spring AI 2.0.0-M* compatibility with Spring Boot 4
-      detection: "spring-ai.*2\\.0\\.0-M[0-9]+"
+      version: 2.4.0
+      description: >
+        Add Jackson 2 dependencies and JacksonConfiguration bean for Spring AI 2.0.0-M6
+        compatibility with Spring Boot 4 (M6 still imports Jackson 2 ObjectMapper from
+        ChromaVectorStoreAutoConfiguration). Gated to M6 ONLY — M3-M5 are unaffected
+        and M7+ no longer needs the workaround.
+      detection: "spring-ai.*2\\.0\\.0-M6\\b"
       versionGate:
         springAi:
-          pattern: "^2\\.0\\.0-M\\d+$"
+          pattern: "^2\\.0\\.0-M6$"
           excludeGA: true
         springBoot:
           minVersion: "4.0.0"
       automationPotential: 100
       userApprovalRequired: false
+
+    - id: jackson-2-compatibility-layer-removal
+      version: 2.4.0
+      description: >
+        Remove the Jackson 2 compatibility layer when upgrading from Spring AI 2.0.0-M6
+        to 2.0.0-M7+. Deletes JacksonConfiguration.java and removes the explicit Jackson 2
+        dependencies from the build file.
+      detection: "JacksonConfiguration\\.java"
+      versionGate:
+        springAi:
+          minVersion: "2.0.0-M7"
+        springBoot:
+          minVersion: "4.0.0"
+      automationPotential: 100
+      userApprovalRequired: false
+
+    - id: spring-ai-starter-rename
+      version: 2.3.0
+      description: >
+        Rename Spring AI 1.x starter artifactIds to the 2.0 unified pattern
+        `spring-ai-starter-model-{provider}`.
+      detection: "spring-ai-(openai|ollama|anthropic|mistral-ai|bedrock-converse|huggingface|stability-ai|minimax|moonshot|qianfan)-spring-boot-starter"
+      automationPotential: 100
+
+    - id: spring-ai-cloud-bindings-removal
+      version: 2.3.0
+      description: >
+        Remove `org.springframework.ai:spring-ai-spring-cloud-bindings` dependency
+        (removed in Spring AI 2.0.0-M7). Preserves the unrelated
+        `org.springframework.cloud:spring-cloud-bindings` (Cloud Foundry bindings).
+      detection: "<artifactId>spring-ai-spring-cloud-bindings</artifactId>|org\\.springframework\\.ai:spring-ai-spring-cloud-bindings"
+      versionGate:
+        springAi:
+          minVersion: "2.0.0-M7"
+      automationPotential: 100
+
+    - id: spring-ai-removed-modules
+      version: 2.3.0
+      description: >
+        Detect and handle Spring AI modules removed in M4/M5:
+        - spring-ai-azure-openai (merged into spring-ai-openai; rewrite to
+          spring-ai-starter-model-openai with Azure endpoint config)
+        - spring-ai-vertex-ai-gemini (removed)
+        - spring-ai-zhipuai (removed)
+        - spring-ai-oci-genai (removed)
+      detection: "spring-ai-(azure-openai|vertex-ai-gemini|zhipuai|oci-genai)"
+      automationPotential: 50
+      userApprovalRequired: true
+
+    - id: spring-ai-api-removals-m1-m6
+      version: 2.3.0
+      description: >
+        Rewrite removed/renamed Spring AI APIs across M1-M6:
+        - PromptChatMemoryAdvisor (removed M6) → explicit ChatMemory.CONVERSATION_ID pattern
+        - ModelOptionsUtils[.merge] (removed M5) → builder-based options
+        - OpenAiConnectionProperties (renamed M6) → OpenAiCommonProperties
+        - McpAsyncClientCustomizer/McpSyncClientCustomizer (M3) → McpClientCustomizer<B>
+        - disableMemory() (M3) → disableInternalConversationHistory()
+      detection: "PromptChatMemoryAdvisor|ModelOptionsUtils|OpenAiConnectionProperties|McpAsyncClientCustomizer|McpSyncClientCustomizer|\\.disableMemory\\s*\\("
+      automationPotential: 80
+
+    - id: spring-ai-claude-3-enum-removal
+      version: 2.3.0
+      description: >
+        Replace removed Claude 3 enum constants (M3) with the Claude 4.x equivalents:
+        CLAUDE_3_OPUS / CLAUDE_3_SONNET / CLAUDE_3_HAIKU → CLAUDE_4_OPUS / CLAUDE_4_5_SONNET /
+        CLAUDE_4_5_HAIKU (with TODO comment so the developer can verify).
+      detection: "AnthropicApi\\.ChatModel\\.CLAUDE_3_(OPUS|SONNET|HAIKU)"
+      automationPotential: 70
+      userApprovalRequired: true
+
+    - id: spring-ai-default-temperature-constants
+      version: 2.3.0
+      description: >
+        Remove references to default temperature constants removed in M1
+        (e.g., OpenAiChatOptions.DEFAULT_TEMPERATURE). Replaces with explicit literal
+        value or removes the call if redundant.
+      detection: "(OpenAi|Anthropic|Ollama|MistralAi|Azure)\\w*ChatOptions\\.DEFAULT_TEMPERATURE"
+      automationPotential: 90
 
     - id: spring-ai-docs
       version: 2.1.0
@@ -64,3 +155,9 @@ skill:
       minVersion: 1.0.0
     - skill: migration-state
       minVersion: 1.0.0
+    - skill: build-file-updater
+      minVersion: 1.2.0
+    - skill: import-migrator
+      minVersion: 1.0.0
+    - skill: application-property-migrator
+      minVersion: 1.2.0

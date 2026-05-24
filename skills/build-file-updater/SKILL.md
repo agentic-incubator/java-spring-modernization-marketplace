@@ -171,14 +171,19 @@ extra["springCloudVersion"] = "2025.1.0"
 
 ## Version Reference
 
-| Component    | Old Version | New Version       |
-| ------------ | ----------- | ----------------- |
-| Spring Boot  | 3.5.x       | 4.0.6             |
-| Spring Cloud | 2025.0.x    | 2025.1.1          |
-| Java         | 21          | 21 (25 available) |
-| Jackson BOM  | -           | 3.1.3             |
-| Vaadin       | 24.x        | 25.1.0            |
-| Spring AI    | 1.0.x       | **2.0.0-M6**      |
+| Component        | Old Version | New Version (Boot 4.0 line) | RC / Milestone line         |
+| ---------------- | ----------- | --------------------------- | --------------------------- |
+| Spring Boot      | 3.5.x       | 4.0.6                       | **4.1.0-RC1**               |
+| Spring Cloud     | 2025.0.x    | 2025.1.1                    | 2026.0.0-M\* (when shipped) |
+| Spring Framework | 6.x         | 7.0.x                       | 7.0.7                       |
+| Spring Security  | 6.x         | 7.0.x                       | **7.1.0-RC1**               |
+| Java             | 21          | 21 (25 available)           | 21 / 25                     |
+| Jackson BOM      | -           | 3.1.3                       | 3.1.3                       |
+| Micrometer BOM   | 1.16.x      | 1.16.x                      | **1.17.0-RC1**              |
+| OpenTelemetry    | -           | -                           | 1.60.1                      |
+| Flyway           | -           | -                           | 12.4.0                      |
+| Vaadin           | 24.x        | 25.1.0                      | 25.1.x                      |
+| Spring AI        | 1.0.x       | **2.0.0-M6**                | **2.0.0-M7**                |
 
 ## Starter Artifact Renames
 
@@ -241,7 +246,10 @@ Replace with Tomcat (default) or Jetty:
 
 ## Spring Milestones Repository
 
-When using milestone releases (e.g., Spring AI 2.0.0-M6), add the Spring Milestones repository:
+When using milestone or RC releases (e.g., Spring AI `2.0.0-M7`, Spring Boot `4.1.0-RC1`),
+add the Spring Milestones repository to **both** `<repositories>` (for dependency resolution)
+**and** `<pluginRepositories>` (for plugin resolution — required when the Spring Boot Maven
+plugin itself is an RC/milestone version).
 
 ### Maven
 
@@ -256,9 +264,25 @@ When using milestone releases (e.g., Spring AI 2.0.0-M6), add the Spring Milesto
         </snapshots>
     </repository>
 </repositories>
+
+<pluginRepositories>
+    <pluginRepository>
+        <id>spring-milestones</id>
+        <name>Spring Milestones</name>
+        <url>https://repo.spring.io/milestone</url>
+        <snapshots>
+            <enabled>false</enabled>
+        </snapshots>
+    </pluginRepository>
+</pluginRepositories>
 ```
 
+> Omitting `<pluginRepositories>` for a Spring Boot RC/milestone parent causes:
+> `Plugin org.springframework.boot:spring-boot-maven-plugin:<version> not found`
+
 ### Gradle Groovy DSL
+
+`build.gradle` — for dependency resolution:
 
 ```groovy
 repositories {
@@ -266,7 +290,21 @@ repositories {
 }
 ```
 
+`settings.gradle` — for **plugin** resolution:
+
+```groovy
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+        maven { url 'https://repo.spring.io/milestone' }
+    }
+}
+```
+
 ### Gradle Kotlin DSL
+
+`build.gradle.kts` — for dependency resolution:
 
 ```kotlin
 repositories {
@@ -274,13 +312,69 @@ repositories {
 }
 ```
 
+`settings.gradle.kts` — for **plugin** resolution:
+
+```kotlin
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+        maven { url = uri("https://repo.spring.io/milestone") }
+    }
+}
+```
+
 ### When to Add
 
-Add Spring Milestones repository when:
+Add Spring Milestones repository (both repositories AND pluginRepositories / settings
+pluginManagement) when:
 
-- Using Spring AI 2.0.0-M6 (or any milestone release)
-- Using any `-M1`, `-M2`, `-RC1`, etc. version
-- Repository not already present in build file
+- Using Spring AI 2.0.0-M\* (any milestone release)
+- Using Spring Boot 4.x-M\* / 4.x-RC\*
+- Using any `-M1`, `-M2`, `-RC1`, etc. version of any artifact
+- Repository / pluginManagement not already present in build file
+
+## Spring AI Starter Artifact Renames (1.x → 2.0)
+
+Spring AI 2.0 renamed every model-starter artifact to a unified pattern:
+`spring-ai-starter-model-{provider}`. Update GAV coordinates in addition to imports.
+
+| Provider     | Old artifactId (1.x)                             | New artifactId (2.0)                                             |
+| ------------ | ------------------------------------------------ | ---------------------------------------------------------------- |
+| OpenAI       | `spring-ai-openai-spring-boot-starter`           | `spring-ai-starter-model-openai`                                 |
+| Ollama       | `spring-ai-ollama-spring-boot-starter`           | `spring-ai-starter-model-ollama`                                 |
+| Anthropic    | `spring-ai-anthropic-spring-boot-starter`        | `spring-ai-starter-model-anthropic`                              |
+| MistralAI    | `spring-ai-mistral-ai-spring-boot-starter`       | `spring-ai-starter-model-mistral-ai`                             |
+| Bedrock      | `spring-ai-bedrock-converse-spring-boot-starter` | `spring-ai-starter-model-bedrock-converse`                       |
+| HuggingFace  | `spring-ai-huggingface-spring-boot-starter`      | `spring-ai-starter-model-huggingface`                            |
+| Stability AI | `spring-ai-stability-ai-spring-boot-starter`     | `spring-ai-starter-model-stability-ai`                           |
+| MiniMax      | `spring-ai-minimax-spring-boot-starter`          | `spring-ai-starter-model-minimax`                                |
+| Moonshot     | `spring-ai-moonshot-spring-boot-starter`         | `spring-ai-starter-model-moonshot`                               |
+| QianFan      | `spring-ai-qianfan-spring-boot-starter`          | `spring-ai-starter-model-qianfan`                                |
+| ZhipuAI      | `spring-ai-zhipuai-spring-boot-starter`          | _REMOVED in M4 — see below_                                      |
+| Azure OpenAI | `spring-ai-azure-openai-spring-boot-starter`     | _MERGED into `spring-ai-starter-model-openai` in M4 — see below_ |
+| Vertex AI    | `spring-ai-vertex-ai-gemini-spring-boot-starter` | _REMOVED in M5 — see below_                                      |
+| OCI GenAI    | `spring-ai-oci-genai-spring-boot-starter`        | _REMOVED in M5 — see below_                                      |
+
+### Removed Modules (Spring AI 2.0.0-M4 / M5)
+
+- `spring-ai-azure-openai` — merged into `spring-ai-openai`. Use
+  `spring-ai-starter-model-openai` and configure `spring.ai.openai.base-url` to point at
+  the Azure endpoint.
+- `spring-ai-vertex-ai-gemini` — removed (non-embedding modules dropped).
+- `spring-ai-zhipuai` — removed.
+- `spring-ai-oci-genai` — removed.
+
+For removed integrations, projects must either switch providers (via the unified
+`spring.ai.model.*` selector — see `spring-ai-model-selector-enforcer` skill) or pin Spring
+AI to the 1.x line.
+
+### Spring AI Cloud Bindings Removal (M7)
+
+The artifact `org.springframework.ai:spring-ai-spring-cloud-bindings` was removed in
+Spring AI 2.0.0-M7. **Remove it.** Do **not** confuse it with the separate
+`org.springframework.cloud:spring-cloud-bindings` (Cloud Foundry bindings) — that one
+**must remain** intact.
 
 ## Spring AI Version Update
 
@@ -288,11 +382,19 @@ Add Spring Milestones repository when:
 <!-- Before -->
 <spring-ai.version>1.1.6</spring-ai.version>  <!-- Boot 3.5.x -->
 
-<!-- After -->
+<!-- After (Boot 4.0 line) -->
 <spring-ai.version>2.0.0-M6</spring-ai.version>
+
+<!-- After (Boot 4.1.0-RC1 line) -->
+<spring-ai.version>2.0.0-M7</spring-ai.version>
 ```
 
-**Important:** Spring AI 2.0.0-M6 is required for Spring Boot 4 compatibility due to autoconfigure module split.
+**Important:**
+
+- Spring AI 2.0.0-M6 is required for Spring Boot 4.0.x compatibility due to autoconfigure module split.
+- Spring AI 2.0.0-M7 pairs with Spring Boot 4.1.0-RC1; M7 also removes
+  `spring-ai-spring-cloud-bindings` (see above) and deprecates SSE MCP transport in favor of
+  Streamable HTTP (see `spring-ai-mcp-sse-to-streamable-http-migrator` skill).
 
 ## Migration Steps
 

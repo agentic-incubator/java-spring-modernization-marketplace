@@ -1,7 +1,10 @@
 skill:
   name: dependency-updater
-  version: 2.0.0
-  description: Upgrade all dependencies and plugins to latest stable/milestone compatible versions with compatibility validation and incremental rollback
+  version: 2.1.0
+  description: >
+    Upgrade all dependencies and plugins to latest stable/milestone compatible versions
+    with compatibility validation, incremental rollback, and per-artifact RC/milestone
+    opt-in via --target-rc=<artifactId>:<version>.
 
   transformations:
     - id: dependency-updates
@@ -41,7 +44,7 @@ skill:
       default: true
 
     - id: include-milestones
-      description: Include milestones and RC (exclude alpha, beta, snapshot)
+      description: Include milestones and RC (exclude alpha, beta, snapshot). Global widening.
       mavenIgnorePattern: '(?i).*-(alpha|beta)([-.]?\d+)?|.*SNAPSHOT'
       default: false
 
@@ -49,6 +52,21 @@ skill:
       description: Include all except snapshots
       mavenIgnorePattern: '.*SNAPSHOT'
       default: false
+
+    - id: target-rc
+      description: >
+        Per-artifact override — keeps stable-only filtering globally but allows the named
+        artifact to resolve to the specified RC/milestone version. Format:
+        --target-rc=<groupId-or-artifactId>:<version> (multiple --target-rc flags allowed).
+        Auto-adds Spring Milestones repository to BOTH <repositories> and
+        <pluginRepositories> when the target version is an RC/milestone.
+      mavenIgnorePattern: '(?i).*-(alpha|beta|m|rc)([-.]?\d+)?|.*SNAPSHOT'  # global filter unchanged
+      default: false
+      perArtifactOverride: true
+      examples:
+        - "--target-rc=spring-boot:4.1.0-RC1"
+        - "--target-rc=spring-ai-bom:2.0.0-M7"
+        - "--target-rc=spring-boot:4.1.0-RC1 --target-rc=spring-ai-bom:2.0.0-M7"
 
   buildToolSupport:
     maven:
@@ -131,6 +149,19 @@ skill:
       - pattern: "org.springframework.ai"
         suggestedSkill: spring-ai-migrator
         reason: "Spring AI 1.x → 2.x API changes"
+
+      - pattern: "PromptChatMemoryAdvisor|ModelOptionsUtils|OpenAiConnectionProperties|McpAsyncClientCustomizer|McpSyncClientCustomizer|\\.disableMemory\\("
+        suggestedSkill: spring-ai-migrator
+        reason: "Spring AI 2.0 M1-M6 API removals/renames"
+        minSkillVersion: "2.4.0"
+
+      - pattern: "set(Temperature|MaxTokens|Model|TopP|TopK|FrequencyPenalty)\\s*\\("
+        suggestedSkill: spring-ai-options-setter-migrator
+        reason: "Spring AI 2.0.0-M6 removed all *Options setter methods"
+
+      - pattern: "WebFluxSseClientTransport|McpSseClientProperties|spring\\.ai\\.mcp\\.client\\.sse\\."
+        suggestedSkill: spring-ai-mcp-sse-to-streamable-http-migrator
+        reason: "Spring AI 2.0.0-M7 deprecated SSE MCP transport"
 
       - pattern: "com.vaadin"
         suggestedSkill: vaadin-migrator

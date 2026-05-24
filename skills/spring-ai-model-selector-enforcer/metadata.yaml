@@ -1,0 +1,48 @@
+skill:
+  name: spring-ai-model-selector-enforcer
+  version: 1.0.0
+  description: >
+    Detect Spring AI 2.0 multi-provider classpath collisions and inject the six
+    spring.ai.model.* selector properties per Spring profile with `none` as the
+    safe default. Prevents OpenAI autoconfigure binding by default when other
+    providers are on the classpath.
+
+  transformations:
+    - id: model-selector-enforcement
+      version: 1.0.0
+      description: >
+        Inject explicit spring.ai.model.{chat,embedding,image,moderation,audio.speech,
+        audio.transcription} selectors per Spring profile, inferring providers from
+        existing config blocks and code references or defaulting to 'none'.
+      detection: "spring-ai-starter-model-(openai|ollama|anthropic|mistral-ai|bedrock|huggingface|stability-ai|minimax|moonshot|qianfan)"
+      automationPotential: 90
+      userApprovalRequired: false
+
+  inputs:
+    - name: strategy
+      type: string
+      default: "infer"
+      values: ["infer", "explicit-none"]
+    - name: profiles
+      type: csv
+      default: ""
+    - name: primary-provider
+      type: string
+      default: ""
+    - name: mode
+      type: string
+      default: "migrate"
+      values: ["detect", "migrate"]
+    - name: dry-run
+      type: boolean
+      default: false
+
+  dependencies:
+    - skill: build-runner
+      minVersion: 1.0.0
+    - skill: migration-state
+      minVersion: 1.0.0
+    - skill: dependency-scanner
+      minVersion: 1.0.0
+    - skill: application-property-migrator
+      minVersion: 1.2.0

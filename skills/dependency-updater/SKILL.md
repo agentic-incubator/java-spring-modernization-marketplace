@@ -207,6 +207,49 @@ git checkout build.gradle.kts
 - ✅ `3.0.0-alpha` - Included
 - ❌ `3.0.0-SNAPSHOT` - Excluded
 
+### target-rc (per-artifact opt-in, NEW in v2.1.0)
+
+**Use case**: A project wants to onboard ONE specific RC/milestone (e.g., Spring Boot
+`4.1.0-RC1` or Spring AI `2.0.0-M7`) while keeping everything else on stable releases.
+
+`--target-rc=<groupId-or-artifactId>:<version>` (repeatable) keeps the global
+`stable-only` filter in effect but allows the named artifact to resolve to the specified
+RC version. The skill auto-adds the Spring Milestones repository to BOTH
+`<repositories>` and `<pluginRepositories>` (Maven) / `settings.gradle*` `pluginManagement`
+(Gradle) when the target version is an RC or milestone.
+
+**Examples:**
+
+```bash
+# Bump Spring Boot to 4.1.0-RC1; all other deps stable-only
+mvn versions:use-latest-releases \
+    -Dincludes='org.springframework.boot:*' \
+    -DnewVersion=4.1.0-RC1
+
+# Or via the skill's CLI surface:
+dependency-updater --target-rc=spring-boot:4.1.0-RC1
+
+# Multiple targets — Boot 4.1 RC + Spring AI 2.0 M7
+dependency-updater \
+    --target-rc=spring-boot:4.1.0-RC1 \
+    --target-rc=spring-ai-bom:2.0.0-M7
+```
+
+**Example resolution:**
+
+- ✅ `spring-boot:4.1.0-RC1` — included (matches `--target-rc`)
+- ✅ `guava:33.0.0` — included (stable)
+- ❌ `spring-cloud:2026.0.0-M1` — excluded (no `--target-rc` override; stable-only filter wins)
+- ❌ `commons-lang3:3.15.0-RC1` — excluded (no override)
+
+**Compared to `include-milestones`:**
+
+| Aspect   | `target-rc`                                | `include-milestones`                             |
+| -------- | ------------------------------------------ | ------------------------------------------------ |
+| Scope    | Per-artifact (narrow)                      | Global (wide)                                    |
+| Risk     | Low — only the chosen artifact moves to RC | High — every dep may bump to a milestone version |
+| Use when | You want **exactly one** RC                | You want to scan all available milestones        |
+
 ## Special Handling
 
 ### Spring Boot BOM-Managed Dependencies

@@ -1,7 +1,7 @@
 # Spring AI Version Validator Skill
 
 **Skill ID:** `spring-ai-version-validator`
-**Version:** 1.0.0
+**Version:** 1.1.0
 **Category:** Validation
 **Priority:** MEDIUM
 **Automation:** 100%
@@ -40,14 +40,22 @@ in spring-milestones (https://repo.spring.io/milestone)
 
 ## Version Compatibility Reference
 
-| Spring Boot | Spring AI     | Notes                                  |
-| ----------- | ------------- | -------------------------------------- |
-| 3.3.x       | 1.0.x         | Original Spring AI                     |
-| 3.5.x       | 1.0.x – 1.1.x | Last Spring Boot 3.x generation        |
-| 3.5.x       | **1.1.6**     | Latest stable for Boot 3.x             |
-| **4.0.x**   | **2.0.0-M6+** | Required for Boot 4 (latest milestone) |
+| Spring Boot    | Spring AI     | Notes                                                                           |
+| -------------- | ------------- | ------------------------------------------------------------------------------- |
+| 3.3.x          | 1.0.x         | Original Spring AI                                                              |
+| 3.5.x          | 1.0.x – 1.1.x | Last Spring Boot 3.x generation                                                 |
+| 3.5.x          | **1.1.6**     | Latest stable for Boot 3.x                                                      |
+| **4.0.x**      | **2.0.0-M6**  | Required for Boot 4.0 (needs Jackson 2 compat layer — see `spring-ai-migrator`) |
+| **4.1.0-RC1+** | **2.0.0-M7**  | Latest milestone; no Jackson 2 layer needed; SSE MCP transport deprecated       |
 
-When correcting a malformed milestone version, use the current latest milestone (`2.0.0-M6`) for Boot 4 targets, or `1.1.6` for Boot 3.5.x targets.
+**Auto-correction targets:**
+
+- Boot 4.1.0-RC1+ target → `2.0.0-M7` (latest milestone)
+- Boot 4.0.x target → `2.0.0-M6`
+- Boot 3.5.x target → `1.1.6` (latest stable)
+
+When correcting a malformed milestone version, prefer **`2.0.0-M7`** unless the project is
+pinned to Spring Boot 4.0.x (in which case use `2.0.0-M6`).
 
 ---
 
@@ -147,7 +155,7 @@ grep -E "spring-ai.*version.*2\.\d+-RC\d+" build.gradle build.gradle.kts
 
 4. AUTO-CORRECT (if possible)
    - Missing patch: Add ".0" before milestone
-     2.0-M1 → 2.0.0-M6
+     2.0-M1 → 2.0.0-M7
      2.0-RC1 → 2.0.0-RC1
 
    - Missing minor and patch: Add ".0.0" before milestone
@@ -570,4 +578,6 @@ issue: null
 
 ## Version History
 
+- **1.1.0** (2026-05-23): Bumped latest-milestone recommendation from `2.0.0-M6` to
+  `2.0.0-M7`; added Spring Boot `4.1.0-RC1` compatibility row.
 - **1.0.0** (2026-01-04): Initial implementation for Spring AI version format validation

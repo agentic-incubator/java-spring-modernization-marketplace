@@ -1,6 +1,13 @@
 ---
 name: spring-ai-migrator
-description: Migrate Spring AI 1.x to 2.0.x including TTS API changes (SpeechModel to TextToSpeechModel), speed parameter type change (Float to Double), chat memory advisor constant renames, and autoconfigure migration for Spring Boot 4 compatibility. Supports 1.1.6 (Boot 3.5.x) and 2.0.0-M6 (Boot 4.x). Use when upgrading Spring AI or fixing Spring AI compilation errors.
+description: >
+  Migrate Spring AI 1.x to 2.0.x including TTS API changes (SpeechModel to
+  TextToSpeechModel), speed parameter type change (Float to Double), chat memory
+  advisor constant renames, autoconfigure migration for Spring Boot 4 compatibility,
+  starter artifact renames, removed-module handling, spring-cloud-bindings removal
+  (M7), and Spring AI API removals across M1-M6. Supports 1.1.6 (Boot 3.5.x), 2.0.0-M6
+  (Boot 4.0.x), and 2.0.0-M7 (Boot 4.1.0-RC1). Use when upgrading Spring AI or fixing
+  Spring AI compilation errors.
 allowed-tools: Read, Write, Edit, Glob, Grep
 ---
 
@@ -24,12 +31,13 @@ ClassNotFoundException: org.springframework.boot.autoconfigure.web.client.RestCl
 
 ## Version Compatibility
 
-| Spring Boot | Spring AI     | Notes                                  |
-| ----------- | ------------- | -------------------------------------- |
-| 3.3.x       | 1.0.x         | Original Spring AI                     |
-| 3.5.x       | 1.0.x - 1.1.x | Last Spring Boot 3.x compatible        |
-| 3.5.x       | **1.1.6**     | Latest stable for Boot 3.x             |
-| **4.0.x**   | **2.0.0-M6+** | Required for Boot 4 (latest milestone) |
+| Spring Boot    | Spring AI     | Notes                                                                                                                   |
+| -------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| 3.3.x          | 1.0.x         | Original Spring AI                                                                                                      |
+| 3.5.x          | 1.0.x - 1.1.x | Last Spring Boot 3.x compatible                                                                                         |
+| 3.5.x          | **1.1.6**     | Latest stable for Boot 3.x                                                                                              |
+| **4.0.x**      | **2.0.0-M6**  | Required for Boot 4.0 (Jackson 2 compat layer needed)                                                                   |
+| **4.1.0-RC1+** | **2.0.0-M7**  | Boot 4.1 line; M7 removes Jackson 2 dependency, removes `spring-ai-spring-cloud-bindings`, deprecates SSE MCP transport |
 
 ## Key Migration Areas
 
@@ -641,7 +649,7 @@ Each transformation has a detection pattern in `metadata.yaml`:
 
 ```yaml
 skill: spring-ai-migrator
-version: 2.3.0
+version: 2.4.0
 transformations:
   - tts-model-rename
   - speed-parameter
@@ -650,6 +658,187 @@ transformations:
   - autoconfigure-class-split
   - milestones-repository
   - jackson-2-compatibility-layer
+  - spring-ai-starter-rename
+  - spring-ai-cloud-bindings-removal
+  - spring-ai-removed-modules
+  - spring-ai-api-removals-m1-m6
+  - spring-ai-claude-3-enum-removal
+  - spring-ai-default-temperature-constants
 completedAt: <ISO-8601-timestamp>
 commitSha: <git-commit-sha>
 ```
+
+---
+
+## v2.4.0 New Transformations (M3-M7 coverage)
+
+### Starter Artifact Renames (M1+)
+
+Spring AI 2.0 unified every model starter under `spring-ai-starter-model-{provider}`.
+Old artifact IDs no longer resolve.
+
+| Old artifactId                                   | New artifactId                             |
+| ------------------------------------------------ | ------------------------------------------ |
+| `spring-ai-openai-spring-boot-starter`           | `spring-ai-starter-model-openai`           |
+| `spring-ai-ollama-spring-boot-starter`           | `spring-ai-starter-model-ollama`           |
+| `spring-ai-anthropic-spring-boot-starter`        | `spring-ai-starter-model-anthropic`        |
+| `spring-ai-mistral-ai-spring-boot-starter`       | `spring-ai-starter-model-mistral-ai`       |
+| `spring-ai-bedrock-converse-spring-boot-starter` | `spring-ai-starter-model-bedrock-converse` |
+| `spring-ai-huggingface-spring-boot-starter`      | `spring-ai-starter-model-huggingface`      |
+| `spring-ai-stability-ai-spring-boot-starter`     | `spring-ai-starter-model-stability-ai`     |
+| `spring-ai-minimax-spring-boot-starter`          | `spring-ai-starter-model-minimax`          |
+| `spring-ai-moonshot-spring-boot-starter`         | `spring-ai-starter-model-moonshot`         |
+| `spring-ai-qianfan-spring-boot-starter`          | `spring-ai-starter-model-qianfan`          |
+
+Apply via `build-file-updater` v1.2.0 (which carries the rename map for both Maven and
+Gradle DSLs).
+
+### Removed Modules (M4 / M5)
+
+- **`spring-ai-azure-openai`** (M4) — merged into `spring-ai-openai`. Migrate to
+  `spring-ai-starter-model-openai` and configure the Azure endpoint:
+
+  ```yaml
+  spring:
+    ai:
+      openai:
+        base-url: https://<your-resource>.openai.azure.com
+        api-key: ${AZURE_OPENAI_API_KEY}
+  ```
+
+- **`spring-ai-vertex-ai-gemini`** (M5) — removed.
+- **`spring-ai-zhipuai`** (M5) — removed.
+- **`spring-ai-oci-genai`** (M5) — removed.
+
+For removed integrations, projects must either switch providers via the unified
+`spring.ai.model.*` selector (run `spring-ai-model-selector-enforcer` afterwards) or pin
+Spring AI to the 1.x line.
+
+### Spring AI Cloud Bindings Removal (M7)
+
+```xml
+<!-- BEFORE — must be removed -->
+<dependency>
+    <groupId>org.springframework.ai</groupId>
+    <artifactId>spring-ai-spring-cloud-bindings</artifactId>
+</dependency>
+
+<!-- AFTER — delete the dependency entirely -->
+```
+
+**Do NOT confuse with `org.springframework.cloud:spring-cloud-bindings`** — that artifact
+provides Cloud Foundry service bindings and is unrelated. Preserve it.
+
+### Removed/Renamed APIs (M1-M6)
+
+| Removed/Renamed API                                    | Since | Replacement                                             |
+| ------------------------------------------------------ | ----- | ------------------------------------------------------- |
+| `PromptChatMemoryAdvisor`                              | M6    | Explicit `ChatMemory.CONVERSATION_ID` parameter pattern |
+| `ModelOptionsUtils` (and `.merge()`)                   | M5    | Builder-based options construction                      |
+| `OpenAiConnectionProperties`                           | M6    | Renamed to `OpenAiCommonProperties`                     |
+| `McpAsyncClientCustomizer` / `McpSyncClientCustomizer` | M3    | Unified `McpClientCustomizer<B>` (parameterized)        |
+| `.disableMemory()`                                     | M3    | `.disableInternalConversationHistory()`                 |
+| `*ChatOptions.DEFAULT_TEMPERATURE` constants           | M1    | Explicit literal value (e.g., `0.7`)                    |
+
+#### `PromptChatMemoryAdvisor` Migration
+
+**Before (≤ M5):**
+
+```java
+chatClient.prompt()
+    .advisors(new PromptChatMemoryAdvisor(chatMemory))
+    .call();
+```
+
+**After (M6+):**
+
+```java
+chatClient.prompt()
+    .advisors(advisor -> advisor.param(ChatMemory.CONVERSATION_ID, "session-123"))
+    .call();
+```
+
+#### `OpenAiConnectionProperties` Rename
+
+```diff
+- import org.springframework.ai.openai.OpenAiConnectionProperties;
++ import org.springframework.ai.openai.OpenAiCommonProperties;
+
+- OpenAiConnectionProperties props = ...;
++ OpenAiCommonProperties props = ...;
+```
+
+#### `McpClientCustomizer` Unification
+
+```diff
+- import org.springframework.ai.mcp.client.autoconfigure.McpAsyncClientCustomizer;
+- import org.springframework.ai.mcp.client.autoconfigure.McpSyncClientCustomizer;
++ import org.springframework.ai.mcp.client.common.autoconfigure.McpClientCustomizer;
+
+- @Bean
+- McpAsyncClientCustomizer asyncCustomizer() { ... }
++ @Bean
++ McpClientCustomizer<McpAsyncClient> asyncCustomizer() { ... }
+```
+
+#### `disableMemory()` Rename
+
+```diff
+- chatClient.prompt().advisors(a -> a.disableMemory()).call();
++ chatClient.prompt().advisors(a -> a.disableInternalConversationHistory()).call();
+```
+
+### Claude 3 Enum Constant Removal (M3)
+
+`AnthropicApi.ChatModel.CLAUDE_3_OPUS` / `CLAUDE_3_SONNET` / `CLAUDE_3_HAIKU` removed.
+Default rewrites (review each — model identity may have changed semantics):
+
+| Removed           | Suggested replacement |
+| ----------------- | --------------------- |
+| `CLAUDE_3_OPUS`   | `CLAUDE_4_OPUS`       |
+| `CLAUDE_3_SONNET` | `CLAUDE_4_5_SONNET`   |
+| `CLAUDE_3_HAIKU`  | `CLAUDE_4_5_HAIKU`    |
+
+The skill inserts a `// TODO: verify Claude 4 model choice matches your intent` comment.
+
+### Default Temperature Constant Removal (M1)
+
+```diff
+- options.temperature(OpenAiChatOptions.DEFAULT_TEMPERATURE);
++ options.temperature(0.7);   // was DEFAULT_TEMPERATURE
+```
+
+---
+
+## Jackson 2 Compatibility Layer — Tightened Version Gate (v2.4.0)
+
+The `jackson-2-compatibility-layer` transformation now applies to **Spring AI 2.0.0-M6 only**.
+
+- **M1-M5**: Older milestones used different Jackson coordination; the workaround is unnecessary.
+- **M6**: ChromaVectorStoreAutoConfiguration imports `com.fasterxml.jackson.databind.ObjectMapper`. The compatibility layer is required.
+- **M7+**: Spring AI moved off the Jackson 2 ObjectMapper requirement. The workaround is no
+  longer needed and should be **removed** by the new `jackson-2-compatibility-layer-removal`
+  transformation when upgrading M6 → M7.
+
+### Removal Steps (`jackson-2-compatibility-layer-removal`)
+
+1. Delete `src/main/java/<base-package>/config/JacksonConfiguration.java`.
+2. Remove explicit Jackson 2 dependencies from the build file:
+
+   ```xml
+   <!-- DELETE -->
+   <dependency>
+       <groupId>com.fasterxml.jackson.core</groupId>
+       <artifactId>jackson-databind</artifactId>
+       <version>2.18.2</version>
+   </dependency>
+   <dependency>
+       <groupId>com.fasterxml.jackson.datatype</groupId>
+       <artifactId>jackson-datatype-jsr310</artifactId>
+       <version>2.18.2</version>
+   </dependency>
+   ```
+
+3. Run `mvn clean compile` / `./gradlew compileJava` to verify.
+4. Update `.migration-state.yaml`: add `jackson-2-compatibility-layer-removal` to the
+   `spring-ai-migrator` transformations list.

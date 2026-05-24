@@ -1,8 +1,15 @@
 ---
 name: application-property-migrator
-description: Migrate application.yml and application.properties files for Spring Boot 4 including property renames, namespace changes, kebab-case convention, and logging package updates. Use when upgrading Spring Boot or fixing configuration issues.
+description: >
+  Migrate application.yml and application.properties files for Spring Boot 4
+  including property renames, namespace changes, kebab-case convention, logging
+  package updates, the six Spring AI 2.0 `spring.ai.model.*` selectors, and Spring
+  Boot 4.1 opt-in property awareness. Use when upgrading Spring Boot or fixing
+  configuration issues.
 allowed-tools: Read, Write, Edit, Glob, Grep
 ---
+
+**Version:** 1.2.0
 
 # Application Property Migrator
 
@@ -115,7 +122,13 @@ logging:
 
 ## Spring AI Property Changes
 
-### Provider Selection (New in 2.0)
+### Provider Selection — All Six Selectors (New in 2.0)
+
+Spring AI 2.0 introduces six `spring.ai.model.<type>` selectors. **All six must be set
+explicitly** when more than one provider starter is on the classpath, or
+`@ConditionalOnProperty(havingValue="openai", matchIfMissing=true)` on the OpenAI
+autoconfiguration classes silently defaults to OpenAI for unset types and crashes the app
+with `At least one credential source must be specified`.
 
 ```yaml
 # Before (Spring AI 1.x - autoconfigure excludes)
@@ -126,15 +139,37 @@ spring:
     ollama:
       base-url: http://localhost:11434
 
-# After (Spring AI 2.0 - model selection)
+# After (Spring AI 2.0 - the six model selectors)
 spring:
   ai:
     model:
       chat: ollama
       embedding: ollama
+      image: none
+      moderation: none
+      audio:
+        speech: none
+        transcription: none
     ollama:
       base-url: http://localhost:11434
 ```
+
+#### Detection patterns
+
+| Pattern                                                                  | Action                                                                |
+| ------------------------------------------------------------------------ | --------------------------------------------------------------------- |
+| `spring.ai.model.chat` set, but `spring.ai.model.image` missing          | Add `image: none` (and all other missing of the six)                  |
+| `spring.ai.openai.api-key` set + `spring.ai.ollama.*` config             | Multi-provider classpath — invoke `spring-ai-model-selector-enforcer` |
+| Multiple `spring-ai-starter-model-*` deps + no `spring.ai.model.*` block | Run `spring-ai-model-selector-enforcer` to inject all six             |
+
+Valid selector values per profile:
+
+- `openai`, `ollama`, `anthropic`, `mistral-ai`, `bedrock-converse`, `huggingface`,
+  `stability-ai`, `minimax`, `moonshot`, `qianfan`
+- `none` — disables autoconfiguration for that model type
+
+For automatic injection with intelligent inference per profile, delegate to the
+**`spring-ai-model-selector-enforcer`** skill.
 
 ### TTS Speed Parameter Type
 
@@ -275,6 +310,22 @@ grep -r "[0-9]\.0f" --include="*.yml" --include="*.yaml"
 6. **Fix type literals** - Remove `f` suffix from Float values
 7. **Validate syntax** - Ensure YAML/properties parse correctly
 8. **Test application** - Verify configuration loads successfully
+
+## Spring Boot 4.1 New Opt-in Properties (Reference)
+
+Spring Boot 4.1.0-RC1 introduces several new properties. They are **opt-in** — no
+migration transformation is required, but document them so developers can adopt them
+deliberately.
+
+| Property                             | Type             | Notes                                                           |
+| ------------------------------------ | ---------------- | --------------------------------------------------------------- |
+| `spring.datasource.connection-fetch` | `eager` / `lazy` | Eager pre-warms the connection pool at startup; lazy defers     |
+| `spring.webflux.default-html-escape` | boolean          | Default HTML escaping for WebFlux template engines              |
+| `spring.data.redis.listener.*`       | various          | New listener-container tuning knobs (concurrency, error policy) |
+| `spring.grpc.*`                      | various          | First-class Spring gRPC configuration namespace                 |
+
+These do not require transformation. Skill version 1.2.0+ surfaces them in `--report` mode
+so projects can review opt-in opportunities after upgrading to Boot 4.1.
 
 ## IDE Warnings
 

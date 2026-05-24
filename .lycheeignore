@@ -1,0 +1,20 @@
+# Additional URL patterns to ignore beyond what's in lychee.toml.
+# One regex per line. Lychee uses these as substring/regex matches.
+
+# Spring documentation that's sometimes flaky or rate-limited
+docs\.spring\.io.*reference
+
+# Repo internal anchors that lychee can't resolve standalone (these resolve fine in
+# GitHub's rendered view)
+^#
+
+# GitHub anchor links inside the same file (lychee can struggle with these)
+github\.com/.+#L\d+
+
+# Placeholder URLs that appear in example code blocks
+your-resource
+your-org
+github\.com/myorg/
+
+# Link rot — discussion was deleted/renumbered upstream but topic is still valid
+spring-cloud-openfeign/discussions/867

@@ -1,0 +1,35 @@
+skill:
+  name: spring-ai-options-setter-migrator
+  version: 1.0.0
+  description: >
+    Rewrite removed setter calls on Spring AI options classes (M6+) to builder
+    construction or YAML property equivalents.
+
+  transformations:
+    - id: options-setter-to-builder
+      version: 1.0.0
+      description: >
+        Convert .set<Property>() setter calls on *Options classes to builder-chain
+        construction.
+      detection: "(OpenAi|Anthropic|Ollama|MistralAi|Azure|Bedrock|Stability|HuggingFace)\\w*Options\\w*\\.\\s*set[A-Z]\\w+\\s*\\("
+      automationPotential: 85
+      userApprovalRequired: false
+
+  inputs:
+    - name: target
+      type: string
+      default: "builder"
+      values: ["builder", "yaml"]
+    - name: mode
+      type: string
+      default: "migrate"
+      values: ["detect", "migrate"]
+    - name: dry-run
+      type: boolean
+      default: false
+
+  dependencies:
+    - skill: build-runner
+      minVersion: 1.0.0
+    - skill: migration-state
+      minVersion: 1.0.0

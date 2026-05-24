@@ -5,6 +5,133 @@ All notable changes to the Spring Modernization Marketplace will be documented i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.11.0] - 2026-05-23
+
+### Spring Boot 4.1.0-RC1 + Spring AI 2.0.0-M7 Coverage
+
+This release closes the gap between the v1.10.0 marketplace (Boot 4.0 / Spring AI 2.0.0-M6)
+and the current upstream lines. Twelve specific gaps surfaced during a real
+kahoot-quiz-generator migration; all are addressed.
+
+### Added — New Skills
+
+- **`spring-ai-model-selector-enforcer`** (v1.0.0): The flagship addition. Detects
+  Spring AI 2.0 multi-provider classpath collisions and injects the six
+  `spring.ai.model.{chat,embedding,image,moderation,audio.speech,audio.transcription}`
+  selector properties per Spring profile with `none` as the safe default. Prevents the
+  silent `"At least one credential source must be specified"` startup failure where
+  OpenAI autoconfiguration `matchIfMissing=true` binds by default for any unset
+  selector. Supports inference from existing provider config blocks, code references,
+  or `--primary-provider` override.
+- **`spring-boot-bom-override-reconciler`** (v1.0.0): Detects and reconciles stale
+  Maven `<properties>` / Gradle `ext`-`extra` overrides of BOM-managed dependencies
+  (Micrometer, Spring Framework, Spring Security, OpenTelemetry, Flyway) before/after
+  a Spring Boot major/minor bump. Strategies: `drop`, `update`, `report`.
+- **`spring-ai-options-setter-migrator`** (v1.0.0): Rewrites removed setter calls on
+  Spring AI `*Options` classes (M6 removal). Two targets: `builder` (fold setters into
+  existing builder chain) or `yaml` (extract literal-only setters to `application.yml`).
+- **`spring-ai-mcp-sse-to-streamable-http-migrator`** (v1.0.0): Migrates Spring AI MCP
+  clients from the deprecated SSE transport (deprecated in M7) to the new Streamable
+  HTTP transport. Rewrites transport classes, translates the `spring.ai.mcp.client.sse.*`
+  property tree, and adjusts connection URLs.
+
+### Added — New Agents
+
+- **`spring-boot-41-rc-upgrade-agent`**: Orchestrates the focused Boot 4.0.x → 4.1.0-RC1
+  upgrade. Phases: detect → build-file-updater → bom-override-reconciler →
+  dependency-updater (`--target-rc`) → restclient-to-webclient-customizer-migrator
+  (with new `withHttpClientDefaults()` step) → property awareness → validate.
+- **`spring-ai-20-m7-upgrade-agent`**: Orchestrates the Spring AI 1.1.x → 2.0.0-M7
+  upgrade. Mandatorily ends with `spring-ai-model-selector-enforcer` — refuses to
+  finish without successful selector enforcement.
+
+### Added — New Slash Commands
+
+- **`/spring-m11n:migrate-spring-boot-41`** — wraps `spring-boot-41-rc-upgrade-agent`.
+- **`/spring-m11n:migrate-spring-ai-20`** — wraps `spring-ai-20-m7-upgrade-agent`.
+- **`/spring-m11n:detect-multi-provider-collision`** — read-only diagnostic running the
+  selector enforcer in detect mode.
+- **`/spring-m11n:migrate-mcp-streamable-http`** — standalone wrapper for the SSE →
+  Streamable HTTP migration.
+
+### Changed — Skill Version Bumps
+
+- **`spring-ai-migrator`** v2.3.0 → **v2.4.0**: Six new transformations covering M1-M7
+  - `spring-ai-starter-rename` — `spring-ai-*-spring-boot-starter` → `spring-ai-starter-model-*`
+  - `spring-ai-cloud-bindings-removal` — removes `spring-ai-spring-cloud-bindings`
+    (M7); preserves the unrelated `org.springframework.cloud:spring-cloud-bindings`
+  - `spring-ai-removed-modules` — Azure OpenAI merged into `spring-ai-openai`;
+    Vertex AI Gemini / ZhipuAI / OCI GenAI removed (M4-M5)
+  - `spring-ai-api-removals-m1-m6` — `PromptChatMemoryAdvisor` (M6),
+    `ModelOptionsUtils[.merge]` (M5), `OpenAiConnectionProperties` → `OpenAiCommonProperties`
+    (M6), `McpAsyncClientCustomizer`/`McpSyncClientCustomizer` → `McpClientCustomizer<B>`
+    (M3), `disableMemory()` → `disableInternalConversationHistory()` (M3)
+  - `spring-ai-claude-3-enum-removal` — Claude 3 → Claude 4.x enum constants
+  - `spring-ai-default-temperature-constants` — removed default temperature constants
+  - **Tightened** `jackson-2-compatibility-layer` version gate from `2.0.0-M[0-9]+` to
+    `2.0.0-M6` ONLY. Added reverse `jackson-2-compatibility-layer-removal` for M7+
+    projects upgrading from M6.
+- **`spring-ai-version-validator`** v1.0.0 → **v1.1.0**: Recommends `2.0.0-M7` as the
+  latest milestone; adds Spring Boot `4.1.0-RC1` to the compatibility table.
+- **`spring-ai-mcp-client-package-migrator`** v1.0.0 → **v1.1.0**: Adds
+  `McpAsyncClientCustomizer`/`McpSyncClientCustomizer` → `McpClientCustomizer<B>`
+  unification (Spring AI 2.0.0-M3 API surface change).
+- **`restclient-to-webclient-customizer-migrator`** v1.0.0 → **v1.1.0**: Adds
+  `ReactorClientHttpRequestFactoryBuilder.withHttpClientDefaults()` transformation
+  (Boot 4.1.0-RC1 no longer applies `proxyWithSystemProperties()` by default).
+- **`build-file-updater`** v1.1.x → **v1.2.0**:
+  - Adds `<pluginRepositories>` block alongside `<repositories>` for Spring Milestones
+    (Maven), and `settings.gradle*` `pluginManagement { repositories { ... } }` equivalent
+    (Gradle). Critical for resolving the `spring-boot-maven-plugin` for Boot RC parents.
+  - Refreshed Version Reference table with the Boot 4.1.0-RC1 line: Micrometer 1.17.0-RC1,
+    Spring Framework 7.0.7, Spring Security 7.1.0-RC1, OpenTelemetry 1.60.1, Flyway 12.4.0.
+  - New Spring AI starter rename map.
+  - Spring AI cloud bindings removal documentation.
+- **`application-property-migrator`** v1.1.x → **v1.2.0**:
+  - Expanded `spring.ai.model.*` selector coverage from 2 → all 6 selectors.
+  - New Spring Boot 4.1 opt-in property reference section
+    (`spring.datasource.connection-fetch`, `spring.webflux.default-html-escape`,
+    `spring.data.redis.listener.*`, `spring.grpc.*`).
+- **`dependency-updater`** v2.0.0 → **v2.1.0**:
+  - Adds **`--target-rc=<artifactId>:<version>`** per-artifact RC opt-in (multiple
+    flags allowed). Keeps global `stable-only` filter while permitting a specific RC.
+  - Auto-adds Spring Milestones to BOTH `<repositories>` AND `<pluginRepositories>`
+    when an RC target is set.
+  - Three new entries in the error-classification → migration-skill suggestion map
+    (Spring AI M1-M6 API removals, options setter removals, SSE transport patterns).
+- **`java-maintenance-workflow`** v1.0.0 → **v1.1.0**: Adds `--target-rc` opt-in mode
+  matching the `dependency-updater` semantics. Records the RC opt-in in the PR body.
+- **`spring-boot-4-breaking-changes-detector`** v1.0.0 → **v1.1.0**: Six new catalog
+  entries for Boot 4.1.0-RC1 (ReactorClientHttpRequestFactoryBuilder proxy change,
+  Micrometer 1.17 BOM, Framework 7.0.7, Security 7.1.0-RC1, OpenTelemetry 1.60.1,
+  Flyway 12.4.0).
+- **`migration-protocol`** v1.0.0 → **v1.1.0**: Documents `<pluginRepositories>` (Maven)
+  / `settings.gradle*` `pluginManagement` (Gradle) requirement for Spring Boot
+  RC/milestone parents. Adds "RC / Milestone Opt-in Upgrades" section.
+- **`pattern-detector`** & **`import-migrator`**: Added Spring AI 2.0.x (M1-M7) catalog
+  tables covering every API removal, rename, and deprecation listed above.
+
+### Migration Path
+
+Existing migrations from prior versions continue to work without modification. The new
+transformations are additive and gated by version detection — projects that don't need
+them are no-ops.
+
+To onboard to Boot 4.1.0-RC1 + Spring AI 2.0.0-M7:
+
+```bash
+/spring-m11n:migrate-spring-boot-41 /path/to/project
+/spring-m11n:migrate-spring-ai-20 /path/to/project
+```
+
+To diagnose only:
+
+```bash
+/spring-m11n:detect-multi-provider-collision /path/to/project
+```
+
+---
+
 ## [1.7.0] - 2026-05-21
 
 ### Added
@@ -477,7 +604,7 @@ All new skills follow consistent pattern:
 - Spring Cloud 2025.1.0 Release: <https://spring.io/blog/2025/11/25/spring-cloud-2025-1-0-aka-oakwood-has-been-released/>
 - Spring Framework HTTP Interface: <https://docs.spring.io/spring-framework/reference/integration/rest-clients.html#rest-http-interface>
 - JUnit 5 User Guide: <https://junit.org/junit5/docs/current/user-guide/>
-- Gradle 9.0 Release Notes: <https://docs.gradle.org/9.0/release-notes.html>
+- Gradle 9.0 Release Notes: <https://docs.gradle.org/9.0.0/release-notes.html>
 - Testcontainers Documentation: <https://testcontainers.com/>
 - Spring Data R2DBC: <https://spring.io/projects/spring-data-r2dbc>
 

@@ -1,7 +1,7 @@
 # Spring Boot 4.x Breaking Changes Detector Skill
 
 **Skill ID:** `spring-boot-4-breaking-changes-detector`
-**Version:** 1.0.0
+**Version:** 1.1.0
 **Category:** Detection & Analysis
 **Priority:** CRITICAL (blocks migrations)
 
@@ -730,13 +730,94 @@ breakingChanges:
 
 ---
 
+## Spring Boot 4.1.0-RC1 Additional Catalog Entries (v1.1.0+)
+
+### A. ReactorClientHttpRequestFactoryBuilder Proxy Default Removed
+
+**Status:** BEHAVIOR CHANGE
+**Since:** 4.1.0-RC1
+**Severity:** MEDIUM (silent runtime behavior change)
+
+**Issue:**
+`ReactorClientHttpRequestFactoryBuilder` no longer applies `proxyWithSystemProperties()`
+by default. Projects relying on `-Dhttp.proxyHost` / `-Dhttps.proxyHost` for outbound
+HTTP need explicit opt-in.
+
+**Detection Pattern:**
+
+```regex
+ReactorClientHttpRequestFactoryBuilder\b(?!.*\.withHttpClientDefaults)
+```
+
+**Migration:** see `restclient-to-webclient-customizer-migrator` v1.1.0+ — the
+`reactor-http-builder-defaults` transformation injects `.withHttpClientDefaults()` where
+needed.
+
+### B. Micrometer BOM 1.16 → 1.17.0-RC1
+
+**Status:** MANAGED VERSION BUMP
+**Since:** 4.1.0-RC1
+**Severity:** LOW (mostly additive)
+
+**Issue:**
+Projects that pin `<micrometer.version>1.16.x</micrometer.version>` explicitly in
+`<properties>` will stay on the older managed version after the Boot 4.1.0-RC1 BOM ships
+1.17.0-RC1. This creates a drift between the Boot BOM expectation and the resolved Micrometer.
+
+**Migration:** see `spring-boot-bom-override-reconciler` — drops or updates stale
+overrides during the Boot 4.0→4.1 bump.
+
+### C. Spring Framework 7.0.x → 7.0.7
+
+**Status:** MANAGED VERSION BUMP
+**Since:** 4.1.0-RC1
+**Severity:** LOW (patch level)
+
+Bundled with the new Boot BOM. No code changes required unless the project pins
+`<spring-framework.version>` to an older 7.0.x — handle via
+`spring-boot-bom-override-reconciler`.
+
+### D. Spring Security 7.0 → 7.1.0-RC1
+
+**Status:** MANAGED VERSION BUMP
+**Since:** 4.1.0-RC1
+**Severity:** LOW (minor; additive)
+
+No new code-level breaking changes documented vs 7.0.x, but `<spring-security.version>`
+overrides should be reconciled.
+
+### E. OpenTelemetry 1.60.1 in BOM
+
+**Status:** MANAGED ADDITION
+**Since:** 4.1.0-RC1
+**Severity:** LOW
+
+OpenTelemetry instrumentation is now BOM-managed at 1.60.1.
+
+### F. Flyway 12.4.0 in BOM
+
+**Status:** MANAGED ADDITION
+**Since:** 4.1.0-RC1
+**Severity:** LOW (database tooling)
+
+Flyway 12.x is BOM-managed. Projects pinning `<flyway.version>` to 11.x or earlier should
+reconcile via `spring-boot-bom-override-reconciler`.
+
+---
+
 ## References
 
 - **Spring Boot 4.0 Release Notes:** <https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-4.0-Release-Notes>
-- **Related Skills:** openfeign-compatibility-detector, jackson-migrator, security-config-migrator
+- **Spring Boot 4.1 Release Notes:** <https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-4.1-Release-Notes>
+- **Related Skills:** `openfeign-compatibility-detector`, `jackson-migrator`,
+  `security-config-migrator`, `restclient-to-webclient-customizer-migrator` (v1.1.0+),
+  `spring-boot-bom-override-reconciler`
 
 ---
 
 ## Version History
 
+- **1.1.0** (2026-05-23): Added Boot 4.1.0-RC1 catalog entries:
+  ReactorClientHttpRequestFactoryBuilder proxy default change, Micrometer BOM 1.17,
+  Framework 7.0.7, Security 7.1.0-RC1, OpenTelemetry 1.60.1, Flyway 12.4.0.
 - **1.0.0** (2026-01-04): Initial implementation covering top 8 Spring Boot 4.x breaking changes
