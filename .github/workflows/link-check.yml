@@ -34,12 +34,12 @@ jobs:
       - name: Run lychee
         uses: lycheeverse/lychee-action@v2
         with:
-          # --no-progress is friendlier in CI logs
-          # --base . anchors relative paths to the repo root
+          # --no-progress is friendlier in CI logs.
+          # No --base flag: lychee resolves relative paths against each markdown
+          # file's directory, which is what we want for intra-repo links.
           args: >-
             --config lychee.toml
             --no-progress
-            --base .
             --verbose
             './**/*.md'
           # Don't fail the action on broken links during scheduled runs — just open an issue.
