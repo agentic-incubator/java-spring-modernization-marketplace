@@ -1,3 +1,10 @@
+---
+name: testcontainers-module-validator
+description: >
+  Validate that Java tests declare the Testcontainers modules required by imported container classes.
+  Use when preventing missing-class failures or reviewing modular Testcontainers dependencies.
+---
+
 # Testcontainers Module Validator Skill
 
 **Skill ID:** `testcontainers-module-validator`

@@ -1,3 +1,10 @@
+---
+name: version-comparator
+description: >
+  Compare semantic versions for migration tiers, skip logic, and upgrade decisions.
+  Use when shell-based modernization workflows need deterministic version ordering.
+---
+
 # Version Comparator Skill
 
 Semantic version comparison utilities for migration tier classification and version-aware decision making.

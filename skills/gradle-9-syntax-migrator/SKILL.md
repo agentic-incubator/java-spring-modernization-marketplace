@@ -1,3 +1,10 @@
+---
+name: gradle-9-syntax-migrator
+description: >
+  Migrate Gradle build scripts to Gradle 9-compatible Java and test syntax.
+  Use when upgrading Gradle wrappers or resolving Gradle 9 deprecations and build failures.
+---
+
 # Gradle 9.x Syntax Migrator Skill
 
 **Skill ID:** `gradle-9-syntax-migrator`

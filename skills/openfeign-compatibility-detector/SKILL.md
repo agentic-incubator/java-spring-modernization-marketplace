@@ -1,3 +1,10 @@
+---
+name: openfeign-compatibility-detector
+description: >
+  Detect Spring Cloud OpenFeign usage and Spring Boot compatibility risks.
+  Use when custom Feign clients, encoders, decoders, or removed Boot APIs may block migration.
+---
+
 # OpenFeign Compatibility Detector Skill
 
 **Skill ID:** `openfeign-compatibility-detector`

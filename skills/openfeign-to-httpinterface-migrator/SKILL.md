@@ -1,3 +1,10 @@
+---
+name: openfeign-to-httpinterface-migrator
+description: >
+  Migrate hand-written OpenFeign clients to Spring HTTP Interface clients.
+  Use when replacing Feign annotations, dependencies, configuration, and client wiring for Spring Boot 4.
+---
+
 # OpenFeign to Spring HTTP Interface Migrator Skill
 
 **Skill ID:** `openfeign-to-httpinterface-migrator`

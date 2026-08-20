@@ -1,3 +1,10 @@
+---
+name: multi-module-dependency-analyzer
+description: >
+  Analyze Maven and Gradle multi-module dependency graphs and build order.
+  Use when module relationships, blockers, or parallel build sequencing must be determined.
+---
+
 # Multi-Module Dependency Analyzer Skill
 
 **Skill ID:** `multi-module-dependency-analyzer`

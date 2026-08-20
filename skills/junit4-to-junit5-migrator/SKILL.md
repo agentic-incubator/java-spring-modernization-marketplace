@@ -1,3 +1,10 @@
+---
+name: junit4-to-junit5-migrator
+description: >
+  Migrate Java tests and build configuration from JUnit 4 to JUnit 5 Jupiter.
+  Use when modernizing Spring tests, annotations, assertions, runners, or test platforms.
+---
+
 # JUnit4 to JUnit5 Migrator Skill
 
 **Skill ID:** `junit4-to-junit5-migrator`

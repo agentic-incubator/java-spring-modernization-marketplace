@@ -1,3 +1,10 @@
+---
+name: library-migration-classifier
+description: >
+  Classify dependency changes as version upgrades or library migrations.
+  Use when estimating modernization effort, compatibility risk, and required code changes.
+---
+
 # Library Migration Classifier Skill
 
 **Skill ID:** `library-migration-classifier`

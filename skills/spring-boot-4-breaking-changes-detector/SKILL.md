@@ -1,3 +1,10 @@
+---
+name: spring-boot-4-breaking-changes-detector
+description: >
+  Detect Spring Boot 4 API removals, dependency changes, and runtime incompatibilities.
+  Use before or during a Boot 4 migration to identify compilation and production blockers.
+---
+
 # Spring Boot 4.x Breaking Changes Detector Skill
 
 **Skill ID:** `spring-boot-4-breaking-changes-detector`
