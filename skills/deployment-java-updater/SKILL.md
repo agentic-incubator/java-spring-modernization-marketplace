@@ -240,12 +240,12 @@ spec:
 # Before
 image:
   repository: eclipse-temurin
-  tag: "17-jre"
+  tag: '17-jre'
 
 # After
 image:
   repository: bellsoft/liberica-openjre-alpine
-  tag: "21"
+  tag: '21'
 ```
 
 ### 6. Heroku system.properties Updates

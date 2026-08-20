@@ -91,12 +91,12 @@ Glob: **/helm/**/*.yaml
 spec:
   containers:
     - name: app
-      image: myapp:1.0  # May contain Java version in custom images
-      image: eclipse-temurin:21-jre  # Direct Java image
+      image: myapp:1.0 # May contain Java version in custom images
+      image: eclipse-temurin:21-jre # Direct Java image
 
 # ConfigMap with Java version
 data:
-  JAVA_VERSION: "21"
+  JAVA_VERSION: '21'
 
 # Init container for Java setup
 initContainers:

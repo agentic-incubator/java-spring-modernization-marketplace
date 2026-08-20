@@ -100,12 +100,12 @@ git diff .github/workflows/ | grep '^[+-].*uses:' | grep -v '^---\|^+++'
 # Before
 strategy:
   matrix:
-    java: [ '17', '21' ]
+    java: ['17', '21']
 
 # After
 strategy:
   matrix:
-    java: [ '21', '25' ]
+    java: ['21', '25']
 ```
 
 ### Environment Variable Update
@@ -189,9 +189,9 @@ new_string: "java: [ '21', '25' ]"
 Workflows may use different quote styles:
 
 ```yaml
-java-version: '21'     # Single quotes
-java-version: "21"     # Double quotes
-java-version: 21       # Unquoted
+java-version: '21' # Single quotes
+java-version: '21' # Double quotes
+java-version: 21 # Unquoted
 ```
 
 Preserve the original style when updating.
@@ -358,9 +358,9 @@ Adding new Java version to test matrix:
 
 ```yaml
 # From
-java: [ '21' ]
+java: ['21']
 # To
-java: [ '21', '25' ]
+java: ['21', '25']
 ```
 
 ### Scenario 3: Minimum Version Bump
@@ -369,9 +369,9 @@ Removing old Java version from matrix:
 
 ```yaml
 # From
-java: [ '17', '21', '25' ]
+java: ['17', '21', '25']
 # To
-java: [ '21', '25' ]
+java: ['21', '25']
 ```
 
 ## Integration with Build File Updates

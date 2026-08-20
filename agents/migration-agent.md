@@ -978,12 +978,12 @@ For matrix builds:
 # Before
 strategy:
   matrix:
-    java: [ '17', '21' ]
+    java: ['17', '21']
 
 # After
 strategy:
   matrix:
-    java: [ '21', '25' ]
+    java: ['21', '25']
 ```
 
 **After applying GitHub Actions changes:**

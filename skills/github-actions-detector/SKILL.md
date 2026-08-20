@@ -79,9 +79,9 @@ steps:
 ### Direct Version
 
 ```yaml
-java-version: '21'      # Extracts: 21
-java-version: 21        # Extracts: 21
-java-version: "17"      # Extracts: 17
+java-version: '21' # Extracts: 21
+java-version: 21 # Extracts: 21
+java-version: '17' # Extracts: 17
 ```
 
 ### Matrix Reference

@@ -146,13 +146,13 @@ This application uses Spring Boot 4.0.0 with Java 21.
 
 Each transformation uses specific detection patterns:
 
-| Transformation             | Detection Pattern                       |
+| Transformation | Detection Pattern |
 | -------------------------- | --------------------------------------- | ----------------- | -------- |
-| `readme-prerequisites`     | `README\.md.\*(Prerequisites?           | Requirements?)`   |
-| `general-version-refs`     | `Spring Boot 3\.[0-9]+                  | Jackson 2\.[0-9]+ | Java 17` |
-| `getting-started-guide`    | `docs/getting-started\.md.*Java 17`     |
+| `readme-prerequisites` | `README\.md.\*(Prerequisites?           | Requirements?)` |
+| `general-version-refs` | `Spring Boot 3\.[0-9]+                  | Jackson 2\.[0-9]+ | Java 17` |
+| `getting-started-guide` | `docs/getting-started\.md.*Java 17` |
 | `migration-guide-versions` | `docs/migrations\.md.*Spring Boot.*3\.` |
-| `aggregate-doc-report`     | `\.migration-state\.yaml`               |
+| `aggregate-doc-report` | `\.migration-state\.yaml` |
 
 ## Aggregated Reporting
 

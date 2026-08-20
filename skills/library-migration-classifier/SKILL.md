@@ -118,34 +118,34 @@ libraryClassification:
   libraryMigrations: 2
 
   versionUpgrades:
-    - library: "org.springframework.boot:spring-boot-starter-web"
-      from: "3.5.7"
-      to: "4.0.1"
-      type: "VERSION_UPGRADE_MAJOR"
-      effort: "LOW"
-      estimatedHours: "0.5"
-      automationPotential: "95%"
+    - library: 'org.springframework.boot:spring-boot-starter-web'
+      from: '3.5.7'
+      to: '4.0.1'
+      type: 'VERSION_UPGRADE_MAJOR'
+      effort: 'LOW'
+      estimatedHours: '0.5'
+      automationPotential: '95%'
 
   libraryMigrations:
-    - library: "io.reactiverse:reactive-pg-client:0.11.4"
-      status: "DEPRECATED"
-      replacement: "spring-boot-starter-data-r2dbc"
-      type: "LIBRARY_MIGRATION"
-      effort: "HIGH"
-      estimatedHours: "4-8"
+    - library: 'io.reactiverse:reactive-pg-client:0.11.4'
+      status: 'DEPRECATED'
+      replacement: 'spring-boot-starter-data-r2dbc'
+      type: 'LIBRARY_MIGRATION'
+      effort: 'HIGH'
+      estimatedHours: '4-8'
       requiresManualReview: true
       scope:
-        - "Entity annotation changes"
-        - "Repository interface rewrite"
-        - "Configuration removal"
-        - "application.yml migration"
-        - "Documentation overhaul"
-      automationPotential: "30%"
-      recommendation: "Flag for manual migration planning"
+        - 'Entity annotation changes'
+        - 'Repository interface rewrite'
+        - 'Configuration removal'
+        - 'application.yml migration'
+        - 'Documentation overhaul'
+      automationPotential: '30%'
+      recommendation: 'Flag for manual migration planning'
 
   summary:
-    totalEffort: "4.5-8.5 hours"
-    automationPotential: "75%"
+    totalEffort: '4.5-8.5 hours'
+    automationPotential: '75%'
     manualReviewRequired: 2
 ```
 
