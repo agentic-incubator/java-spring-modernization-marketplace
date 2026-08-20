@@ -1,7 +1,7 @@
 {
   "name": "spring-modernization-marketplace",
-  "version": "1.11.0",
-  "description": "Claude Code plugin marketplace for Spring ecosystem modernization. v1.11.0 adds Spring Boot 4.1.0-RC1 and Spring AI 2.0.0-M7 coverage: pluginRepositories support, multi-provider classpath collision enforcement, BOM override reconciliation, options-setter migration, MCP SSE → Streamable HTTP, and per-artifact --target-rc opt-in.",
+  "version": "1.12.0",
+  "description": "Claude Code plugin marketplace for Spring ecosystem modernization. v1.12.0 makes all 52 skills portable to OpenAI Codex via standard YAML frontmatter, adds a validate:skills CI gate, and refreshes the markdown lint toolchain and GitHub Actions.",
   "private": true,
   "packageManager": "pnpm@11.0.0",
   "engines": {

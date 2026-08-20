@@ -5,6 +5,37 @@ All notable changes to the Spring Modernization Marketplace will be documented i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.12.0] - 2026-08-20
+
+### Skills Portable to OpenAI Codex
+
+This release makes every skill in the marketplace consumable by OpenAI Codex as well as
+Claude Code, and adds a CI gate so portability cannot regress.
+
+### Added
+
+- **Portable YAML frontmatter on all 52 skills**: Each `skills/*/SKILL.md` now opens with a
+  `name` / `description` frontmatter block following the cross-agent skill convention, so
+  the same skill files load unchanged in Codex. (#14)
+- **`scripts/validate-skills.mjs`** and the `pnpm run validate:skills` script: Verifies every
+  skill directory has a `SKILL.md` with non-empty `name` and `description`, that `name` matches
+  the directory, and that it is lowercase kebab-case (≤ 63 chars). Wired into `pnpm run check`
+  so it runs in CI. (#14)
+
+### Changed
+
+- GitHub Actions in `ci.yml` and `link-check.yml` bumped to current major releases. (#13)
+- Dev toolchain refreshed: `markdownlint-cli` 0.48 → 0.49.1, `prettier` 3.7 → 3.9.6. (#14, #15)
+- Several skill docs reformatted by the newer Prettier (YAML flow-sequence spacing). (#15)
+- `.claude-plugin/plugin.json` and `marketplace.json` versions now track the marketplace
+  release (1.12.0) instead of the stale `1.0.0`; plugin description refreshed to reflect
+  current coverage.
+
+### Fixed
+
+- `github-actions-updater` skill: restored the double-quoted example in the "Handling
+  Different Quote Styles" section that Prettier had rewritten to single quotes.
+
 ## [1.11.0] - 2026-05-23
 
 ### Spring Boot 4.1.0-RC1 + Spring AI 2.0.0-M7 Coverage

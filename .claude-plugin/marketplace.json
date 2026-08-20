@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "A marketplace of AI agents and skills for automating Spring ecosystem modernization at scale",
-    "version": "1.0.0",
+    "version": "1.12.0",
     "pluginRoot": ".."
   },
   "plugins": [
@@ -13,7 +13,7 @@
       "name": "spring-m11n",
       "source": "./",
       "description": "Complete Spring ecosystem modernization toolkit with research, discovery, migration, and validation capabilities",
-      "version": "1.0.0",
+      "version": "1.12.0",
       "author": {
         "name": "Chris Phillipson"
       },

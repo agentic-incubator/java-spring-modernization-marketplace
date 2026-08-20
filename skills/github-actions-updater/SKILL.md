@@ -188,10 +188,11 @@ new_string: "java: [ '21', '25' ]"
 
 Workflows may use different quote styles:
 
+<!-- prettier-ignore -->
 ```yaml
-java-version: '21' # Single quotes
-java-version: '21' # Double quotes
-java-version: 21 # Unquoted
+java-version: '21'     # Single quotes
+java-version: "21"     # Double quotes
+java-version: 21       # Unquoted
 ```
 
 Preserve the original style when updating.
