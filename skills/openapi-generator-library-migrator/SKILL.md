@@ -1,3 +1,10 @@
+---
+name: openapi-generator-library-migrator
+description: >
+  Migrate OpenAPI Generator clients from spring-cloud to spring-http-interface.
+  Use when regenerating Spring Boot 4 clients without Spring Cloud OpenFeign.
+---
+
 # OpenAPI Generator Library Migrator
 
 **Version**: 1.0.0

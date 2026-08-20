@@ -1,3 +1,10 @@
+---
+name: openapi-generator-detector
+description: >
+  Detect OpenAPI Generator plugins, libraries, templates, and configuration in Maven or Gradle projects.
+  Use before updating generated Spring clients or Framework compatibility settings.
+---
+
 # OpenAPI Generator Detector
 
 **Version**: 1.0.0

@@ -1,3 +1,10 @@
+---
+name: spring-ai-version-validator
+description: >
+  Validate Spring AI semantic, milestone, and release-candidate version formats.
+  Use when dependency resolution fails or modernization targets specify Spring AI versions.
+---
+
 # Spring AI Version Validator Skill
 
 **Skill ID:** `spring-ai-version-validator`

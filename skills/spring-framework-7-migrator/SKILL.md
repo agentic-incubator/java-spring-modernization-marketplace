@@ -1,3 +1,10 @@
+---
+name: spring-framework-7-migrator
+description: >
+  Migrate Spring Framework 6 APIs and generated templates to Framework 7.
+  Use when updating HTTP service proxies, WebClient adapters, or OpenAPI-generated clients.
+---
+
 # Spring Framework 7 API Migrator
 
 **Version**: 1.0.0

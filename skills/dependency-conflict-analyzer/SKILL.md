@@ -1,3 +1,10 @@
+---
+name: dependency-conflict-analyzer
+description: >
+  Detect transitive dependency version conflicts in Maven and Gradle classpaths.
+  Use when mixed or incompatible library versions can cause build or runtime failures.
+---
+
 # Dependency Conflict Analyzer Skill
 
 **Skill ID:** `dependency-conflict-analyzer`
