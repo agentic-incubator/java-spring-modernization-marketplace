@@ -27,6 +27,14 @@ Claude Code, and adds a CI gate so portability cannot regress.
 - GitHub Actions in `ci.yml` and `link-check.yml` bumped to current major releases. (#13)
 - Dev toolchain refreshed: `markdownlint-cli` 0.48 → 0.49.1, `prettier` 3.7 → 3.9.6. (#14, #15)
 - Several skill docs reformatted by the newer Prettier (YAML flow-sequence spacing). (#15)
+- `.claude-plugin/plugin.json` and `marketplace.json` versions now track the marketplace
+  release (1.12.0) instead of the stale `1.0.0`; plugin description refreshed to reflect
+  current coverage.
+
+### Fixed
+
+- `github-actions-updater` skill: restored the double-quoted example in the "Handling
+  Different Quote Styles" section that Prettier had rewritten to single quotes.
 
 ## [1.11.0] - 2026-05-23
 
