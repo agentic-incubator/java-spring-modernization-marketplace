@@ -125,36 +125,36 @@ testImplementation 'org.testcontainers:cassandra'
 ```yaml
 testcontainersValidation:
   detected: true
-  coreVersion: "1.21.3"
+  coreVersion: '1.21.3'
   containersUsed: 2
   modulesRequired: 2
   modulesDeclared: 1
   missingModules: 1
 
   containers:
-    - class: "CassandraContainer"
-      import: "org.testcontainers.containers.CassandraContainer"
-      file: "src/test/java/com/example/CassandraIntegrationTest.java"
-      module: "cassandra"
-      declared: false  # MISSING
+    - class: 'CassandraContainer'
+      import: 'org.testcontainers.containers.CassandraContainer'
+      file: 'src/test/java/com/example/CassandraIntegrationTest.java'
+      module: 'cassandra'
+      declared: false # MISSING
 
-    - class: "PostgreSQLContainer"
-      import: "org.testcontainers.containers.PostgreSQLContainer"
-      file: "src/test/java/com/example/PostgresIntegrationTest.java"
-      module: "postgresql"
-      declared: true  # OK
+    - class: 'PostgreSQLContainer'
+      import: 'org.testcontainers.containers.PostgreSQLContainer'
+      file: 'src/test/java/com/example/PostgresIntegrationTest.java'
+      module: 'postgresql'
+      declared: true # OK
 
   missingModules:
-    - module: "cassandra"
-      reason: "CassandraContainer used but module not declared"
+    - module: 'cassandra'
+      reason: 'CassandraContainer used but module not declared'
       autoFix:
-        maven: "<dependency><groupId>org.testcontainers</groupId><artifactId>cassandra</artifactId><scope>test</scope></dependency>"
+        maven: '<dependency><groupId>org.testcontainers</groupId><artifactId>cassandra</artifactId><scope>test</scope></dependency>'
         gradle: "testImplementation 'org.testcontainers:cassandra'"
 
   summary:
-    automationPotential: "100%"
-    estimatedEffort: "2 minutes"
-    status: "AUTO_FIXABLE"
+    automationPotential: '100%'
+    estimatedEffort: '2 minutes'
+    status: 'AUTO_FIXABLE'
 ```
 
 ---
